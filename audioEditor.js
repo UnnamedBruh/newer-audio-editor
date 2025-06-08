@@ -23,9 +23,10 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		this.audioData = audioData;
 		this.sampleRate = sampleRate;
 		this.channels = channels;
+		this.encoding = bits === 8 ? (audioData instanceof Int16Array ? "eulaw16" : "pcm8") : (bits === 16 ? "pcm16" : bits === 32 ? (audioData instanceof Float32Array ? "pcmf32" : "pcm32") : "pcm16");
 		this.bits = bits;
 	}
-	convertToWav(floatPoint = false) {
+	convertToWav() {
 		const numChannels = this.channels, len = this.audioData.length;
 		if (floatPoint || this.bits !== 64) this.bits = 32;
 		const len2 = len * (this.bits / 8);
@@ -36,7 +37,7 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		this.writeString(view, 8, 'WAVE');
 		this.writeString(view, 12, 'fmt ');
 		view.setUint32(16, 16, true);
-		view.setUint16(20, floatPoint ? 3 : (this.bits === 8 && this.audioData instanceof Int16Array ? 7 : 1), true); // The type of PCM (1 = integer-based, 3 = IEEE 754 floating-point-based, 7 = μ-law - used in )
+		view.setUint16(20, this.encoding.startsWith("pcmf") ? 3 : this.encoding.startsWith("pcm") ? 1 : 7, true); // The type of PCM (1 = integer-based, 3 = IEEE 754 floating-point-based, 7 = μ-law - used in )
 		view.setUint16(22, numChannels, true);
 		view.setUint32(24, this.sampleRate, true);
 		view.setUint32(28, this.sampleRate * this.channels * (this.bits / 8), true);
@@ -45,7 +46,7 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		this.writeString(view, 36, 'data');
 		view.setUint32(40, len2, true);
 		let offset = 44, pointer = this.audioData;
-		if (floatPoint) {
+		if (this.encoding.startsWith("pcmf")) {
 			if (this.bits === 32) {
 				for (let i = 0; i < len; i++) {
 					view.setFloat32(offset, pointer[i], true);
@@ -58,15 +59,15 @@ class AudioExporter { // This class is meant for the original programmer's devel
 				}
 			}
 		} else {
-			if (this.bits === 8 && this.audioData instanceof Int16Array) {
+			if (this.encoding.startsWith("eulaw")) {
 				for (let i = 0; i < len; i++) {
-					view.setUint8(offset, linearToMuLaw(pointer[i]), true);
+					view.setUint8(offset, linearToMuLaw(pointer[i]));
 					offset++;
 				}
-			} else {
+			} else if (this.encoding.startsWith("pcm")) {
 				if (this.bits === 8) {
 					for (let i = 0; i < len; i++) {
-						view.setUint8(offset, pointer[i], true);
+						view.setUint8(offset, pointer[i]);
 						offset++;
 					}
 				} else {
