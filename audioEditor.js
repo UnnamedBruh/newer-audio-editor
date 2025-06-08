@@ -1,7 +1,6 @@
-// G.711 μ-law encode: convert 16-bit linear PCM to 8-bit μ-law
-// I used AI for this function (pls forgive me if im lazy)
+// G.711 μ-law encode: convert 16-bit signed int (linear PCM) to 8-bit μ-law
 function linearToMuLaw(sample) {
-	const MU_LAW_MAX = 0x1FFF; // Max 13-bit magnitude
+	const MU_LAW_MAX = 0x7FFF; // Max 13-bit magnitude
 	const BIAS = 0x84; // Bias for linear code
 
 	let sign = (sample >> 8) & 0x80;
@@ -18,15 +17,9 @@ function linearToMuLaw(sample) {
 	return muLawByte & 0xFF;
 }
 
-function UMP3(audioBuffer /*Float32Array*/, sampleRate, bitsPerSample, bitrate) {
-	const view = new DataView(new ArrayBuffer(4));
-
-	// For now, only the header is added
-	view.setUint8(0, 73); // I
-	view.setUint8(1, 68); // D
-	view.setUint8(2, 51); // 3
-
-	return view.buffer; // The rest will be handled someday.
+function scaEncode(floatData, sampleRate) {
+	const header = new Uint8Array(32);
+	
 }
 
 class AudioExporter { // This class is meant for the original programmer's development, not for public use; implement error handling, and handle other bits if invalid types are expected 
@@ -37,17 +30,22 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		this.encoding = bits === 8 ? (audioData instanceof Int16Array ? "ulaw" : "pcm8") : (bits === 16 ? "pcm16" : bits === 32 ? (audioData instanceof Float32Array ? "pcmf32" : "pcm32") : "pcm16");
 		this.bits = bits;
 	}
-	convertToWav() {
+	convertToWav(metadata) {
 		const numChannels = this.channels, len = this.audioData.length;
 		const len2 = len * (this.bits / 8);
-		const buffer = new ArrayBuffer(44 + len2);
+
+		const metaBuffer = new ArrayBuffer(1024); // metadata space + padding
+		const metaView = new DataView(metaBuffer);
+		const metaLength = this.addMetadata(metaView, 0, metadata);
+		
+		const buffer = new ArrayBuffer(44 + len2 + metaLength);
 		const view = new DataView(buffer);
 		this.writeString(view, 0, 'RIFF');
 		view.setUint32(4, 36 + len2, true);
 		this.writeString(view, 8, 'WAVE');
 		this.writeString(view, 12, 'fmt ');
 		view.setUint32(16, 16, true);
-		view.setUint16(20, this.encoding.startsWith("pcmf") ? 3 : this.encoding.startsWith("pcm") ? 1 : 7, true); // The type of PCM (1 = integer-based, 3 = IEEE 754 floating-point-based, 7 = μ-law - used in )
+		view.setUint16(20, this.encoding.startsWith("pcmf") ? 3 : this.encoding.startsWith("pcm") ? 1 : 7, true); // The type of PCM (1 = integer-based, 3 = IEEE 754 floating-point-based, 7 = μ-law - used mainly for telephones and voice-only audio)
 		view.setUint16(22, numChannels, true);
 		view.setUint32(24, this.sampleRate, true);
 		view.setUint32(28, this.sampleRate * this.channels * (this.bits / 8), true);
@@ -88,11 +86,44 @@ class AudioExporter { // This class is meant for the original programmer's devel
 				}
 			}
 		}
+		const metaArray = new Uint8Array(metaBuffer.slice(0, metaLength));
+		const finalArray = new Uint8Array(buffer);
+		finalArray.set(metaArray, offset);
 		return new Blob([view.buffer], { type: 'audio/wav' });
 	}
 	writeString(view, offset, string) {
 		for (let i = 0; i < string.length; i++) {
 			view.setUint8(offset + i, string.charCodeAt(i));
 		}
+	}
+	addMetadata(view, offset, metadata = {}) {
+		function writeTag(tag, value) {
+			const tagLen = value.length + (value.length % 2 === 0 ? 1 : 0);
+			view.setUint8(offset++, tag.charCodeAt(0));
+			view.setUint8(offset++, tag.charCodeAt(1));
+			view.setUint8(offset++, tag.charCodeAt(2));
+			view.setUint8(offset++, tag.charCodeAt(3));
+			view.setUint32(offset, tagLen, true); offset += 4;
+			for (let i = 0; i < value.length; i++) {
+				view.setUint8(offset++, value.charCodeAt(i));
+			}
+			view.setUint8(offset++, 0);
+			if (value.length % 2 === 0) offset++;
+			return offset;
+		}
+	
+		const startOffset = offset;
+		this.writeString(view, offset, 'LIST'); offset += 4;
+		const sizePos = offset; offset += 4; // Placeholder
+		this.writeString(view, offset, 'INFO'); offset += 4;
+	
+		for (const tag in metadata) {
+			const value = metadata[tag];
+			offset = writeTag(tag, value);
+		}
+	
+		// Set LIST chunk size
+		view.setUint32(sizePos, offset - startOffset - 8, true);
+		return offset;
 	}
 };
