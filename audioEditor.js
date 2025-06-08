@@ -18,6 +18,17 @@ function linearToMuLaw(sample) {
 	return muLawByte & 0xFF;
 }
 
+function UMP3(audioBuffer /*Float32Array*/, sampleRate, bitsPerSample, bitrate) {
+	const view = new DataView(new ArrayBuffer(4));
+
+	// For now, only the header is added
+	view.setUint8(0, 73); // I
+	view.setUint8(1, 68); // D
+	view.setUint8(2, 51); // 3
+
+	return view.buffer; // The rest will be handled someday.
+}
+
 class AudioExporter { // This class is meant for the original programmer's development, not for public use; implement error handling, and handle other bits if invalid types are expected 
 	constructor(audioData, sampleRate, channels, bits) {
 		this.audioData = audioData;
