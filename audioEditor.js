@@ -23,7 +23,7 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		this.audioData = audioData;
 		this.sampleRate = sampleRate;
 		this.channels = channels;
-		this.encoding = bits === 8 ? (audioData instanceof Int16Array ? "eulaw16" : "pcm8") : (bits === 16 ? "pcm16" : bits === 32 ? (audioData instanceof Float32Array ? "pcmf32" : "pcm32") : "pcm16");
+		this.encoding = bits === 8 ? (audioData instanceof Int16Array ? "ulaw" : "pcm8") : (bits === 16 ? "pcm16" : bits === 32 ? (audioData instanceof Float32Array ? "pcmf32" : "pcm32") : "pcm16");
 		this.bits = bits;
 	}
 	convertToWav() {
@@ -58,7 +58,7 @@ class AudioExporter { // This class is meant for the original programmer's devel
 				}
 			}
 		} else {
-			if (this.encoding.startsWith("eulaw")) {
+			if (this.encoding === "ulaw") {
 				for (let i = 0; i < len; i++) {
 					view.setUint8(offset, linearToMuLaw(pointer[i]));
 					offset++;
