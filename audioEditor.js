@@ -28,7 +28,6 @@ class AudioExporter { // This class is meant for the original programmer's devel
 	}
 	convertToWav() {
 		const numChannels = this.channels, len = this.audioData.length;
-		if (floatPoint || this.bits !== 64) this.bits = 32;
 		const len2 = len * (this.bits / 8);
 		const buffer = new ArrayBuffer(44 + len2);
 		const view = new DataView(buffer);
