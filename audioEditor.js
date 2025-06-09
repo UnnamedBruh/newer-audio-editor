@@ -34,4 +34,6 @@ effects["resample"] = function(buffer, targetSampleRate, shouldSmooth) {
 			variable[i] = z[Math.floor(i * speed)];
 		}
 	}
+
+	buffer.audioData = variable;
 }
