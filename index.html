@@ -15,4 +15,26 @@
 			}
 		</style>
 	</head>
+	<body>
+		<h1>Audio Editor</h1>
+		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba"><div id="editor"></div>
+		<script>
+			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+			const audioInput = document.getElementById("aud");
+			audioInput.oninput = function(eve) {
+				if (eve.target.files.length === 0) return;
+				const firstFile = eve.target.files[0];
+				const fileReader = new FileReader(firstFile);
+				fileReader.onload = function(event) {
+					try {
+						const buffer = audioContext.decodeAudioData(event.target.result);
+					} catch {
+						alert("The audio could not be properly loaded.");
+					}
+				}
+				fileReader.readAsArrayBuffer();
+			}
+		</script>
+	</body>
 </html>
