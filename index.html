@@ -17,14 +17,24 @@
 	<body>
 		<script src="audioEditor.js"></script>
 		<script src="audioExporter.js"></script>
+		Volume (<a id="la">100</a>%): <input type="slider" id="vol" min="0" max="10" step="0.01" style="width: 100%">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba">
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), ed = document.getElementById("editor");
+			const audioInput = document.getElementById("aud"), ed = document.getElementById("editor"), volume = document.getElementById("vol"), label = document.getElementById("la");
 			let exporters = [];
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0;
+			let gainNode = audioContext.createGain();
+			gainNode.connect(audioContext.destination);
+			gainNode.gain.value = 1;
+			volume.oninput = function() {
+				const x = +volume.value;
+				if (x > 0.9 && x < 1) volume.value = 1;
+				label.textContent = x * 100;
+				gainNode.gain.value = x;
+			}
 			function tick() {
 				if (timeline && playing) {
 					const x = Date.now() - whenPlayed;
