@@ -26,7 +26,7 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, volumeWarning = true;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, sampleData = null, skipSample = 480, volumeWarning = true;
 			let gainNode = audioContext.createGain();
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
@@ -55,7 +55,7 @@
 			function tick() {
 				if (timeline && playing) {
 					const x = Date.now() - whenPlayed;
-					timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / 480 + bbb);
+					timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb);
 				}
 				requestAnimationFrame(() => tick());
 			}
@@ -77,33 +77,37 @@
 					timeline.setAttribute("fill", "none");
 				}
 			}
+			function generateWaveform(exp) {
+				let data = "M 0,100 ";
+				const len = exp.audioData.length, y = exp.audioData;
+				if (y instanceof Float32Array || y instanceof Float64Array) {
+					for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
+						data += "L " + j + "," + Math.round(100 + y[i] * 100) + " ";
+					}
+				} else if (y instanceof Uint8Array) {
+					for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
+						data += "L " + j + "," + Math.round(100 + y[i] / 2.55) + " ";
+					}
+				} else if (y instanceof Int16Array) {
+					for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
+						data += "L " + j + "," + Math.round(100 + y[i] / 327.68) + " ";
+					}
+				}
+				return data;
+			}
 			function loadDiv(exp) {
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 				document.body.appendChild(v);
 				v.appendChild(x);
-				x.setAttribute("width", exp.audioData.length / 480);
-				v.style.width = (exp.audioData.length / 480) + "px";
+				x.setAttribute("width", exp.audioData.length / sampleSkip);
+				v.style.width = (exp.audioData.length / sampleSkip) + "px";
 				x.setAttribute("height", 200);
 				const n = document.createElementNS("http://www.w3.org/2000/svg", "path");
 				x.appendChild(n);
 				n.setAttribute("fill", "white");
 				n.setAttribute("stroke-width", 1);
-				let data = "M 0,100 ";
-				const len = exp.audioData.length, y = exp.audioData;
-				if (y instanceof Float32Array || y instanceof Float64Array) {
-					for (let i = 0, j = 0; i < len; i += 480, j++) {
-						data += "L " + j + "," + (100 + y[i] * 100) + " ";
-					}
-				} else if (y instanceof Uint8Array) {
-					for (let i = 0, j = 0; i < len; i += 480, j++) {
-						data += "L " + j + "," + (100 + y[i] / 2.55) + " ";
-					}
-				} else if (y instanceof Int16Array) {
-					for (let i = 0, j = 0; i < len; i += 480, j++) {
-						data += "L " + j + "," + (100 + y[i] / 327.68) + " ";
-					}
-				}
+				data = generateWaveform(exp);
 				n.setAttribute("d", data);
 				v.appendChild(document.createElement("br"));
 				const play = document.createElement("button");
@@ -121,9 +125,30 @@
 					playSound();
 				}
 				x.onclick = function(eve) {
-					startAt = (eve.clientX - x.getBoundingClientRect().x) / 480 * exporters.sampleRate / 10000;
+					startAt = (eve.clientX - x.getBoundingClientRect().x) / sampleSkip * exporters.sampleRate / 10000;
 					bbb = startAt * 100;
 					playSound();
+				}
+				const label3 = document.createElement("a");
+				const co = document.createElement("input");
+				label3.textContent = "View at Sample-Level";
+				v.appendChild(label3);
+				co.type = "checkbox";
+				v.appendChild(co);
+				co.oninput = function() {
+					if (co.checked) {
+						sampleSkip = 1;
+						let shouldDo = true;
+						if (!sampleData) {
+							if (!(shouldDo = confirm("Viewing at the sample level could consume ~" + ((exp.audioData.length * 8) / (1024 * 1024)) + " MB (this count is just an estimate)! Are you sure you want to view at the sample level?")))
+							sampleData = generateWaveform(exp);
+						}
+						if (shouldDo) n.setAttribute("d", sampleData);
+					} else {
+						sampleSkip = 480;
+						if (!data) data = generateWaveform(exp);
+						n.setAttribute("d", data);
+					}
 				}
 				ed = v;
 			}
@@ -139,6 +164,9 @@
 							ed.remove();
 							ed = null;
 						}
+						data = null;
+						sampleData = null;
+						sampleSkip = 480;
 						sharedBuffer = await audioContext.decodeAudioData(event.target.result);
 						const channel = sharedBuffer.getChannelData(0);
 						exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
