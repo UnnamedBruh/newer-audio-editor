@@ -30,7 +30,7 @@
 					const x = Date.now() - whenPlayed;
 					timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / 480);
 				}
-				requestAnimationFrame(tick);
+				requestAnimationFrame(() => tick());
 			}
 			function playSound() {
 				if (!sharedBuffer) return;
