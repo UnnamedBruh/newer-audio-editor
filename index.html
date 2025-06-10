@@ -8,7 +8,7 @@
 				font-family: Arial, sans-serif;
 				min-width: 100vw;
 			}
-			#editor {
+			div {
 				border-radius: 8px;
 				background-color: rgb(30, 30, 30);
 				min-width: 100vw;
@@ -34,7 +34,7 @@
 				x.setAttribute("height", 200);
 				const n = document.createElementNS("http://www.w3.org/2000/svg", "path");
 				x.appendChild(n);
-				n.setAttribute("stroke-fill", "white");
+				n.setAttribute("fill", "white");
 				n.setAttribute("stroke-width", 1);
 				let data = "M 0,100 ";
 				const len = exp.audioData.length, y = exp.audioData;
