@@ -33,13 +33,13 @@
 			volume.oninput = function() {
 				let x = +volume.value;
 				if (x > 0.9 && x < 1.1) x = volume.value = 1;
-				label.textContent = x * 100;
+				label.textContent = Math.round(x * 100);
 				gainNode.gain.value = x * +volume2.value;
 			}
 			volume2.oninput = function() {
 				let x = +volume2.value;
 				if (x > 0.9 && x < 1.1) x = volume2.value = 1;
-				label2.textContent = x * 100;
+				label2.textContent = Math.round(x * 100);
 				gainNode.gain.value = x * +volume.value;
 			}
 			function tick() {
