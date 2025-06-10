@@ -34,7 +34,10 @@
 			}
 			function playSound() {
 				if (!sharedBuffer) return;
-				if (src) src.stop();
+				if (src) {
+					src.onended = function() {};
+					src.stop();
+				}
 				src = audioContext.createBufferSource();
 				src.buffer = sharedBuffer;
 				src.connect(audioContext.destination);
@@ -81,7 +84,7 @@
 				v.appendChild(play);
 				timeline = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 				timeline.setAttribute("height", 200);
-				timeline.setAttribute("width", 4);
+				timeline.setAttribute("width", 2);
 				timeline.setAttribute("fill", "none");
 				timeline.setAttribute("x", 0);
 				x.appendChild(timeline);
