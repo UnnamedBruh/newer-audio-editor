@@ -62,6 +62,7 @@
 						const buffer = await audioContext.decodeAudioData(event.target.result);
 						const channel = buffer.getChannelData(0);
 						exporters.push(new AudioExporter(channel, buffer.sampleRate, 1, 32));
+						loadDiv(exporters[exporters.length - 1]);
 					} catch {
 						alert("The audio could not be properly loaded! Due to the strip-aways from viewing metadata that are unhelpful, we cannot provide much info on what exactly failed.");
 					}
