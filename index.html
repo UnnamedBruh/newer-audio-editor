@@ -90,12 +90,12 @@
 				x.appendChild(timeline);
 				play.onclick = () => {
 					startAt = 0;
-					ddd = 0;
+					bbb = 0;
 					playSound();
 				}
 				x.onclick = function(eve) {
 					startAt = (eve.clientX - x.getBoundingClientRect().x) / 480 * exporters[0].sampleRate / 10000;
-					ddd = startAt * 10000;
+					bbb = startAt * 10000;
 					playSound();
 				}
 			}
