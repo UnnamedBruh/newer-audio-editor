@@ -24,9 +24,9 @@
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba">
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), ed = null, volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
+			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, volumeWarning = true;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, volumeWarning = true;
 			let gainNode = audioContext.createGain();
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
