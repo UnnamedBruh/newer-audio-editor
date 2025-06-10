@@ -20,14 +20,38 @@
 		<script src="audioExporter.js"></script>
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
-		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba"><div id="editor"></div>
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba">
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), ed = document.getElementById("editor");
 			let exporters = [];
-			function loadDiv(index) {
+			function loadDiv(exp) {
 				const v = document.createElement("div");
-				const x = document.createElement("svg");
+				const x = document.createElementNS("svg", "https://www.w3.org/2000/svg");
+				document.body.appendChild(v);
+				v.appendChild(x);
+				x.setAttribute("width", exp.audioData.length / 480);
+				x.setAttribute("height", 200);
+				const n = document.createElementNS("path", "https://www.w3.org/2000/svg");
+				x.appendChild(n);
+				n.setAttribute("stroke-fill", "white");
+				n.setAttribute("stroke-width", 1);
+				let data = "M 0,100 ";
+				const len = exp.audioData.length, y = exp.audioData;
+				if (y instanceof Float32Array || y instanceof Float64Array) {
+					for (let i = 0, j = 0; i < len; i += 480, j++) {
+						data += "L " + j + "," + (100 + y[i] * 100) + " ";
+					}
+				} else if (y instanceof Uint8Array) {
+					for (let i = 0, j = 0; i < len; i += 480, j++) {
+						data += "L " + j + "," + (100 + y[i] / 2.55) + " ";
+					}
+				} else if (y instanceof Int16Array) {
+					for (let i = 0, j = 0; i < len; i += 480, j++) {
+						data += "L " + j + "," + (100 + y[i] / 327.58) + " ";
+					}
+				}
+				n.setAttribute("d", data);
 			}
 			audioInput.oninput = function(eve) {
 				if (eve.target.files.length === 0) return;
