@@ -17,26 +17,36 @@
 	<body>
 		<script src="audioEditor.js"></script>
 		<script src="audioExporter.js"></script>
-		Volume (<a id="la">100</a>%): <input type="range" id="vol" min="0" max="20" step="0.01" value="1" style="width: calc(100% - 150px)"><br>
-		Volume Multiplier (<a id="la2">100</a>%): <input type="range" id="vol2" min="0" max="20" step="0.01" value="1" style="width: calc(100% - 300px)">
+		Volume (<a id="la">100</a>%): <input type="range" id="vol" min="0" max="50" step="0.01" value="1" style="width: calc(100% - 150px)"><br>
+		Volume Multiplier (<a id="la2">100</a>%): <input type="range" id="vol2" min="0" max="50" step="0.01" value="1" style="width: calc(100% - 300px)">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba">
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), ed = document.getElementById("editor"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
-			let exporters = [];
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0;
+			const audioInput = document.getElementById("aud"), ed = null, volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
+			let exporters = null;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, volumeWarning = true;
 			let gainNode = audioContext.createGain();
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
 			volume.oninput = function() {
+				if (volumeWarning) {
+					volumeWarning = false;
+					alert("Moving the knob to the right can cause incredibly loud results! The maximum volume possible is 100,000% with both sliders put to their max values!");
+					volume.value = 1;
+				}
 				let x = +volume.value;
 				if (x > 0.9 && x < 1.1) x = volume.value = 1;
 				label.textContent = Math.round(x * 100);
 				gainNode.gain.value = x * +volume2.value;
 			}
 			volume2.oninput = function() {
+				if (volumeWarning) {
+					volumeWarning = false;
+					alert("Moving the knob to the right can cause incredibly loud results! The maximum volume possible is 100,000% with both sliders put to their max values!");
+					volume.value = 1;
+				}
 				let x = +volume2.value;
 				if (x > 0.9 && x < 1.1) x = volume2.value = 1;
 				label2.textContent = Math.round(x * 100);
@@ -111,25 +121,28 @@
 					playSound();
 				}
 				x.onclick = function(eve) {
-					startAt = (eve.clientX - x.getBoundingClientRect().x) / 480 * exporters[0].sampleRate / 10000;
+					startAt = (eve.clientX - x.getBoundingClientRect().x) / 480 * exporters.sampleRate / 10000;
 					bbb = startAt * 100;
 					playSound();
 				}
+				ed = v;
 			}
 			audioInput.oninput = function(eve) {
 				if (eve.target.files.length === 0) return;
-				if (exporters.length === 1) {
-					alert("You can only edit one sound at a time! This limitation will likely be lifted in the future.");
-					return;
-				}
 				const firstFile = eve.target.files[0];
 				const fileReader = new FileReader();
 				fileReader.onload = async function(event) {
 					try {
+						exporters = null;
+						if (ed) {
+							ed.innerHTML = "";
+							ed.remove();
+							ed = null;
+						}
 						sharedBuffer = await audioContext.decodeAudioData(event.target.result);
 						const channel = sharedBuffer.getChannelData(0);
-						exporters.push(new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32));
-						loadDiv(exporters[exporters.length - 1]);
+						exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
+						loadDiv(exporters);
 					} catch (err) {
 						alert("The audio could not be properly loaded! Due to the strip-aways from viewing metadata that are unhelpful, we cannot provide much info on what exactly failed.");
 						console.log(err.message + err.stack);
