@@ -163,8 +163,11 @@
 						n.setAttribute("d", data);
 					}
 				}
+				let ticks = 0;
 				window.onscroll = function() {
 					if (sampleSkip === 1) {
+						if (ticks++ < 10) return;
+						ticks = 0;
 						let data2 = ["M " + window.pageXOffset + ",100 "];
 						let x = window.pageXOffset;
 						const len = Math.min(x + window.innerWidth, exp.audioData.length), y = exp.audioData;
@@ -190,6 +193,7 @@
 								prev = val;
 							}
 						}
+						n.setAttribute("d", data2.join(" "));
 					}
 				}
 				ed = v;
