@@ -166,7 +166,7 @@
 				let ticks = 0;
 				window.onscroll = function() {
 					if (sampleSkip === 1) {
-						if (ticks++ < 10) return;
+						if (ticks++ < 1) return;
 						ticks = 0;
 						let data2 = ["M " + window.pageXOffset + ",100 "];
 						let x = window.pageXOffset;
@@ -193,6 +193,7 @@
 								prev = val;
 							}
 						}
+						data2.push("L " + len + ",100");
 						n.setAttribute("d", data2.join(" "));
 					}
 				}
