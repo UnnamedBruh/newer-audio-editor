@@ -30,7 +30,7 @@
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
 			volume.oninput = function() {
-				const x = +volume.value;
+				let x = +volume.value;
 				if (x > 0.9 && x < 1) x = volume.value = 1;
 				label.textContent = x * 100;
 				gainNode.gain.value = x;
@@ -50,7 +50,7 @@
 				}
 				src = audioContext.createBufferSource();
 				src.buffer = sharedBuffer;
-				src.connect(audioContext.destination);
+				src.connect(gainNode);
 				src.start(0, startAt);
 				whenPlayed = Date.now();
 				playing = true;
