@@ -27,12 +27,12 @@
 			let exporters = [];
 			function loadDiv(exp) {
 				const v = document.createElement("div");
-				const x = document.createElementNS("svg", "https://www.w3.org/2000/svg");
+				const x = document.createElementNS("svg", "http://www.w3.org/2000/svg");
 				document.body.appendChild(v);
 				v.appendChild(x);
 				x.setAttribute("width", exp.audioData.length / 480);
 				x.setAttribute("height", 200);
-				const n = document.createElementNS("path", "https://www.w3.org/2000/svg");
+				const n = document.createElementNS("path", "http://www.w3.org/2000/svg");
 				x.appendChild(n);
 				n.setAttribute("stroke-fill", "white");
 				n.setAttribute("stroke-width", 1);
