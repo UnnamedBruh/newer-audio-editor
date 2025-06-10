@@ -24,11 +24,11 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), ed = document.getElementById("editor");
 			let exporters = [];
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0;
 			function tick() {
 				if (timeline && playing) {
 					const x = Date.now() - whenPlayed;
-					timeline.setAttribute("x", (x + startAt * 1000) / 1000 * sharedBuffer.sampleRate / 480);
+					timeline.setAttribute("x", (x + bbb) / 1000 * sharedBuffer.sampleRate / 480);
 				}
 				requestAnimationFrame(() => tick());
 			}
@@ -41,7 +41,7 @@
 				src = audioContext.createBufferSource();
 				src.buffer = sharedBuffer;
 				src.connect(audioContext.destination);
-				src.start(startAt);
+				src.start(0, startAt);
 				whenPlayed = Date.now();
 				playing = true;
 				if (timeline) timeline.setAttribute("fill", "red");
@@ -90,10 +90,12 @@
 				x.appendChild(timeline);
 				play.onclick = () => {
 					startAt = 0;
+					ddd = 0;
 					playSound();
 				}
 				x.onclick = function(eve) {
 					startAt = eve.clientX / 480 * exporters[0].sampleRate / 10000;
+					ddd = startAt * 1000;
 					playSound();
 				}
 			}
