@@ -27,7 +27,7 @@
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null;
 			function tick() {
 				if (timeline && playing) {
-					const x = Data.now() - whenPlayed;
+					const x = Date.now() - whenPlayed;
 					timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / 480);
 				}
 				requestAnimationFrame(tick);
@@ -81,7 +81,7 @@
 				v.appendChild(play);
 				timeline = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 				timeline.setAttribute("height", 200);
-				timeline.setAttribute("width", 2);
+				timeline.setAttribute("width", 4);
 				timeline.setAttribute("fill", "none");
 				timeline.setAttribute("x", 0);
 				play.onclick = () => playSound();
