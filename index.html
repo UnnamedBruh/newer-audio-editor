@@ -95,7 +95,7 @@
 				}
 				x.onclick = function(eve) {
 					startAt = (eve.clientX - x.getBoundingClientRect().x) / 480 * exporters[0].sampleRate / 10000;
-					bbb = startAt * 10000;
+					bbb = startAt * 1000;
 					playSound();
 				}
 			}
