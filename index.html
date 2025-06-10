@@ -23,22 +23,26 @@
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba"><div id="editor"></div>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud");
+			const audioInput = document.getElementById("aud"), ed = document.getElementById("editor");
 			let exporters = [];
+			function loadDiv(index) {
+				const v = document.createElement("div");
+				const x = document.createElement("svg");
+			}
 			audioInput.oninput = function(eve) {
 				if (eve.target.files.length === 0) return;
 				const firstFile = eve.target.files[0];
-				const fileReader = new FileReader(firstFile);
-				fileReader.onload = function(event) {
+				const fileReader = new FileReader();
+				fileReader.onload = async function(event) {
 					try {
-						const buffer = audioContext.decodeAudioData(event.target.result);
+						const buffer = await audioContext.decodeAudioData(event.target.result);
 						const channel = buffer.getChannelData(0);
 						exporters.push(new AudioExporter(channel, buffer.sampleRate, 1, 32));
 					} catch {
 						alert("The audio could not be properly loaded! Due to the strip-aways from viewing metadata that are unhelpful, we cannot provide much info on what exactly failed.");
 					}
 				}
-				fileReader.readAsArrayBuffer();
+				fileReader.readAsArrayBuffer(firstFile);
 			}
 		</script>
 	</body>
