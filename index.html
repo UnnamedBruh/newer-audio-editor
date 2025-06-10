@@ -78,22 +78,22 @@
 				}
 			}
 			function generateWaveform(exp) {
-				let data = "M 0,100 ";
+				let data2 = "M 0,100 ";
 				const len = exp.audioData.length, y = exp.audioData;
 				if (y instanceof Float32Array || y instanceof Float64Array) {
 					for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
-						data += "L " + j + "," + Math.round(100 + y[i] * 100) + " ";
+						data2 += "L " + j + "," + Math.round(100 + y[i] * 100) + " ";
 					}
 				} else if (y instanceof Uint8Array) {
 					for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
-						data += "L " + j + "," + Math.round(100 + y[i] / 2.55) + " ";
+						data2 += "L " + j + "," + Math.round(100 + y[i] / 2.55) + " ";
 					}
 				} else if (y instanceof Int16Array) {
 					for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
-						data += "L " + j + "," + Math.round(100 + y[i] / 327.68) + " ";
+						data2 += "L " + j + "," + Math.round(100 + y[i] / 327.68) + " ";
 					}
 				}
-				return data;
+				return data2;
 			}
 			function loadDiv(exp) {
 				const v = document.createElement("div");
@@ -140,13 +140,18 @@
 						sampleSkip = 1;
 						let shouldDo = true;
 						if (!sampleData) {
-							if (!(shouldDo = confirm("Viewing at the sample level could consume ~" + ((exp.audioData.length * 8) / (1024 * 1024)) + " MB (this count is just an estimate)! Are you sure you want to view at the sample level?")))
-							sampleData = generateWaveform(exp);
+							if ((shouldDo = confirm("Viewing at the sample level could consume ~" + ((exp.audioData.length * 14) / (1024 * 1024)) + " MB (this count is just an estimate)! Are you sure you want to view at the sample level?"))) {
+								sampleData = generateWaveform(exp);
+								x.setAttribute("width", exp.audioData.length / sampleSkip);
+								v.style.width = (exp.audioData.length / sampleSkip) + "px";
+							}
 						}
 						if (shouldDo) n.setAttribute("d", sampleData);
 					} else {
 						sampleSkip = 480;
 						if (!data) data = generateWaveform(exp);
+						x.setAttribute("width", exp.audioData.length / sampleSkip);
+						v.style.width = (exp.audioData.length / sampleSkip) + "px";
 						n.setAttribute("d", data);
 					}
 				}
