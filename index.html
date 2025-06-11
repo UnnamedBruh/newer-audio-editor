@@ -55,7 +55,11 @@
 			function tick() {
 				if (timeline && playing) {
 					const x = Date.now() - whenPlayed;
-					timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb);
+					if (sampleSkip === 1) {
+						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb - window.pageXOffset);
+					} else {
+						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb);
+					}
 				}
 				requestAnimationFrame(() => tick());
 			}
@@ -136,9 +140,9 @@
 				}
 				x.onclick = function(eve) {
 					if (sampleSkip === 1) {
-						startAt = (eve.clientX - xOff) / exporters.sampleRate;
+						startAt = (eve.clientX) / exporters.sampleRate;
 					} else {
-						startAt = (eve.clientX - xOff) / sampleSkip * exporters.sampleRate / 10000;
+						startAt = (eve.clientX) / sampleSkip * exporters.sampleRate / 10000;
 					}
 					bbb = startAt * 100;
 					playSound();
