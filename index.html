@@ -164,8 +164,11 @@
 						n.setAttribute("d", data);
 					}
 				}
+				let count = 0;
 				window.onscroll = function() {
 					if (sampleSkip === 1) {
+						if (count++ < 100) return;
+						count = 0;
 						let data2 = ["M " + window.pageXOffset + ",100 "];
 						let x = window.pageXOffset;
 						const len = Math.min(x + window.innerWidth - xOff, exp.audioData.length), y = exp.audioData;
