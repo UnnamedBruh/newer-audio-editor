@@ -171,10 +171,10 @@
 						if (count++ < 4) return;
 						count = 0;
 						let data2 = ["M 0,100 "];
-						let x = window.pageXOffset;
+						let xn = window.pageXOffset;
 						x.setAttribute("width", window.innerWidth);
-						x.style.marginRight = Math.min(x - xOff, exp.audioData.length) + "px";
-						const len = Math.min(x + window.innerWidth - xOff, exp.audioData.length), y = exp.audioData;
+						x.style.marginRight = Math.min(xn - xOff, exp.audioData.length) + "px";
+						const len = Math.min(xn + window.innerWidth - xOff, exp.audioData.length), y = exp.audioData;
 						let prev = 0, val;
 						if (y instanceof Float32Array || y instanceof Float64Array) {
 							let ep = Number.EPSILON;
