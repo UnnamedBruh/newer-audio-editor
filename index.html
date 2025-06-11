@@ -27,7 +27,7 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, skipSample = 400, volumeWarning = true, prevIntervalID = null, xOff;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
@@ -161,7 +161,7 @@
 					if (sampleSkip === 1) {
 						startAt = (eve.clientX - xOff + window.pageXOffset) / exporters.sampleRate;
 					} else {
-						startAt = (eve.clientX + window.pageXOffset) / sampleSkip * exporters.sampleRate / 10000;
+						startAt = (eve.clientX - xOff + window.pageXOffset) / sampleSkip * exporters.sampleRate / 10000;
 					}
 					bbb = startAt * 100;
 					playSound();
@@ -266,7 +266,7 @@
 								ref[i] = exp.audioData[i];
 							}
 							x.setAttribute("width", exp.audioData.length / sampleSkip);
-							v.setAttribute("width", exp.audioData.length / sampleSkip);
+							v.style.width = (exp.audioData.length / sampleSkip) + "px";
 							n.setAttribute("d", data);
 						}
 					}
