@@ -78,7 +78,7 @@
 				}
 			}
 			function generateWaveform(exp) {
-				let data2 = ["M 0,100 "];
+				let data2 = ["M 0,100 L 0,100 "];
 				const len = exp.audioData.length, y = exp.audioData;
 				let prev = 0, val;
 				if (y instanceof Float32Array || y instanceof Float64Array) {
@@ -170,7 +170,7 @@
 					if (sampleSkip === 1) {
 						if (count++ < 4) return;
 						count = 0;
-						let data2 = ["M 0,100 "];
+						let data2 = ["M 0,100 L 0,100 "];
 						let xn = window.pageXOffset;
 						x.setAttribute("width", window.innerWidth);
 						x.style.marginRight = Math.min(xn - xOff, exp.audioData.length) + "px";
