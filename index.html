@@ -41,7 +41,7 @@
 				label.textContent = Math.round(x * 100);
 				label.textContent = "0".repeat(5 - label.textContent.length) + label.textContent;
 				gainNode.gain.value = x * +volume2.value;
-				if (x >= +volume.max - 1) {
+				if (x >= +volume.max / 1.1) {
 					volume.max *= 10;
 					volume.disabled = true;
 					document.onmouseup = function() {
@@ -61,7 +61,7 @@
 				label2.textContent = Math.round(x * 100);
 				label2.textContent = "0".repeat(5 - label2.textContent.length) + label2.textContent;
 				gainNode.gain.value = x * +volume.value;
-				if (x >= +volume2.max - 1) {
+				if (x >= +volume2.max / 1.1) {
 					volume2.max *= 10;
 					volume2.disabled = true;
 					document.onmouseup = function() {
