@@ -17,8 +17,8 @@
 	<body>
 		<script src="audioEditor.js"></script>
 		<script src="audioExporter.js"></script>
-		Volume (<a id="la">00100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
-		Volume Multiplier (<a id="la2">00100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%">
+		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
+		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .mp4, .3gp, .3g2, .webm">
@@ -39,7 +39,7 @@
 				let x = +volume.value;
 				if (x > 0.9 && x < 1.1) x = volume.value = 1;
 				label.textContent = Math.round(x * 100);
-				label.textContent = "0".repeat(20 - label.textContent.length) + label.textContent;
+				label.textContent = label.textContent;
 				gainNode.gain.value = x * +volume2.value;
 				if (x >= +volume.max / 1.1) {
 					volume.max *= 10;
@@ -59,7 +59,7 @@
 				let x = +volume2.value;
 				if (x > 0.9 && x < 1.1) x = volume2.value = 1;
 				label2.textContent = Math.round(x * 100);
-				label2.textContent = "0".repeat(20 - label2.textContent.length) + label2.textContent;
+				label2.textContent = label2.textContent;
 				gainNode.gain.value = x * +volume.value;
 				if (x >= +volume2.max / 1.1) {
 					volume2.max *= 10;
