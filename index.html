@@ -271,7 +271,10 @@
 						currentSelected = effect;
 						if (effect) {
 							params.innerHTML = effect[1] + "<br>" + effect[2];
-							paramElements = new Array(effect[3]).map((_, i) => document.getElementById(effect[4] + i));
+							paramElements = new Array(effect[3]).map((_, i) => {
+								document.getElementById(effect[4] + i);
+								console.log(i);
+							});
 						} else {
 							params.innerHTML = "";
 							paramElements = null;
