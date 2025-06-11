@@ -258,7 +258,9 @@
 					apply.onclick = function() {
 						if (currentSelected) {
 							const values = [exp, ...paramElements.map((x, i) => effect[5][i](x.value))];
+							console.log(values);
 							effects[effect[4]](...values);
+							console.log(effect[4]);
 							data = generateWaveform(exp);
 							n.setAttribute("d", data);
 						}
