@@ -163,11 +163,8 @@
 						n.setAttribute("d", data);
 					}
 				}
-				let ticks = 0;
 				window.onscroll = function() {
 					if (sampleSkip === 1) {
-						if (ticks++ < 1) return;
-						ticks = 0;
 						let data2 = ["M " + window.pageXOffset + ",100 "];
 						let x = window.pageXOffset;
 						const len = Math.min(x + window.innerWidth, exp.audioData.length), y = exp.audioData;
@@ -176,21 +173,27 @@
 							let ep = Number.EPSILON;
 							for (let i = x; i < len; i++) {
 								val = y[i];
-								if (Math.abs(prev - val) >= ep) data2.push("L " + i + "," + Math.round(100 + val * 100));
-								prev = val;
+								if (Math.abs(prev - val) >= ep) {
+									data2.push("L " + i + "," + Math.round(100 + val * 100));
+									prev = val;
+								}
 								val = y[i];
 							}
 						} else if (y instanceof Uint8Array) {
 							for (let i = x; i < len; i++) {
 								val = y[i];
-								if (prev !== y[i]) data2.push("L " + i + "," + Math.round(100 + val / 2.55));
-								prev = val;
+								if (prev !== y[i]) {
+									data2.push("L " + i + "," + Math.round(100 + val / 2.55));
+									pev = val;
+								}
 							}
 						} else if (y instanceof Int16Array) {
 							for (let i = x; i < len; i++) {
 								val = y[i];
-								if (prev !== y[i]) data2.push("L " + i + "," + Math.round(100 + val / 327.68));
-								prev = val;
+								if (prev !== y[i]) {
+									data2.push("L " + i + "," + Math.round(100 + val / 327.68));
+									prev = val;
+								}
 							}
 						}
 						data2.push("L " + len + ",100");
