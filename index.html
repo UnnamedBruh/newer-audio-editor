@@ -166,6 +166,7 @@
 					}
 				}
 				let count = 0;
+				let yu = exp.audioData.length;
 				window.onscroll = function() {
 					if (sampleSkip === 1) {
 						if (count++ < 4) return;
@@ -174,31 +175,31 @@
 						let xn = window.pageXOffset;
 						x.setAttribute("width", window.innerWidth);
 						x.style.marginRight = Math.min(xn - xOff, exp.audioData.length) + "px";
-						const len = Math.min(xn + window.innerWidth - xOff, exp.audioData.length), y = exp.audioData;
+						const len = xn + window.innerWidth - xOff, y = exp.audioData;
 						let prev = 0, val;
 						if (y instanceof Float32Array || y instanceof Float64Array) {
 							let ep = Number.EPSILON;
-							for (let i = x, j = 0; i < len; i++, j++) {
+							for (let i = xn, j = 0; i < len && i < yu; i++, j++) {
 								val = y[i];
 								if (Math.abs(prev - val) >= ep) {
-									data2.push("L " + i + "," + Math.round(100 + val * 100));
+									data2.push("L " + j + "," + Math.round(100 + val * 100));
 									prev = val;
 								}
 								val = y[i];
 							}
 						} else if (y instanceof Uint8Array) {
-							for (let i = x, j = 0; i < len; i++, j++) {
+							for (let i = xn, j = 0; i < len && i < yu; i++, j++) {
 								val = y[i];
 								if (prev !== y[i]) {
-									data2.push("L " + i + "," + Math.round(100 + val / 2.55));
+									data2.push("L " + j + "," + Math.round(100 + val / 2.55));
 									pev = val;
 								}
 							}
 						} else if (y instanceof Int16Array) {
-							for (let i = x, j = 0; i < len; i++, j++) {
+							for (let i = xn, j = 0; i < len && i < yu; i++, j++) {
 								val = y[i];
 								if (prev !== y[i]) {
-									data2.push("L " + i + "," + Math.round(100 + val / 327.68));
+									data2.push("L " + j + "," + Math.round(100 + val / 327.68));
 									prev = val;
 								}
 							}
