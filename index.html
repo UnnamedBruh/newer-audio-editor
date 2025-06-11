@@ -160,6 +160,7 @@
 						sampleSkip = 480;
 						if (!data) data = generateWaveform(exp);
 						x.setAttribute("width", exp.audioData.length / sampleSkip);
+						x.style.marginRight = "0px";
 						v.style.width = (exp.audioData.length / sampleSkip) + "px";
 						n.setAttribute("d", data);
 					}
@@ -167,35 +168,37 @@
 				let count = 0;
 				window.onscroll = function() {
 					if (sampleSkip === 1) {
-						if (count++ < 100) return;
+						if (count++ < 4) return;
 						count = 0;
-						let data2 = ["M " + window.pageXOffset + ",100 "];
+						let data2 = ["M 0,100 "];
 						let x = window.pageXOffset;
+						x.setAttribute("width", window.innerWidth);
+						x.style.marginRight = Math.min(x - xOff, exp.audioData.length) + "px";
 						const len = Math.min(x + window.innerWidth - xOff, exp.audioData.length), y = exp.audioData;
 						let prev = 0, val;
 						if (y instanceof Float32Array || y instanceof Float64Array) {
 							let ep = Number.EPSILON;
-							for (let i = x; i < len; i++) {
+							for (let i = x, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (Math.abs(prev - val) >= ep) {
-									data2.push("L " + i + "," + Math.round(100 + val * 100));
+									data2.push("L " + j + "," + Math.round(100 + val * 100));
 									prev = val;
 								}
 								val = y[i];
 							}
 						} else if (y instanceof Uint8Array) {
-							for (let i = x; i < len; i++) {
+							for (let i = x, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (prev !== y[i]) {
-									data2.push("L " + i + "," + Math.round(100 + val / 2.55));
+									data2.push("L " + j + "," + Math.round(100 + val / 2.55));
 									pev = val;
 								}
 							}
 						} else if (y instanceof Int16Array) {
-							for (let i = x; i < len; i++) {
+							for (let i = x, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (prev !== y[i]) {
-									data2.push("L " + i + "," + Math.round(100 + val / 327.68));
+									data2.push("L " + j + "," + Math.round(100 + val / 327.68));
 									prev = val;
 								}
 							}
