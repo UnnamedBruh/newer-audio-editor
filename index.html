@@ -260,7 +260,7 @@
 							const values = [exp, ...paramElements.map((x, i) => effect[5][i](x.value))];
 							effects[effect[4]](...values);
 							data = generateWaveform(exp);
-							sharedBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
+							sharedBuffer = audioContext.createBuffer(1, exp.audioData.length, exp.sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
 							for (let i = 0; i < ref.length; i++) {
 								ref[i] = exp.audioData[i];
