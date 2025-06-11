@@ -27,7 +27,7 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, skipSample = 400, volumeWarning = true, prevIntervalID = null, xOff;
 			let gainNode = audioContext.createGain();
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
