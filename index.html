@@ -254,7 +254,7 @@
 					const apply = document.createElement("button");
 					apply.textContent = "Apply";
 					v.appendChild(apply);
-					let currentSelected = null, paramElements = null;
+					let currentSelected = null, paramElements = null, effect;
 					apply.onclick = function() {
 						if (currentSelected) {
 							const values = [exp, ...paramElements.map((x, i) => effect[5][i](x.value))];
@@ -264,7 +264,7 @@
 						}
 					}
 					opt.oninput = function() {
-						const effect = effectsList.find(x => x[4] === opt.value);
+						effect = effectsList.find(x => x[4] === opt.value);
 						currentSelected = effect;
 						if (effect) {
 							params.innerHTML = effect[1] + "<br>" + effect[2];
