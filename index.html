@@ -181,7 +181,7 @@
 							for (let i = x, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (Math.abs(prev - val) >= ep) {
-									data2.push("L " + j + "," + Math.round(100 + val * 100));
+									data2.push("L " + i + "," + Math.round(100 + val * 100));
 									prev = val;
 								}
 								val = y[i];
@@ -190,7 +190,7 @@
 							for (let i = x, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (prev !== y[i]) {
-									data2.push("L " + j + "," + Math.round(100 + val / 2.55));
+									data2.push("L " + i + "," + Math.round(100 + val / 2.55));
 									pev = val;
 								}
 							}
@@ -198,7 +198,7 @@
 							for (let i = x, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (prev !== y[i]) {
-									data2.push("L " + j + "," + Math.round(100 + val / 327.68));
+									data2.push("L " + i + "," + Math.round(100 + val / 327.68));
 									prev = val;
 								}
 							}
