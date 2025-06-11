@@ -39,6 +39,9 @@ effects["resample"] = function(buffer, targetSampleRate, shouldSmooth) {
 	if (targetSampleRate === buffer.sampleRate) return;
 
 	const speed = buffer.sampleRate / targetSampleRate;
+
+	skipSample = Math.round(480 * (targetSampleRate / 48000));
+	
 	_resampleAudio(buffer, speed, shouldSmooth);	
 	buffer.sampleRate = targetSampleRate;
 }
