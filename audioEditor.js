@@ -38,7 +38,7 @@ function _resampleAudio(buffer, speed, shouldSmooth) {
 effects["resample"] = function(buffer, targetSampleRate, shouldSmooth) {
 	if (targetSampleRate === buffer.sampleRate) return;
 
-	const speed = targetSampleRate / buffer.sampleRate;
+	const speed = buffer.sampleRate / targetSampleRate;
 	_resampleAudio(buffer, speed, shouldSmooth);	
 	buffer.sampleRate = targetSampleRate;
 }
