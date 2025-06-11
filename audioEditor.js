@@ -47,3 +47,33 @@ effects["speed"] = function(buffer, speed, shouldSmooth) {
 	if (speed === 1) return;
 	_resampleAudio(buffer, speed, shouldSmooth);
 }
+
+effects["gain"] = function(buffer, multiplier) {
+	if (multiplier === 1) return;
+	if (buffer.audioData instanceof Float32Array || buffer.audioData instanceof Float64Array || buffer.audioData instanceof Int16Array) {
+		if (multiplier === 0) buffer.audioData.fill(0); else if (multiplier === -1) {
+			const len = buffer.audioData.length, data = buffer.audioData;
+			for (let i = 0; i < len; i++) {
+				data[i] = -data[i];
+			}
+		} else {
+			const len = buffer.audioData.length, data = buffer.audioData;
+			for (let i = 0; i < len; i++) {
+				data[i] *= multiplier;
+			}
+		}
+	} else {
+		const dec = buffer.audioData instanceof Uint8Array ? 128 : 2147483648;
+		if (multiplier === 0) buffer.audioData.fill(dec); else if (multiplier === -1) {
+			const len = buffer.audioData.length, data = buffer.audioData;
+			for (let i = 0; i < len; i++) {
+				data[i] = -(data[i] - dec) + dec;
+			}
+		} else {
+			const len = buffer.audioData.length, data = buffer.audioData;
+			for (let i = 0; i < len; i++) {
+				data[i] = (data[i] - dec) * multiplier + dec;
+			}
+		}
+	}
+}
