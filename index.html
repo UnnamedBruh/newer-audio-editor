@@ -138,9 +138,9 @@
 					if (sampleSkip === 1) {
 						startAt = (eve.clientX - xOff) / exporters.sampleRate;
 					} else {
-						startAt = (eve.clientX - xOff) / sampleSkip / exporters.sampleRate / 1000;
+						startAt = (eve.clientX - xOff) / sampleSkip * exporters.sampleRate / 10000;
 					}
-					bbb = startAt * 1000;
+					bbb = startAt * 100;
 					playSound();
 				}
 				const label3 = document.createElement("a");
