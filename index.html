@@ -258,9 +258,6 @@
 					apply.onclick = function() {
 						if (currentSelected) {
 							const values = [exp, ...paramElements.map((x, i) => effect[5][i](x.value))];
-							console.log(values);
-							console.log(paramElements);
-							console.log(effect[5]);
 							effects[effect[4]](...values);
 							data = generateWaveform(exp);
 							sharedBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
@@ -268,6 +265,8 @@
 							for (let i = 0; i < ref.length; i++) {
 								ref[i] = exp.audioData[i];
 							}
+							x.setAttribute("width", exp.audioData.length / sampleSkip);
+							v.setAttribute("width", exp.audioData.length / sampleSkip);
 							n.setAttribute("d", data);
 						}
 					}
@@ -279,7 +278,6 @@
 							paramElements = new Array(effect[3]);
 							for (let i = 0; i < paramElements.length; i++) {
 								paramElements[i] = document.getElementById(effect[4] + i);
-								console.log(i);
 							}
 						} else {
 							params.innerHTML = "";
