@@ -44,9 +44,9 @@
 				if (x >= +volume.max / 1.1) {
 					volume.max *= 10;
 					volume.disabled = true;
-					document.onmouseup = function() {
+					document.body.onmouseup = function() {
 						volume.disabled = false;
-						document.onmouseup = null;
+						document.body.onmouseup = null;
 					}
 				}
 			}
@@ -64,9 +64,9 @@
 				if (x >= +volume2.max / 1.1) {
 					volume2.max *= 10;
 					volume2.disabled = true;
-					document.onmouseup = function() {
+					document.body.onmouseup = function() {
 						volume2.disabled = false;
-						document.onmouseup = null;
+						document.body.onmouseup = null;
 					}
 				}
 			}
