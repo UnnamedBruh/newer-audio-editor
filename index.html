@@ -135,8 +135,12 @@
 					playSound();
 				}
 				x.onclick = function(eve) {
-					startAt = (eve.clientX - x.getBoundingClientRect().x) / sampleSkip * exporters.sampleRate / 10000;
-					bbb = startAt * 100;
+					if (sampleSkip === 1) {
+						startAt = (eve.clientX - xOff) / exporters.sampleRate;
+					} else {
+						startAt = (eve.clientX - xOff) / sampleSkip / exporters.sampleRate / 1000;
+					}
+					bbb = startAt * 1000;
 					playSound();
 				}
 				const label3 = document.createElement("a");
@@ -160,7 +164,7 @@
 						sampleSkip = 480;
 						if (!data) data = generateWaveform(exp);
 						x.setAttribute("width", exp.audioData.length / sampleSkip);
-						x.style.marginRight = "0px";
+						x.style.marginLeft = "0px";
 						v.style.width = (exp.audioData.length / sampleSkip) + "px";
 						n.setAttribute("d", data);
 					}
