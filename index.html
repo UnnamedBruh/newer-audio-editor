@@ -26,7 +26,7 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, sampleData = null, skipSample = 480, volumeWarning = true;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, sampleData = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff;
 			let gainNode = audioContext.createGain();
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
@@ -105,6 +105,7 @@
 				return data2.join(" ");
 			}
 			function loadDiv(exp) {
+				if (typeof prevIntervalId === "number") clearInterval(prevIntervalID);
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 				document.body.appendChild(v);
@@ -167,7 +168,7 @@
 					if (sampleSkip === 1) {
 						let data2 = ["M " + window.pageXOffset + ",100 "];
 						let x = window.pageXOffset;
-						const len = Math.min(x + window.innerWidth, exp.audioData.length), y = exp.audioData;
+						const len = Math.min(x + window.innerWidth - xOff, exp.audioData.length), y = exp.audioData;
 						let prev = 0, val;
 						if (y instanceof Float32Array || y instanceof Float64Array) {
 							let ep = Number.EPSILON;
@@ -200,6 +201,9 @@
 						n.setAttribute("d", data2.join(" "));
 					}
 				}
+				prevIntervalID = setInterval(function() {
+					xOff = x.getBoundingClientRect().x;
+				}, 1000);
 				ed = v;
 			}
 			audioInput.oninput = function(eve) {
