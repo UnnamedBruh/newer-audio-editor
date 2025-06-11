@@ -27,7 +27,7 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, sampleData = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff;
 			let gainNode = audioContext.createGain();
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
@@ -175,14 +175,8 @@
 				co.oninput = function() {
 					if (co.checked) {
 						sampleSkip = 1;
-						let shouldDo = true;
-						if (!sampleData) {
-							if ((shouldDo = confirm("Viewing at the sample level could consume ~" + ((exp.audioData.length * 14) / (1024 * 1024)) + " MB (this count is just an estimate)! Are you sure you want to view at the sample level?"))) {
-								x.setAttribute("width", exp.audioData.length / sampleSkip);
-								v.style.width = (exp.audioData.length / sampleSkip) + "px";
-							}
-						}
-						if (shouldDo) n.setAttribute("d", sampleData);
+						x.setAttribute("width", exp.audioData.length);
+						v.style.width = exp.audioData.length + "px";
 					} else {
 						sampleSkip = 480;
 						if (!data) data = generateWaveform(exp);
@@ -238,6 +232,49 @@
 				prevIntervalID = setInterval(function() {
 					xOff = window.pageXOffset + v.getBoundingClientRect().x;
 				}, 1000);
+				v.appendChild(document.createElement("br"));
+				const opt = document.createElement("select");
+				{
+					const label = document.createElement("a");
+					label.textContent = "Effect To Apply: ";
+					let option = document.createElement("option");
+					option.textContent = "Please select an effect";
+					option.value = "placeholder";
+					v.appendChild(label);
+					v.appendChild(opt);
+					opt.appendChild(option);
+					for (let effect of effectsList) {
+						option = document.createElement("option");
+						option.textContent = effect[0];
+						option.value = effect[4];
+						opt.appendChild(option);
+					}
+					const params = document.createElement("div");
+					v.appendChild(params);
+					const apply = document.createElement("button");
+					apply.textContent = "Apply";
+					v.appendChild(apply);
+					let currentSelected = null, paramElements = null;
+					apply.onclick = function() {
+						if (currentSelected) {
+							const values = [exp, ...paramElements.map((x, i) => effect[5][i](x.value))];
+							effects[effect[4]](...values);
+							data = generateWaveform(exp);
+							n.setAttribute("d", data);
+						}
+					}
+					opt.oninput = function() {
+						const effect = effectsList.find(x => x[4] === opt.value);
+						currentSelected = effect;
+						if (effect) {
+							params.innerHTML = effect[1] + "<br>" + effect[2];
+							paramElements = new Array(effect[3]).map((_, i) => document.getElementById(effect[4] + i));
+						} else {
+							params.innerHTML = "";
+							paramElements = null;
+						}
+					}
+				}
 				ed = v;
 			}
 			audioInput.oninput = function(eve) {
