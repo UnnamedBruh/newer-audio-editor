@@ -161,7 +161,7 @@
 					if (sampleSkip === 1) {
 						startAt = (eve.clientX - xOff + window.pageXOffset) / exporters.sampleRate;
 					} else {
-						startAt = (eve.clientX - xOff + window.pageXOffset) / sampleSkip * exporters.sampleRate / 10000;
+						startAt = (eve.clientX - xOff + window.pageXOffset * 2) / sampleSkip * exporters.sampleRate / 10000;
 					}
 					bbb = startAt * 100;
 					playSound();
