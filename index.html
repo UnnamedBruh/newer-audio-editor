@@ -17,11 +17,11 @@
 	<body>
 		<script src="audioEditor.js"></script>
 		<script src="audioExporter.js"></script>
-		Volume (<a id="la">100</a>%): <input type="range" id="vol" min="0" max="50" step="0.01" value="1" style="width: calc(100% - 150px)"><br>
-		Volume Multiplier (<a id="la2">100</a>%): <input type="range" id="vol2" min="0" max="50" step="0.01" value="1" style="width: calc(100% - 300px)">
+		Volume (<a id="la">100</a>%): <input type="range" id="vol" min="0" max="200" step="0.01" value="1" style="width: calc(400% - 150px)"><br>
+		Volume Multiplier (<a id="la2">100</a>%): <input type="range" id="vol2" min="0" max="200" step="0.01" value="1" style="width: calc(400% - 300px)">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
-		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba">
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .mp4, .3gp, .3g2, .webm">
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
@@ -39,6 +39,7 @@
 				let x = +volume.value;
 				if (x > 0.9 && x < 1.1) x = volume.value = 1;
 				label.textContent = Math.round(x * 100);
+				label.textContent = "0".repeat(5 - label.textContent.length) + label.textContent;
 				gainNode.gain.value = x * +volume2.value;
 			}
 			volume2.oninput = function() {
@@ -50,6 +51,7 @@
 				let x = +volume2.value;
 				if (x > 0.9 && x < 1.1) x = volume2.value = 1;
 				label2.textContent = Math.round(x * 100);
+				label2.textContent = "0".repeat(5 - label.textContent.length) + label.textContent;
 				gainNode.gain.value = x * +volume.value;
 			}
 			function tick() {
