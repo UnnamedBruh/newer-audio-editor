@@ -209,7 +209,7 @@
 					}
 				}
 				prevIntervalID = setInterval(function() {
-					xOff = v.getBoundingClientRect().x + window.pageXOffset;
+					xOff = window.pageXOffset + v.getBoundingClientRect().x;
 				}, 1000);
 				ed = v;
 			}
