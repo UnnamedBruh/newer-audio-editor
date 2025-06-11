@@ -39,7 +39,7 @@
 				let x = +volume.value;
 				if (x > 0.9 && x < 1.1) x = volume.value = 1;
 				label.textContent = Math.round(x * 100);
-				label.textContent = "0".repeat(5 - label.textContent.length) + label.textContent;
+				label.textContent = "0".repeat(20 - label.textContent.length) + label.textContent;
 				gainNode.gain.value = x * +volume2.value;
 				if (x >= +volume.max / 1.1) {
 					volume.max *= 10;
@@ -59,7 +59,7 @@
 				let x = +volume2.value;
 				if (x > 0.9 && x < 1.1) x = volume2.value = 1;
 				label2.textContent = Math.round(x * 100);
-				label2.textContent = "0".repeat(5 - label2.textContent.length) + label2.textContent;
+				label2.textContent = "0".repeat(20 - label2.textContent.length) + label2.textContent;
 				gainNode.gain.value = x * +volume.value;
 				if (x >= +volume2.max / 1.1) {
 					volume2.max *= 10;
