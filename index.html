@@ -161,7 +161,7 @@
 					if (sampleSkip === 1) {
 						startAt = (eve.clientX - xOff + window.pageXOffset) / exporters.sampleRate;
 					} else {
-						startAt = (eve.clientX - xOff + window.pageXOffset * 2) / sampleSkip * exporters.sampleRate / 10000;
+						startAt = (eve.clientX - xOff + window.pageXOffset) / sampleSkip * exporters.sampleRate / 10000;
 					}
 					bbb = startAt * 100;
 					playSound();
@@ -263,6 +263,11 @@
 							console.log(effect[5]);
 							effects[effect[4]](...values);
 							data = generateWaveform(exp);
+							sharedBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
+							const ref = sharedBuffer.getChannelData(0);
+							for (let i = 0; i < ref.length; i++) {
+								ref[i] = exp.audioData[i];
+							}
 							n.setAttribute("d", data);
 						}
 					}
@@ -275,7 +280,7 @@
 							for (let i = 0; i < paramElements.length; i++) {
 								paramElements[i] = document.getElementById(effect[4] + i);
 								console.log(i);
-							};
+							}
 						} else {
 							params.innerHTML = "";
 							paramElements = null;
