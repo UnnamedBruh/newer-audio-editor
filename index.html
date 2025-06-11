@@ -33,7 +33,7 @@
 			volume.oninput = function() {
 				if (volumeWarning) {
 					volumeWarning = false;
-					alert("Moving the knob to the right can cause incredibly loud results! The maximum volume possible is 250,000% with both sliders put to their max values!");
+					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly, and ethically, as these are very experimental features.");
 					volume.value = 1;
 				}
 				let x = +volume.value;
@@ -53,7 +53,7 @@
 			volume2.oninput = function() {
 				if (volumeWarning) {
 					volumeWarning = false;
-					alert("Moving the knob to the right can cause incredibly loud results! The maximum volume possible is 100,000% with both sliders put to their max values!");
+					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly, and ethically, as these are very experimental features.");
 					volume.value = 1;
 				}
 				let x = +volume2.value;
@@ -61,11 +61,11 @@
 				label2.textContent = Math.round(x * 100);
 				label2.textContent = "0".repeat(5 - label2.textContent.length) + label2.textContent;
 				gainNode.gain.value = x * +volume.value;
-				if (x >= +volume.max - 1) {
-					volume.max *= 10;
-					volume.disabled = true;
+				if (x >= +volume2.max - 1) {
+					volume2.max *= 10;
+					volume2.disabled = true;
 					document.onmouseup = function() {
-						volume.disabled = false;
+						volume2.disabled = false;
 						document.onmouseup = null;
 					}
 				}
