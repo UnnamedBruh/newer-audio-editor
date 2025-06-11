@@ -175,11 +175,11 @@
 						let xn = window.pageXOffset;
 						x.setAttribute("width", window.innerWidth);
 						x.style.marginLeft = (xn - xOff) + "px";
-						const len = xn - xOff + window.innerWidth, y = exp.audioData;
+						const len = Math.min(xn - xOff + window.innerWidth, yu), y = exp.audioData;
 						let prev = 0, val;
 						if (y instanceof Float32Array || y instanceof Float64Array) {
 							let ep = Number.EPSILON;
-							for (let i = xn, j = 0; i < len && i < yu; i++, j++) {
+							for (let i = xn, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (Math.abs(prev - val) >= ep) {
 									data2.push("L " + j + "," + Math.round(100 + val * 100));
@@ -188,7 +188,7 @@
 								val = y[i];
 							}
 						} else if (y instanceof Uint8Array) {
-							for (let i = xn, j = 0; i < len && i < yu; i++, j++) {
+							for (let i = xn, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (prev !== y[i]) {
 									data2.push("L " + j + "," + Math.round(100 + val / 2.55));
@@ -196,7 +196,7 @@
 								}
 							}
 						} else if (y instanceof Int16Array) {
-							for (let i = xn, j = 0; i < len && i < yu; i++, j++) {
+							for (let i = xn, j = 0; i < len; i++, j++) {
 								val = y[i];
 								if (prev !== y[i]) {
 									data2.push("L " + j + "," + Math.round(100 + val / 327.68));
