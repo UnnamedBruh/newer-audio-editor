@@ -259,8 +259,9 @@
 						if (currentSelected) {
 							const values = [exp, ...paramElements.map((x, i) => effect[5][i](x.value))];
 							console.log(values);
+							console.log(paramElements);
+							console.log(effect[5]);
 							effects[effect[4]](...values);
-							console.log(effect[4]);
 							data = generateWaveform(exp);
 							n.setAttribute("d", data);
 						}
