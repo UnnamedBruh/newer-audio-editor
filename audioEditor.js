@@ -61,8 +61,8 @@ effects["gain"] = function(buffer, multiplier) {
 }
 
 effects["quantize"] = function(buffer, bits) {
-	bits = bits - 1;
 	if (bits >= 32) return;
+	bits = bits - 1;
 	const precision = Math.pow(2, -bits), n = Math.pow(2, bits);
 	const len = buffer.audioData.length, pointer = buffer.audioData;
 
