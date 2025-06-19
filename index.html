@@ -227,9 +227,9 @@
 						if (currentSelected) {
 							const values = [exp, ...paramElements.map((x, i) => {
 								if (x.type === "checkbox") {
-									effect[5][i](x.checked);
+									return effect[5][i](x.checked);
 								} else {
-									effect[5][i](x.value);
+									return effect[5][i](x.value);
 								}
 							})];
 							effects[effect[4]](...values);
