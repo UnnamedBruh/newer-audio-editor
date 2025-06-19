@@ -102,7 +102,7 @@ effects["smooth"] = function(buffer, samples, method) {
 			z[i] = interpolate(z[i], z[i - 1], perc);
 		}
 	} else if (method === "dyn") { // Much more sophisticated smoothing algorithm
-		let z = buffer.audioData, perc = 1 - samples / 100, f, p;
+		let z = buffer.audioData, perc = samples / 100, f, p;
 		for (let i = 1; i < v; i++) {
 			f = z[i]; p = z[i - 1];
 			z[i] = interpolate(f, p, perc * Math.pow(1 - Math.abs(f - p), 2));
