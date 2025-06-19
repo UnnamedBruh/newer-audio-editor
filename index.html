@@ -45,9 +45,9 @@
 				if (x >= +volume.max / 1.1) {
 					volume.max *= 10;
 					volume.disabled = true;
-					document.body.onmouseup = function() {
+					document.onmouseup = function() {
 						volume.disabled = false;
-						document.body.onmouseup = null;
+						document.onmouseup = null;
 					}
 				}
 			}
@@ -225,7 +225,13 @@
 					let currentSelected = null, paramElements = null, effect;
 					apply.onclick = function() {
 						if (currentSelected) {
-							const values = [exp, ...paramElements.map((x, i) => effect[5][i](x.value))];
+							const values = [exp, ...paramElements.map((x, i) => {
+								if (x.type === "checkbox") {
+									effect[5][i](x.checked);
+								} else {
+									effect[5][i](x.value);
+								}
+							})];
 							effects[effect[4]](...values);
 							data = generateWaveform(exp);
 							sharedBuffer = audioContext.createBuffer(1, exp.audioData.length, exp.sampleRate);
