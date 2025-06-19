@@ -103,7 +103,7 @@
 			function generateWaveform(exp) {
 				let data2 = ["M 0,100 L 0,100 "];
 				const len = exp.audioData.length, y = exp.audioData;
-				let prev = NaN, val;
+				let prev = 0, val;
 				let ep = Number.EPSILON;
 				for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
 					val = y[i];
@@ -183,7 +183,7 @@
 						x.setAttribute("width", window.innerWidth);
 						x.style.marginLeft = (xn - xOff) + "px";
 						const len = Math.min(xn - xOff + window.innerWidth, yu), y = exp.audioData;
-						let prev = NaN, val;
+						let prev = 0, val;
 						let ep = Number.EPSILON;
 						for (let i = xn, j = 0; i < len; i++, j++) {
 							val = y[i];
