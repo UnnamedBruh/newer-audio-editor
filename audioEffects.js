@@ -38,7 +38,7 @@ const effectsList = [
 	[
 		"Smooth Audio",
 		"Picks the soonest sample for every nth group, or interpolates samples into each other linearly or with an accumulator, creating a \"lowpass\" effect.",
-		'<a id="custom">Smoothing Threshold (measured in samples)</a>: <input id="smooth0" type="number" min="1" max="256" step="1" value="4"><br>Blending Method: <select id="smooth1" oninput="document.getElementById(\'custom\').textContent = this.value === \'a\' || this.value === \'r\' ? \'Interpolation Level (as percentage)\' : (this.value === \'dyn\' ? \'Level Of Softness (measured in cents)\' : \'Smoothing Threshold (measured in samples)\');"><option value="n">no-interpolating</option><option value="l">linear interpolation</option><option value="a">accumulator-based interpolation</option><option value="r">right-sample interpolation</option><option value="dyn">dynamic interpolation</option></select>',
+		'<a id="custom">Smoothing Threshold (measured in samples)</a>: <input id="smooth0" type="number" min="1" max="256" step="1" value="4"><br>Blending Method: <select id="smooth1" oninput="document.getElementById(\'custom\').textContent = this.value === \'a\' || this.value === \'r\' ? \'Interpolation Level (as percentage)\' : (this.value === \'dyn\' ? \'Level Of Softness (measured in hundredths)\' : \'Smoothing Threshold (measured in samples)\');"><option value="n">no-interpolating</option><option value="l">linear interpolation</option><option value="a">accumulator-based interpolation</option><option value="r">right-sample interpolation</option><option value="dyn">dynamic interpolation</option></select>',
 		2,
 		"smooth",
 		[Number, identifier]
