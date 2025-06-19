@@ -68,8 +68,12 @@ effects["quantize"] = function(buffer, bits, which) {
 	const trunc = which === "r" ? Math.round : (which === "t" ? Math.trunc : (which === "f" ? Math.floor : Math.ceil));
 
 	if (which === "fl") {
-		for (let i = 0; i < len; i++) {
-			pointer[i] = Math.f16round(pointer[i]);
+		if ("f16round" in Math) {
+			for (let i = 0; i < len; i++) {
+				pointer[i] = Math.f16round(pointer[i]);
+			}
+		} else {
+			alert("Unfortunately, half-precision floats are not supported in your browser. You can switch your browser to the latest version of Google Chrome, Microsoft Edge, Safari or Mozilla Firefox.");
 		}
 	} else {
 		if (bits === 1) {
