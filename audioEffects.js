@@ -30,9 +30,17 @@ const effectsList = [
 	[
 		"Quantization",
 		"Adds a staticky effect (by rounding each sample value to the nearest value determined by the number of bits). Lower bit value = vaguer audio, higher bit value = clearer audio",
-		'Bits: <input id="quantize0" type="number" min="1" max="31" step="1" value="8"><br>Internal Rounding Function: <select id="quantize1" oninput="document.getElementById(\'custom\').textContent = this.value === \'fl\' ? \'Samples will be adapted to simulate 16-bit floating point precision when applied; the Bits field does not affect the result.\' : this.value === \'mu\' ? \'A G.711 μ-law encoder (popular in telecom contexts) will adapt samples to simulate μ-law precision when applied; the Bits field does not affect the result.\' : \'\';"><option value="r">round</option><option value="t">trunc</option><option value="f">floor</option><option value="c">ceil</option><option value="fl">float16</option>><option value="mu">G.711 μ-law</option></select><br><a id="custom"></a>',
+		'Bits: <input id="quantize0" type="number" min="1" max="31" step="1" value="8"><br>Internal Rounding Function: <select id="quantize1" oninput="document.getElementById(\'custom\').textContent = this.value === \'fl\' ? \'Samples will be adapted to simulate 16-bit floating point precision when applied; the Bits field does not affect the result.\' : this.value === \'mu\' ? \'A G.711 μ-law encoder (popular in telecom contexts) will adapt samples to simulate μ-law precision when applied; the Bits field does not affect the result.\' : \'\';"><option value="r">round</option><option value="t">trunc</option><option value="f">floor</option><option value="c">ceil</option><option value="fl">float16</option><option value="mu">G.711 μ-law</option></select><br><a id="custom"></a>',
 		2,
 		"quantize",
+		[Number, identifier]
+	],
+	[
+		"Smooth Audio",
+		"Interpolates samples into each other linearly or with an accumulator, creating a \"lowpass\" effect.",
+		'<a id="custom">Smoothing Threshold (measured in samples)</a>: <input id="smooth0" type="number" min="1" max="256" step="1" value="4"><br>Blending Method: <select id="smooth1" oninput="document.getElementById(\'custom\').textContent = this.value === \'a\' ? \'Blend\' : \'\';"><option value="n">no-interpolating</option><option value="l">linear interpolation</option><option value="a">interpolate accumulator</option></select><br>',
+		2,
+		"smooth",
 		[Number, identifier]
 	]
 ];
