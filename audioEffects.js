@@ -14,7 +14,7 @@ const effectsList = [
 	[
 		"Playback Speed",
 		"Speeds up or slows down the audio.",
-		'Multiplier: <input id="speed0" type="number" min="0.5" max="10" step="0.001" value="2"><br>Smoothen Up Audio: <input id="speed1" type="checkbox" checked>',
+		'Multiplier: <input id="speed0" type="number" min="0.5" max="10" step="0.001" value="2"><br>Smooth Audio: <input id="speed1" type="checkbox" checked>',
 		2,
 		"speed",
 		[Number, identifier]
@@ -22,7 +22,7 @@ const effectsList = [
 	[
 		"Resample Audio",
 		"Resamples the audio to a specific sample rate.",
-		'Samplerate: <select id="resample0"><option>6000</option><option>8000</option><option>11025</option><option>16000</option><option>22050</option><option>33075</option><option>44100</option><option>48000</option><option>72000</option><option>88200</option><option>96000</option><option>176400</option><option>192000</option></select><br>Smoothen Up Audio: <input id="resample1" type="checkbox" checked>',
+		'Samplerate: <select id="resample0"><option>6000</option><option>8000</option><option>11025</option><option>16000</option><option>22050</option><option>33075</option><option>44100</option><option>48000</option><option>72000</option><option>88200</option><option>96000</option><option>176400</option><option>192000</option></select><br>Smooth Audio: <input id="resample1" type="checkbox" checked>',
 		2,
 		"resample",
 		[Number, identifier]
