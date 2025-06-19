@@ -97,7 +97,7 @@ effects["quantize"] = function(buffer, bits, which) {
 effects["smooth"] = function(buffer, samples, method) {
 	const v = buffer.audioData.length;
 	if (method === "r") {
-		let z = buffer.audioData, perc = samples / 100;
+		let z = buffer.audioData, perc = 1 - samples / 100;
 		for (let i = 1; i < v; i++) {
 			z[i] = interpolate(z[i], z[i - 1], perc);
 		}
