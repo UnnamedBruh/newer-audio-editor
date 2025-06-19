@@ -271,7 +271,7 @@
 						sampleData = null;
 						sampleSkip = 480;
 						sharedBuffer = await audioContext.decodeAudioData(event.target.result);
-						const channel = sharedBuffer.getChannelData(Math.max(0, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 0 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 0, sharedBuffer.numberOfChannels)));
+						const channel = sharedBuffer.getChannelData(Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1);
 						exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
 						loadDiv(exporters);
 					} catch (err) {
