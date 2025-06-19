@@ -1,3 +1,5 @@
+function muLawCompress(a,t=255){return Math.sign(a)*Math.log1p(t*Math.abs(a))/Math.log1p(t)}function muLawExpand(a,t=255){return Math.sign(a)*(1/t)*(Math.pow(1+t,Math.abs(a))-1)}function muLawQuantize(a,t=256,n=255){const u=muLawCompress(a,n);return muLawExpand(Math.floor((u+1)/2*(t-1))/(t-1)*2-1,n)}
+
 const effects = Object.create(null);
 
 function interpolate(x, y, z) {
@@ -77,7 +79,7 @@ effects["quantize"] = function(buffer, bits, which) {
 		}
 	} else if (which === "mu") {
 		for (let i = 0; i < len; i++) {
-			pointer[i] = (linearToMuLaw(Math.round(pointer[i] * 32767)) - 128) / 128;
+			pointer[i] = muLawQuantize(pointer[i]);
 		}
 	} else {
 		if (bits === 1) {
