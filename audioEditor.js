@@ -93,3 +93,31 @@ effects["quantize"] = function(buffer, bits, which) {
 		}
 	}
 }
+
+buffer["smooth"] = function(buffer, samples, method) {
+	const v = buffer.audioData.length / speed;
+	const variable = buffer.audioData instanceof Float32Array ? new Float32Array(Math.round(bufferLength)) : new Float64Array(Math.round(bufferLength));
+	
+	if (method === "l") {
+		let x = 0, y = 0, z = buffer.audioData;
+		for (let i = 0; i < v; i++) {
+			x = i * speed;
+			y = Math.floor(x);
+			variable[i] = interpolate(z[y], z[y + samples], x - y);
+		}
+	} else if (method === "n") {
+		let x = 0, y = 0, z = buffer.audioData;
+		for (let i = 0; i < v; i++) {
+			variable[i] = z[Math.floor(i / samples) * samples];
+		}
+	} else {
+		let acc = 0
+		let x = 0, y = 0, z = buffer.audioData, perc = samples / 100;
+		for (let i = 0; i < v; i++) {
+			acc = interpolate(acc, z[i], perc);
+			variable[i] = z[i];
+		}
+	}
+
+	buffer.audioData = variable;
+}
