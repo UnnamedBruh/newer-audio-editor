@@ -60,19 +60,20 @@ effects["gain"] = function(buffer, multiplier) {
 	}
 }
 
-effects["quantize"] = function(buffer, bits) {
+effects["quantize"] = function(buffer, bits, which) {
 	if (bits >= 32) return;
 	bits = bits - 1;
 	const precision = Math.pow(2, -bits), n = Math.pow(2, bits);
 	const len = buffer.audioData.length, pointer = buffer.audioData;
+	const trunc = which === "r" ? Math.round : (which === "t" ? Math.trunc : (which === "f" ? Math.floor : Math.ceil));
 
 	if (bits === 1) {
 		for (let i = 0; i < len; i++) {
-			pointer[i] = Math.trunc(pointer[i]);
+			pointer[i] = trunc(pointer[i]);
 		}
 	} else {
 		for (let i = 0; i < len; i++) {
-			pointer[i] = Math.trunc(pointer[i] * n) * precision;
+			pointer[i] = trunc(pointer[i] * n) * precision;
 		}
 	}
 }
