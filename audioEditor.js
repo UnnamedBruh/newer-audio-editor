@@ -67,13 +67,19 @@ effects["quantize"] = function(buffer, bits, which) {
 	const len = buffer.audioData.length, pointer = buffer.audioData;
 	const trunc = which === "r" ? Math.round : (which === "t" ? Math.trunc : (which === "f" ? Math.floor : Math.ceil));
 
-	if (bits === 1) {
+	if (which === "fl") {
 		for (let i = 0; i < len; i++) {
-			pointer[i] = trunc(pointer[i]);
+			pointer[i] = Math.f16round(pointer[i]);
 		}
 	} else {
-		for (let i = 0; i < len; i++) {
-			pointer[i] = trunc(pointer[i] * n) * precision;
+		if (bits === 1) {
+			for (let i = 0; i < len; i++) {
+				pointer[i] = trunc(pointer[i]);
+			}
+		} else {
+			for (let i = 0; i < len; i++) {
+				pointer[i] = trunc(pointer[i] * n) * precision;
+			}
 		}
 	}
 }
