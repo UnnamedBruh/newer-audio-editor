@@ -111,10 +111,10 @@ effects["smooth"] = function(buffer, samples, method) {
 		const variable = buffer.audioData instanceof Float32Array ? new Float32Array(Math.round(v)) : new Float64Array(Math.round(v));
 
 		if (method === "l") {
-			let x = 0, y = 0, z = buffer.audioData;
+			let y = 0, z = buffer.audioData;
 			let samplesFrac = 1 / samples;
 			for (let i = 0; i < v; i++) {
-				y = Math.floor(x / samples) * samples;
+				y = Math.floor(i / samples) * samples;
 				variable[i] = interpolate(z[y], z[y + samples] || 0, (i * samplesFrac) % 1);
 			}
 		} else if (method === "n") {
