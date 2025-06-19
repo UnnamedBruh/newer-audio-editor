@@ -101,9 +101,8 @@ effects["smooth"] = function(buffer, samples, method) {
 	if (method === "l") {
 		let x = 0, y = 0, z = buffer.audioData;
 		for (let i = 0; i < v; i++) {
-			x = i * speed;
-			y = Math.floor(x);
-			variable[i] = interpolate(z[y], z[y + samples], x - y);
+			y = Math.floor(x / samples) * samples;
+			variable[i] = interpolate(z[y], z[y + samples] || 0, x - y);
 		}
 	} else if (method === "n") {
 		let x = 0, y = 0, z = buffer.audioData;
@@ -115,7 +114,7 @@ effects["smooth"] = function(buffer, samples, method) {
 		let x = 0, y = 0, z = buffer.audioData, perc = samples / 100;
 		for (let i = 0; i < v; i++) {
 			acc = interpolate(acc, z[i], perc);
-			variable[i] = z[i];
+			variable[i] = acc;
 		}
 	}
 
