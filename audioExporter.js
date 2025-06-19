@@ -1,17 +1,22 @@
 // G.711 μ-law encode: convert 16-bit signed int (linear PCM) to 8-bit μ-law
 function linearToMuLaw(sample) {
-	const MU_LAW_MAX = 0x7FFF; // Max 13-bit magnitude
-	const BIAS = 0x84; // Bias for linear code
+	const MU_LAW_MAX = 0x7FFF;
+	const BIAS = 0x84;
 
 	let sign = (sample >> 8) & 0x80;
 	if (sign) sample = -sample;
 	if (sample > MU_LAW_MAX) sample = MU_LAW_MAX;
 	sample += BIAS;
 
+	// Calculate exponent exactly as original loop
 	let exponent = 7;
-	for (let expMask = 0x4000; (sample & expMask) === 0 && exponent > 0; expMask >>= 1) {
+	for (let expMask = 0x4000; expMask > 0x7F; expMask >>= 1) {
+		if (sample & expMask) {
+			break;
+		}
 		exponent--;
 	}
+
 	let mantissa = (sample >> (exponent + 3)) & 0x0F;
 	let muLawByte = ~(sign | (exponent << 4) | mantissa);
 	return muLawByte & 0xFF;
