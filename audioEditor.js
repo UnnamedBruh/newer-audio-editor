@@ -94,7 +94,7 @@ effects["quantize"] = function(buffer, bits, which) {
 	}
 }
 
-buffer["smooth"] = function(buffer, samples, method) {
+effects["smooth"] = function(buffer, samples, method) {
 	const v = buffer.audioData.length / speed;
 	const variable = buffer.audioData instanceof Float32Array ? new Float32Array(Math.round(bufferLength)) : new Float64Array(Math.round(bufferLength));
 	
