@@ -30,7 +30,7 @@ const effectsList = [
 	[
 		"Quantization",
 		"Adds a staticky effect (by rounding each sample value to the nearest value determined by the number of bits). Lower bit value = vaguer audio, higher bit value = clearer audio",
-		'Bits: <input id="quantize0" type="number" min="1" max="31" step="1" value="8"><br>Internal Rounding Function: <select id="quantize1" oninput="document.getElementById(\'custom\').textContent = this.value === \'fl\' ? \'Samples are casted into 16-bit floating point values; the Bits field does not affect the result.\' : \'\';"><option value="r">round</option><option value="t">trunc</option><option value="f">floor</option><option value="c">ceil</option><option value="fl">float16</option></select><br><a id="custom"></a>',
+		'Bits: <input id="quantize0" type="number" min="1" max="31" step="1" value="8"><br>Internal Rounding Function: <select id="quantize1" oninput="document.getElementById(\'custom\').textContent = this.value === \'fl\' ? \'Samples are adapted to simulate 16-bit floating point precision; the Bits field does not affect the result.\' : \'\';"><option value="r">round</option><option value="t">trunc</option><option value="f">floor</option><option value="c">ceil</option><option value="fl">float16</option></select><br><a id="custom"></a>',
 		2,
 		"quantize",
 		[Number, identifier]
