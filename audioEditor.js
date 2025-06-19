@@ -75,6 +75,10 @@ effects["quantize"] = function(buffer, bits, which) {
 		} else {
 			alert("Unfortunately, half-precision floats are not supported in your browser. You can switch your browser to the latest version of Google Chrome, Microsoft Edge, Safari or Mozilla Firefox.");
 		}
+	} else if (which === "mu") {
+		for (let i = 0; i < len; i++) {
+			pointer[i] = (linearToMuLaw(Math.round(pointer[i] * 32767)) - 128) / 128;
+		}
 	} else {
 		if (bits === 1) {
 			for (let i = 0; i < len; i++) {
