@@ -96,28 +96,35 @@ effects["quantize"] = function(buffer, bits, which) {
 
 effects["smooth"] = function(buffer, samples, method) {
 	const v = buffer.audioData.length;
-	const variable = buffer.audioData instanceof Float32Array ? new Float32Array(Math.round(v)) : new Float64Array(Math.round(v));
-	
-	if (method === "l") {
-		let x = 0, y = 0, z = buffer.audioData;
-		let samplesFrac = 1 / samples;
-		for (let i = 0; i < v; i++) {
-			y = Math.floor(x / samples) * samples;
-			variable[i] = interpolate(z[y], z[y + samples] || 0, (i * samplesFrac) % 1);
-		}
-	} else if (method === "n") {
-		let x = 0, y = 0, z = buffer.audioData;
-		for (let i = 0; i < v; i++) {
-			variable[i] = z[Math.floor(i / samples) * samples];
+	if (method === "r") {
+		let z = buffer.audioData, perc = samples / 100;
+		for (let i = 1; i < v; i++) {
+			z[i] = interpolate(acc, z[i - 1], perc);
 		}
 	} else {
-		let acc = 0
-		let x = 0, y = 0, z = buffer.audioData, perc = samples / 100;
-		for (let i = 0; i < v; i++) {
-			acc = interpolate(acc, z[i], perc);
-			variable[i] = acc;
-		}
-	}
+		const variable = buffer.audioData instanceof Float32Array ? new Float32Array(Math.round(v)) : new Float64Array(Math.round(v));
 
-	buffer.audioData = variable;
+		if (method === "l") {
+			let x = 0, y = 0, z = buffer.audioData;
+			let samplesFrac = 1 / samples;
+			for (let i = 0; i < v; i++) {
+				y = Math.floor(x / samples) * samples;
+				variable[i] = interpolate(z[y], z[y + samples] || 0, (i * samplesFrac) % 1);
+			}
+		} else if (method === "n") {
+			let x = 0, y = 0, z = buffer.audioData;
+			for (let i = 0; i < v; i++) {
+				variable[i] = z[Math.floor(i / samples) * samples];
+			}
+		} else {
+			let acc = 0;
+			let z = buffer.audioData, perc = samples / 100;
+			for (let i = 0; i < v; i++) {
+				acc = interpolate(acc, z[i], perc);
+				variable[i] = acc;
+			}
+		}
+
+		buffer.audioData = variable;
+	}
 }
