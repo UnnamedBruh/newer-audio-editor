@@ -42,5 +42,13 @@ const effectsList = [
 		2,
 		"smooth",
 		[Number, identifier]
+	],
+	[
+		"Distort",
+		"Distorts the audio using a mathematical function/formula. Simple, but still achieves wacky results.",
+		'Apply percentage: <input id="smooth0" type="number" min="0" max="100" step="1" value="100" placeholder="Hover for info" title="How much this effect is applied. For example, 50% means the audio is half-distorted, 100% means the audio is fully distorted, and 0% means this effect won\'t apply.">%<br>Blending Method: <select id="smooth1""><option value="s">sqrt</option><option value="c">cbrt</option><option value="co">cos</option><option value="sq">n * n</option><option value="h">n / (floor(n * 8) / 8)</option></select><br>This effect doesn\'t function at all yet... lol.',
+		2,
+		"distort",
+		[Number, identifier]
 	]
 ];
