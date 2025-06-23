@@ -142,11 +142,11 @@ effects["distort"] = function(buffer, perc, method) {
 	if (perc === 0) return; else if (perc === 100) {
 		if (method === "s") {
 			for (let i = 0; i < v; i++) {
-				z[i] = Math.sqrt(z[i]);
+				z[i] = Math.sqrt(Math.abs(z[i])) * Math.sign(z[i]);
 			}
 		} else if (method === "c") {
 			for (let i = 0; i < v; i++) {
-				z[i] = Math.cbrt(z[i]);
+				z[i] = Math.cbrt(Math.abs(z[i])) * Math.sign(z[i]);
 			}
 		} else if (method === "co") {
 			for (let i = 0; i < v; i++) {
@@ -155,25 +155,25 @@ effects["distort"] = function(buffer, perc, method) {
 		} else if (method === "sq") {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
-				x = z[i];
-				z[i] = x * x;
+				x = Math.abs(z[i]);
+				z[i] = x * x * Math.sign(z[i]);
 			}
 		} else {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
-				x = z[i];
-				z[i] = x / (Math.floor(x * 8) / 8);
+				x = Math.abs(z[i]);
+				z[i] = x / (Math.floor(x * 8) / 8) * Math.sign(z[i]);
 			}
 		}
 	} else {
 		perc = perc / 100;
 		if (method === "s") {
 			for (let i = 0; i < v; i++) {
-				z[i] = interpolate(z[i], Math.sqrt(z[i]), perc);
+				z[i] = interpolate(z[i], Math.sqrt(Math.abs(z[i])) * Math.sign(z[i]), perc);
 			}
 		} else if (method === "c") {
 			for (let i = 0; i < v; i++) {
-				z[i] = interpolate(z[i], Math.cbrt(z[i]), perc);
+				z[i] = interpolate(z[i], Math.cbrt(Math.abs(z[i])) * Math.sign(z[i]), perc);
 			}
 		} else if (method === "co") {
 			for (let i = 0; i < v; i++) {
@@ -182,14 +182,14 @@ effects["distort"] = function(buffer, perc, method) {
 		} else if (method === "sq") {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
-				x = z[i];
-				z[i] = interpolate(x, x * x, perc);
+				x = Math.abs(z[i]);
+				z[i] = interpolate(x, x * x * Math.sign(z[i]), perc);
 			}
 		} else {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
-				x = z[i];
-				z[i] = interpolate(x, x / (Math.floor(x * 8) / 8), perc);
+				x = Math.abs(z[i]);
+				z[i] = interpolate(x, x / (Math.floor(x * 8) / 8) * Math.sign(z[i]), perc);
 			}
 		}
 	}
