@@ -134,3 +134,63 @@ effects["smooth"] = function(buffer, samples, method) {
 		buffer.audioData = variable;
 	}
 }
+
+effects["distort"] = function(buffer, perc, method) {
+	const v = buffer.audioData.length;
+	const z = buffer.audioData;
+
+	if (perc === 0) return; else if (perc === 100) {
+		if (method === "s") {
+			for (let i = 0; i < v; i++) {
+				z[i] = Math.sqrt(z[i]);
+			}
+		} else if (method === "c") {
+			for (let i = 0; i < v; i++) {
+				z[i] = Math.cbrt(z[i]);
+			}
+		} else if (method === "co") {
+			for (let i = 0; i < v; i++) {
+				z[i] = Math.cos(z[i]);
+			}
+		} else if (method === "sq") {
+			let x = 0;
+			for (let i = 0; i < v; i++) {
+				x = z[i];
+				z[i] = x * x;
+			}
+		} else {
+			let x = 0;
+			for (let i = 0; i < v; i++) {
+				x = z[i];
+				z[i] = x / (Math.floor(x * 8) / 8);
+			}
+		}
+	} else {
+		perc = perc / 100;
+		if (method === "s") {
+			for (let i = 0; i < v; i++) {
+				z[i] = interpolate(z[i], Math.sqrt(z[i]), perc);
+			}
+		} else if (method === "c") {
+			for (let i = 0; i < v; i++) {
+				z[i] = interpolate(z[i], Math.cbrt(z[i]), perc);
+			}
+		} else if (method === "co") {
+			for (let i = 0; i < v; i++) {
+				z[i] = interpolate(z[i], Math.cos(z[i]), perc);
+			}
+		} else if (method === "sq") {
+			let x = 0;
+			for (let i = 0; i < v; i++) {
+				x = z[i];
+				z[i] = interpolate(x, x * x, perc);
+			}
+		} else {
+			let x = 0;
+			for (let i = 0; i < v; i++) {
+				x = z[i];
+				z[i] = interpolate(x, x / (Math.floor(x * 8) / 8), perc);
+			}
+		}
+	}
+}
