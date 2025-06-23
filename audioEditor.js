@@ -148,10 +148,6 @@ effects["distort"] = function(buffer, perc, method) {
 			for (let i = 0; i < v; i++) {
 				z[i] = Math.cbrt(Math.abs(z[i])) * Math.sign(z[i]);
 			}
-		} else if (method === "co") {
-			for (let i = 0; i < v; i++) {
-				z[i] = Math.cos(z[i]);
-			}
 		} else if (method === "sq") {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
@@ -174,10 +170,6 @@ effects["distort"] = function(buffer, perc, method) {
 		} else if (method === "c") {
 			for (let i = 0; i < v; i++) {
 				z[i] = interpolate(z[i], Math.cbrt(Math.abs(z[i])) * Math.sign(z[i]), perc);
-			}
-		} else if (method === "co") {
-			for (let i = 0; i < v; i++) {
-				z[i] = interpolate(z[i], Math.cos(z[i]), perc);
 			}
 		} else if (method === "sq") {
 			let x = 0;
