@@ -305,8 +305,23 @@
 				if (eve.target.files.length === 0) return;
 				const firstFile = eve.target.files[0];
 				if (firstFile.name.endsWith(".lsac")) {
-					const result = decodeLSAC(firstFile);
-					exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
+					try {
+						const result = await decodeLSAC(firstFile);
+						exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
+						sharedBuffer = audioContext.createBufferSource();
+						const b = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
+						sharedBuffer.buffer = b;
+						const len = result.samples.length;
+						const bufferData = b.getChannelData(0);
+						const samples = result.samples;
+						for (let i = 0; i < len; i++) {
+							bufferData[i] = samples[i];
+						}
+						loadDiv(exporters);
+					} catch (err) {
+						alert("The audio could not be properly loaded! Due to unhelpful strip-aways from viewing metadata, we cannot provide much info on what exactly failed.");
+						console.log(err.message + err.stack);
+					}
 				} else {
 					const fileReader = new FileReader();
 					fileReader.onload = async function(event) {
@@ -325,7 +340,7 @@
 							exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
 							loadDiv(exporters);
 						} catch (err) {
-							alert("The audio could not be properly loaded! Due to the strip-aways from viewing metadata that are unhelpful, we cannot provide much info on what exactly failed.");
+							alert("The audio could not be properly loaded! Due to unhelpful strip-aways from viewing metadata, we cannot provide much info on what exactly failed.");
 							console.log(err.message + err.stack);
 						}
 					}
