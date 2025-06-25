@@ -306,6 +306,15 @@
 				const firstFile = eve.target.files[0];
 				if (firstFile.name.endsWith(".lsac")) {
 					try {
+						exporters = null;
+						if (ed) {
+							ed.innerHTML = "";
+							ed.remove();
+							ed = null;
+						}
+						data = null;
+						sampleData = null;
+						sampleSkip = 480;
 						const result = await decodeLSAC(firstFile);
 						exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
 						sharedBuffer = audioContext.createBufferSource();
