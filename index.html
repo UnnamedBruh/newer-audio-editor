@@ -316,7 +316,6 @@
 						sampleData = null;
 						sampleSkip = 480;
 						const result = await decodeLSAC(firstFile);
-						exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
 						src = audioContext.createBufferSource();
 						sharedBuffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
 						src.buffer = sharedBuffer;
@@ -326,7 +325,9 @@
 						for (let i = 0; i < len; i++) {
 							bufferData[i] = samples[i];
 						}
+						exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
 						loadDiv(exporters);
+						src.connect(gainNode);
 					} catch (err) {
 						alert("The audio could not be properly loaded! Due to unhelpful strip-aways from viewing metadata, we cannot provide much info on what exactly failed.");
 						console.log(err.message + err.stack);
