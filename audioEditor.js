@@ -182,7 +182,7 @@ effects["distort"] = function(buffer, perc, method) {
 			for (let i = 0; i < v; i++) {
 				x = Math.abs(z[i]);
 				z[i] = interpolate(x, x / (Math.floor(x * 8) / 8) * Math.sign(z[i]), perc);
-				if (!isFinite(z[i])) z[i] = Math.sign(z[i]);
+				if (z[i] === Infinity) z[i] = 1; else if (z[i] === -Infinity) z[i] = -1;
 			}
 		}
 	}
