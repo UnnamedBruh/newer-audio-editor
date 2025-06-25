@@ -47,6 +47,14 @@ function encodeLSAC(uint8a = new Uint8Array(0), sampleRate = 48000) {
 	return new Blob([header.buffer, audioData.buffer], { type: "" });
 }
 
+function uint8ToFloat32(uint8array) {
+	const float32 = new Float32Array(uint8array.length);
+	for (let i = 0; i < uint8array.length; i++) {
+		float32[i] = (uint8array[i] / 127.5) - 1;
+	}
+	return float32;
+}
+
 async function decodeLSAC(blob) { // This function was written using a generative model. Perfection is not guaranteed.
 	return new Promise(async (resolve, reject) => {
 		const arrayBuffer = await blob.arrayBuffer();
@@ -126,6 +134,6 @@ async function decodeLSAC(blob) { // This function was written using a generativ
 			output[i * 4 + 3] = Math.min(255, Math.max(0, Math.round(s3)));
 		}
 
-		resolve({ samples: output, sampleRate });
+		resolve({ samples: uint8ToFloat32(output), sampleRate });
 	});
 }
