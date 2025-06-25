@@ -261,7 +261,7 @@
 					}
 				}
 				v.appendChild(document.createElement("br"));
-				const exportBtn = document.createElement("button");
+				let exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as WAV";
 				exportBtn.onclick = function() {
@@ -270,13 +270,28 @@
 					const name = prompt("What is the name of this audio? (e.g. \"Electro Dance (Techno Mix)\") Leave the input blank if you don't want the name to be specified.");
 					const genre = prompt("What is the genre of this audio? (e.g. \"Techno\") Leave the input blank if you don't want the genre to be specified.");
 					const notes = prompt("Any notes or comments for this audio? (e.g. \"This audio is super cool\") Leave the input blank if you don't have any notes or comments.");
-					
+
+					const software = prompt("What software did you use to create this audio? (e.g. \"UnnamedBruh's Audio Editor\") If input is \"UAE\" without quotes, this software's name will be appended to the audio metadata.");
+
 					if (author) metadata["IART"] = author;
 					if (name) metadata["INAM"] = name;
 					if (genre) metadata["IGNR"] = genre;
 					if (notes) metadata["ICMT"] = notes;
+					if (software) metadata["ISFT"] = software === "UAE" ? "UnnamedBruh's Audio Editor" : software;
 					
 					const blob = exporters.convertToWav(metadata);
+
+					const link = document.createElement("a");
+					link.download = (name || "exportedAudio") + ".wav";
+					link.href = URL.createObjectURL(blob);
+					link.click();
+					link.remove();
+				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as LSAC (LoSsy Audio Codec)";
+				exportBtn.onclick = function() {
+					const blob = encodeLSAC(exporters.audioData, exporters.sampleRate);
 
 					const link = document.createElement("a");
 					link.download = (name || "exportedAudio") + ".wav";
