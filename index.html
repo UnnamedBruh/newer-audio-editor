@@ -301,7 +301,7 @@
 				}
 				ed = v;
 			}
-			audioInput.oninput = function(eve) {
+			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
 				const firstFile = eve.target.files[0];
 				if (firstFile.name.endsWith(".lsac")) {
