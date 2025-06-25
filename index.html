@@ -18,11 +18,12 @@
 		<script src="audioEditor.js"></script>
 		<script src="audioExporter.js"></script>
 		<script src="audioEffects.js"></script>
+		<script src="audioLSAC.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
-		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .mp4, .3gp, .3g2, .webm">
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .mp4, .3gp, .3g2, .webm, .lsac">
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
@@ -259,33 +260,62 @@
 						}
 					}
 				}
+				v.appendChild(document.createElement("br"));
+				const exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as WAV";
+				exportBtn.onclick = function() {
+					const metadata = {};
+					const author = prompt("Who is the author of this audio? (e.g. \"John Smith\") Leave the input blank if you don't want the author to be specified.");
+					const name = prompt("What is the name of this audio? (e.g. \"Electro Dance (Techno Mix)\") Leave the input blank if you don't want the name to be specified.");
+					const genre = prompt("What is the genre of this audio? (e.g. \"Techno\") Leave the input blank if you don't want the genre to be specified.");
+					const notes = prompt("Any notes or comments for this audio? (e.g. \"This audio is super cool\") Leave the input blank if you don't have any notes or comments.");
+					
+					if (author) metadata["IART"] = author;
+					if (name) metadata["INAM"] = name;
+					if (genre) metadata["IGNR"] = genre;
+					if (notes) metadata["ICMT"] = notes;
+					
+					const blob = exporters.convertToWav(metadata);
+
+					const link = document.createElement("a");
+					link.download = (name || "exportedAudio") + ".wav";
+					link.href = URL.createObjectURL(blob);
+					link.click();
+					link.remove();
+				}
 				ed = v;
 			}
 			audioInput.oninput = function(eve) {
 				if (eve.target.files.length === 0) return;
 				const firstFile = eve.target.files[0];
-				const fileReader = new FileReader();
-				fileReader.onload = async function(event) {
-					try {
-						exporters = null;
-						if (ed) {
-							ed.innerHTML = "";
-							ed.remove();
-							ed = null;
+				if (firstFile.name.endsWith(".lsac")) {
+					const result = decodeLSAC(firstFile);
+					exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
+				} else {
+					const fileReader = new FileReader();
+					fileReader.onload = async function(event) {
+						try {
+							exporters = null;
+							if (ed) {
+								ed.innerHTML = "";
+								ed.remove();
+								ed = null;
+							}
+							data = null;
+							sampleData = null;
+							sampleSkip = 480;
+							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
+							const channel = sharedBuffer.getChannelData(Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1);
+							exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
+							loadDiv(exporters);
+						} catch (err) {
+							alert("The audio could not be properly loaded! Due to the strip-aways from viewing metadata that are unhelpful, we cannot provide much info on what exactly failed.");
+							console.log(err.message + err.stack);
 						}
-						data = null;
-						sampleData = null;
-						sampleSkip = 480;
-						sharedBuffer = await audioContext.decodeAudioData(event.target.result);
-						const channel = sharedBuffer.getChannelData(Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1);
-						exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
-						loadDiv(exporters);
-					} catch (err) {
-						alert("The audio could not be properly loaded! Due to the strip-aways from viewing metadata that are unhelpful, we cannot provide much info on what exactly failed.");
-						console.log(err.message + err.stack);
 					}
+					fileReader.readAsArrayBuffer(firstFile);
 				}
-				fileReader.readAsArrayBuffer(firstFile);
 			}
 			tick();
 		</script>
