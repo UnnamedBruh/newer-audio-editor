@@ -98,7 +98,7 @@ async function decodeLSAC(blob) { // This function was written using a generativ
 			// We'll try to spread the differences around the avg
 
 			// We'll pick some differences to apply:
-			const diff = 20; // arbitrary small difference for variation
+			const diff = Math.max(4, avg * 0.1);  // Scales with loudness
 
 			// Reconstruct samples (roughly):
 			// Indexing j: s0, s1, s2, s3
