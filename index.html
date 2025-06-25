@@ -317,11 +317,11 @@
 						sampleSkip = 480;
 						const result = await decodeLSAC(firstFile);
 						exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
-						sharedBuffer = audioContext.createBufferSource();
-						const b = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
-						sharedBuffer.buffer = b;
+						src = audioContext.createBufferSource();
+						sharedBuffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
+						src.buffer = b;
 						const len = result.samples.length;
-						const bufferData = b.getChannelData(0);
+						const bufferData = sharedBuffer.getChannelData(0);
 						const samples = result.samples;
 						for (let i = 0; i < len; i++) {
 							bufferData[i] = samples[i];
