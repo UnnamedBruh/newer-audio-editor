@@ -133,12 +133,6 @@ async function decodeLSAC(blob) { // This function was written using a generativ
 			output[i * 4 + 2] = Math.min(255, Math.max(0, Math.round(s2)));
 			output[i * 4 + 3] = Math.min(255, Math.max(0, Math.round(s3)));
 		}
-
-		output = uint8ToFloat32(output);
-		for (let i = 0; i < outputLength; i++) {
-			output[i] = interpolate(output[Math.floor(i / 4) * 4], Math.ceil(i / 4) * 4, (i / 4) % 1);
-		}
-
-		resolve({ samples: output, sampleRate });
+		resolve({ samples: uint8ToFloat32(output), sampleRate });
 	});
 }
