@@ -55,7 +55,7 @@ function uint8ToFloat32(uint8array) {
 	return float32;
 }
 
-async function decodeLSAC(blob) { // This function was written using a generative model. Perfection is not guaranteed.
+async function decodeLSAC(blob) { // This function was written using a generative model, then slightly changed for refining. Perfection is not guaranteed.
 	return new Promise(async (resolve, reject) => {
 		const arrayBuffer = await blob.arrayBuffer();
 		const header = new DataView(arrayBuffer, 0, 12);
@@ -90,8 +90,8 @@ async function decodeLSAC(blob) { // This function was written using a generativ
 			let avg = byte & 0x3F;
 
 			// Reverse the scaling from encode: avg was rounded((sum of 4 samples) / 4) / 4
-			// So, multiply back by 4 * 4 = 16
-			avg = avg * 16;
+			// So, multiply back by 4 = original sample
+			avg = avg * 4;
 
 			// Now we reconstruct the 4 samples:
 			// Using the bool1, bool2 flags, guess which pair has the biggest difference
