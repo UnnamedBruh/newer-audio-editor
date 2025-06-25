@@ -325,7 +325,6 @@
 						}
 						exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
 						loadDiv(exporters);
-						src.connect(gainNode);
 					} catch (err) {
 						alert("The audio could not be properly loaded! Due to unhelpful strip-aways from viewing metadata, we cannot provide much info on what exactly failed.");
 						console.log(err.message + err.stack);
