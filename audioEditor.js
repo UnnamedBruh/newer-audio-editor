@@ -181,6 +181,7 @@ effects["distort"] = function(buffer, perc, method) {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
 				x = Math.abs(z[i]);
+				if (x === 0) continue;
 				z[i] = interpolate(x, x / (Math.floor(x * 8) / 8) * Math.sign(z[i]), perc);
 			}
 		}
