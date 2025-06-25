@@ -47,7 +47,7 @@ function encodeLSAC(uint8a = new Uint8Array(0), sampleRate = 48000) {
 	return new Blob([header.buffer, audioData.buffer], { type: "" });
 }
 
-function decodeLSAC(blob) { // This function was written using a generative model. Perfection is not guaranteed.
+async function decodeLSAC(blob) { // This function was written using a generative model. Perfection is not guaranteed.
 	return new Promise(async (resolve, reject) => {
 		const arrayBuffer = await blob.arrayBuffer();
 		const header = new DataView(arrayBuffer, 0, 12);
