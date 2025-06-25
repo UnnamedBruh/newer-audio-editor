@@ -46,7 +46,7 @@ const effectsList = [
 	[
 		"Distort",
 		"Distorts the audio using a mathematical formula. Simple, but still achieves wacky results.",
-		'Apply percentage: <input id="distort0" type="number" min="0" max="100" step="1" value="100" placeholder="Hover for info" title="How much this effect is applied. For example, 50% means the audio is half-distorted, 100% means the audio is fully distorted, and 0% means this effect won\'t apply.">%<br>Blending Method: <select id="distort1"><option value="s">sqrt(n)</option><option value="c">cbrt(n)</option><option value="sq">n * n</option><option value="h">n / (floor(n * 8) / 8)</option></select>',
+		'Apply percentage: <input id="distort0" type="number" min="0" max="100" step="1" value="100" placeholder="Hover for info" style="width: 100px" title="How much this effect is applied. For example, 50% means the audio is half-distorted, 100% means the audio is fully distorted, and 0% means this effect won\'t apply.">%<br>Blending Method: <select id="distort1"><option value="s">sqrt(n)</option><option value="c">cbrt(n)</option><option value="sq">n * n</option><option value="h">n / (floor(n * 8) / 8)</option></select>',
 		2,
 		"distort",
 		[Number, identifier]
