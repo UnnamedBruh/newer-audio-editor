@@ -35,7 +35,7 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		this.encoding = bits === 8 ? (audioData instanceof Int16Array ? "ulaw" : "pcm8") : (bits === 16 ? "pcm16" : bits === 32 ? (audioData instanceof Float32Array ? "pcmf32" : "pcm32") : "pcm16");
 		this.bits = bits;
 	}
-	convertToWav(metadata) {
+	convertToWav(metadata = {}) {
 		const numChannels = this.channels, len = this.audioData.length;
 		const len2 = len * (this.bits / 8);
 
