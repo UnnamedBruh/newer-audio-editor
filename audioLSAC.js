@@ -77,7 +77,7 @@ async function decodeLSAC(blob) { // This function was written using a generativ
 
 		// We'll reconstruct the original samples into a Uint8Array with length = compressedLength * 4
 		const outputLength = compressedLength * 4;
-		const output = new Uint8Array(outputLength);
+		let output = new Uint8Array(outputLength);
 
 		for (let i = 0; i < compressedLength; i++) {
 			const byte = audioData[i];
@@ -134,6 +134,11 @@ async function decodeLSAC(blob) { // This function was written using a generativ
 			output[i * 4 + 3] = Math.min(255, Math.max(0, Math.round(s3)));
 		}
 
-		resolve({ samples: uint8ToFloat32(output), sampleRate });
+		output = uint8ToFloat32(output);
+		for (let i = 0; i < outputLength; i++) {
+			output[i] = interpolate(output[Math.floor(i / 4) * 4], Math.ceil(i / 4) * 4, (i / 4) % 1);
+		}
+
+		resolve({ samples: output, sampleRate });
 	});
 }
