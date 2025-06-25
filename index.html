@@ -294,7 +294,7 @@
 					const blob = encodeLSAC(exporters.audioData, exporters.sampleRate);
 
 					const link = document.createElement("a");
-					link.download = (name || "exportedAudio") + ".wav";
+					link.download = "exportedAudio.wav";
 					link.href = URL.createObjectURL(blob);
 					link.click();
 					link.remove();
