@@ -319,7 +319,7 @@
 						exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
 						src = audioContext.createBufferSource();
 						sharedBuffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
-						src.buffer = b;
+						src.buffer = sharedBuffer;
 						const len = result.samples.length;
 						const bufferData = sharedBuffer.getChannelData(0);
 						const samples = result.samples;
