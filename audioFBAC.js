@@ -85,6 +85,15 @@ function encodeFBAC(input = new Uint8Array(0), sampleRate = 48000, framesPerChun
 	return buffer;
 }
 
+function uint8ToFloat32(uint8Array) {
+	const floatArray = new Float32Array(uint8Array.length);
+	for(let i = 0; i < uint8Array.length; i++) {
+		floatArray[i] = (uint8Array[i] / 127.5) - 1;
+	}
+	return floatArray;
+}
+
+
 function decodeFBAC(buffer) {
 	const view = new DataView(buffer.buffer);
 	
@@ -137,6 +146,6 @@ function decodeFBAC(buffer) {
 	return {
 		sampleRate,
 		framesPerChunk,
-		audioData: output
+		audioData: uint8ToFloat32(output)
 	};
 }
