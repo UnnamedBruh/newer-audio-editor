@@ -84,3 +84,59 @@ function encodeFBAC(input = new Uint8Array(0), sampleRate = 48000, framesPerChun
 
 	return buffer;
 }
+
+function decodeFBAC(buffer) {
+	const view = new DataView(buffer.buffer);
+	
+	// Step 1: Validate magic bytes "FBAC"
+	if (
+		view.getUint8(0) !== 70 || // 'F'
+		view.getUint8(1) !== 66 || // 'B'
+		view.getUint8(2) !== 65 || // 'A'
+		view.getUint8(3) !== 67	// 'C'
+	) {
+		throw new Error("Invalid FBAC header");
+	}
+	
+	const totalSize = view.getUint32(4);
+	const sampleRate = view.getUint32(8);
+	const uniqueFrameCount = view.getUint32(12);
+	
+	const headerSize = 16;
+	const framesPerChunk = 64; // must match encoder
+	
+	const chunkByteSize = framesPerChunk;
+	const framePoolSize = uniqueFrameCount * chunkByteSize;
+	
+	// Step 2: Read unique frame chunks
+	let offset = headerSize;
+	const uniqueChunks = new Array(uniqueFrameCount);
+	for (let i = 0; i < uniqueFrameCount; i++) {
+		uniqueChunks[i] = buffer.slice(offset, offset + chunkByteSize);
+		offset += chunkByteSize;
+	}
+	
+	// Step 3: Read frame reference table (remaining bytes)
+	const frameRefsCount = (totalSize - offset) / 2; // 2 bytes per frame ref
+	const frameRefs = new Uint16Array(frameRefsCount);
+	
+	for (let i = 0; i < frameRefsCount; i++) {
+		frameRefs[i] = view.getUint16(offset, true);
+		offset += 2;
+	}
+	
+	// Step 4: Reconstruct full output by concatenating frames in order
+	const outputLength = frameRefsCount * chunkByteSize;
+	const output = new Uint8Array(outputLength);
+	
+	for (let i = 0; i < frameRefsCount; i++) {
+		const chunkId = frameRefs[i];
+		output.set(uniqueChunks[chunkId], i * chunkByteSize);
+	}
+	
+	return {
+		sampleRate,
+		framesPerChunk,
+		audioData: output
+	};
+}
