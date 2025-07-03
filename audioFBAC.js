@@ -16,20 +16,17 @@ function encodeFBAC(input = new Uint8Array(0), sampleRate = 48000, framesPerChun
 		input = arr;
 	}
 
-	const totalFrames = Math.ceil(input.length / framesPerChunk);
 	const uniqueChunks = new Map(); // hash -> { id, chunk }
 	const frameRefs = [];
-
 	let chunkId = 0;
 
 	// Step 1: Build unique frame set and index list
 	for (let i = 0; i < input.length; i += framesPerChunk) {
-		const chunk = input.slice(i, i + framesPerChunk);
+		let chunk = input.slice(i, i + framesPerChunk);
 		if (chunk.length < framesPerChunk) {
-			// Pad with zeros
 			const padded = new Uint8Array(framesPerChunk);
 			padded.set(chunk);
-			chunk.set(padded);
+			chunk = padded;
 		}
 
 		const hash = fingerprintFBAC(chunk);
@@ -39,14 +36,14 @@ function encodeFBAC(input = new Uint8Array(0), sampleRate = 48000, framesPerChun
 		frameRefs.push(uniqueChunks.get(hash).id);
 	}
 
-	// Step 2: Prepare buffers
-	const headerSize = 12;
-	const frameTableSize = frameRefs.length * 2; // 2 bytes per frame ref
+	// Step 2: Now calculate sizes correctly
+	const headerSize = 16;
 	const uniqueFrameCount = uniqueChunks.size;
 	const chunkByteSize = framesPerChunk;
 	const framePoolSize = uniqueFrameCount * chunkByteSize;
+	const frameTableSize = frameRefs.length * 2;
 
-	const totalSize = headerSize + 4 + framePoolSize + frameTableSize; // +4 = uniqueFrameCount
+	const totalSize = headerSize + framePoolSize + frameTableSize;
 
 	const buffer = new Uint8Array(totalSize);
 	const view = new DataView(buffer.buffer);
@@ -57,26 +54,22 @@ function encodeFBAC(input = new Uint8Array(0), sampleRate = 48000, framesPerChun
 	view.setUint8(2, 65); // A
 	view.setUint8(3, 67); // C
 
-	view.setUint32(4, totalSize);     // Total file size
-	view.setUint32(8, sampleRate);    // Sample rate
+	view.setUint32(4, totalSize, false);      // total size
+	view.setUint32(8, sampleRate, false);     // sample rate
+	view.setUint32(12, uniqueFrameCount, false); // unique chunks
 
-	// Step 4: Write number of unique frames
-	view.setUint32(12, uniqueFrameCount); // offset 12
-
-	// Step 5: Write unique frame pool
+	// Step 4: Write unique frame pool
 	let offset = 16;
 	const idToChunk = new Array(uniqueFrameCount);
-
 	for (const { id, chunk } of uniqueChunks.values()) {
 		idToChunk[id] = chunk;
 	}
-
 	for (let i = 0; i < idToChunk.length; i++) {
 		buffer.set(idToChunk[i], offset);
 		offset += chunkByteSize;
 	}
 
-	// Step 6: Write frame reference table
+	// Step 5: Write frame reference table
 	for (let i = 0; i < frameRefs.length; i++) {
 		view.setUint16(offset, frameRefs[i], true); // little-endian
 		offset += 2;
