@@ -137,7 +137,6 @@ async function decodeFBAC(buffer) {
 	
 	return {
 		sampleRate,
-		framesPerChunk,
-		audioData: uint8ToFloat32(output)
+		samples: uint8ToFloat32(output)
 	};
 }
