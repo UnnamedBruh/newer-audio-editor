@@ -75,7 +75,7 @@ function encodeFBAC(input = new Uint8Array(0), sampleRate = 48000, framesPerChun
 		offset += 2;
 	}
 
-	return buffer;
+	return Blob([buffer.buffer], { type: "" });
 }
 
 function uint8ToFloat32(uint8Array) {
