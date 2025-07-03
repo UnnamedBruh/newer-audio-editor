@@ -19,11 +19,12 @@
 		<script src="audioExporter.js"></script>
 		<script src="audioEffects.js"></script>
 		<script src="audioLSAC.js"></script>
+		<script src="audioFBAC.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
-		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .mp4, .3gp, .3g2, .webm, .lsac">
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .mp4, .3gp, .3g2, .webm, .lsac, .fbac">
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
@@ -300,12 +301,24 @@
 					link.click();
 					link.remove();
 				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as FBAC (Frame-Based Audio Codec)";
+				exportBtn.onclick = function() {
+					const blob = encodeFBAC(exporters.audioData, exporters.sampleRate);
+
+					const link = document.createElement("a");
+					link.download = "exportedAudio.fbac";
+					link.href = URL.createObjectURL(blob);
+					link.click();
+					link.remove();
+				}
 				ed = v;
 			}
 			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
 				const firstFile = eve.target.files[0];
-				if (firstFile.name.endsWith(".lsac")) {
+				if (firstFile.name.endsWith(".lsac") || firstFile.name.endsWith(".fbac")) {
 					try {
 						exporters = null;
 						if (ed) {
@@ -316,7 +329,8 @@
 						data = null;
 						sampleData = null;
 						sampleSkip = 480;
-						const result = await decodeLSAC(firstFile);
+						let result = 0;
+						if (firstFile.name.endsWith(".lsac")) result = await decodeLSAC(firstFile); else result = decodeFBAC(firstFile);
 						sharedBuffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
 						const len = result.samples.length;
 						const bufferData = sharedBuffer.getChannelData(0);
