@@ -86,8 +86,8 @@ function uint8ToFloat32(uint8Array) {
 	return floatArray;
 }
 
-function decodeFBAC(buffer) {
-	const view = new DataView(buffer.arrayBuffer);
+async function decodeFBAC(buffer) {
+	const view = new DataView(await buffer.arrayBuffer());
 	
 	// Step 1: Validate magic bytes "FBAC"
 	if (
