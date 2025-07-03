@@ -330,7 +330,7 @@
 						sampleData = null;
 						sampleSkip = 480;
 						let result = 0;
-						if (firstFile.name.endsWith(".lsac")) result = await decodeLSAC(firstFile); else result = decodeFBAC(firstFile);
+						if (firstFile.name.endsWith(".lsac")) result = await decodeLSAC(firstFile); else result = await decodeFBAC(firstFile);
 						sharedBuffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
 						const len = result.samples.length;
 						const bufferData = sharedBuffer.getChannelData(0);
