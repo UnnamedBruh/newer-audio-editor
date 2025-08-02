@@ -77,9 +77,9 @@
 				if (timeline && playing) {
 					const x = Date.now() - whenPlayed;
 					if (sampleSkip === 1) {
-						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate + bbb - window.pageXOffset);
+						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb - window.pageXOffset);
 					} else {
-						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate + bbb);
+						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb);
 					}
 				}
 				requestAnimationFrame(() => tick());
@@ -94,7 +94,7 @@
 				src.buffer = sharedBuffer;
 				src.connect(gainNode);
 				src.start(0, startAt);
-				whenPlayed = Date.now();
+				whenPlayed = Date.now() - startAt * 1000;
 				playing = true;
 				if (timeline) timeline.setAttribute("fill", "red");
 				src.onended = function() {
