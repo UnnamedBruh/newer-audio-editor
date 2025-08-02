@@ -77,9 +77,9 @@
 				if (timeline && playing) {
 					const x = Date.now() - whenPlayed;
 					if (sampleSkip === 1) {
-						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb - window.pageXOffset);
+						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate + bbb - window.pageXOffset);
 					} else {
-						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb);
+						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate + bbb);
 					}
 				}
 				requestAnimationFrame(() => tick());
