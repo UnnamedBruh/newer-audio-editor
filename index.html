@@ -149,7 +149,7 @@
 				x.onclick = function(eve) {
 					const clickX = eve.clientX - xOff + window.pageXOffset;
 					const relativeX = clickX / x.clientWidth;
-					startAt = relativeX * audioBuffer.duration; // Time in seconds
+					startAt = relativeX * sharedBuffer.duration; // Time in seconds
 
 					playSound();
 				}
