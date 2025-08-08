@@ -132,3 +132,181 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		return offset;
 	}
 };
+
+// Helper: convert float [-1,1] to 16-bit signed integer
+function floatToInt16(sample) {
+	return Math.max(-1, Math.min(1, sample)) * 0x7FFF | 0;
+}
+
+// Helper: convert float [-1,1] to unsigned 8-bit PCM (0..255)
+function floatToUint8(sample) {
+	return Math.round((Math.max(-1, Math.min(1, sample)) + 1) * 127.5) & 0xFF;
+}
+
+// μ-law expects 16-bit signed ints. Reuse your linearToMuLaw but ensure you pass int16.
+function floatToMuLawByte(sample) {
+	const int16 = floatToInt16(sample);
+	return linearToMuLaw(int16);
+}
+
+// Build the LIST/INFO metadata as a Uint8Array using UTF-8 encoding
+function buildInfoListChunk(metadataObj) {
+	const enc = new TextEncoder();
+	// build tag payloads
+	const tagChunks = [];
+	let payloadLength = 4; // "INFO" (4 bytes)
+	for (const tag in metadataObj) {
+		const valueStr = String(metadataObj[tag] ?? "");
+		const valueBytes = enc.encode(valueStr);
+		const valueLen = valueBytes.length;
+		// chunk: 4 bytes tag + 4 bytes size + value bytes + optional pad
+		const pad = (valueLen % 2 === 1) ? 1 : 0; // pad to even
+		const chunkLen = 4 + 4 + valueLen + pad;
+		const chunk = new Uint8Array(chunkLen);
+		// tag
+		chunk[0] = tag.charCodeAt(0);
+		chunk[1] = tag.charCodeAt(1);
+		chunk[2] = tag.charCodeAt(2);
+		chunk[3] = tag.charCodeAt(3);
+		// size (little-endian)
+		const size = valueLen;
+		chunk[4] = size & 0xFF;
+		chunk[5] = (size >> 8) & 0xFF;
+		chunk[6] = (size >> 16) & 0xFF;
+		chunk[7] = (size >> 24) & 0xFF;
+		// value bytes
+		chunk.set(valueBytes, 8);
+		// pad if necessary (already zeroed)
+		tagChunks.push(chunk);
+		payloadLength += chunkLen;
+	}
+	if (payloadLength === 4) return null; // no INFO tags present
+
+	// build LIST chunk: "LIST" + uint32(size) + "INFO" + payload
+	const totalListLen = 4 + 4 + payloadLength; // "LIST" + size + payload
+	const listChunk = new Uint8Array(totalListLen);
+	let o = 0;
+	// "LIST"
+	listChunk[o++] = 0x4C; listChunk[o++] = 0x49; listChunk[o++] = 0x53; listChunk[o++] = 0x54;
+	// size of payload (payloadLength)
+	const payloadSize = payloadLength;
+	listChunk[o++] = payloadSize & 0xFF;
+	listChunk[o++] = (payloadSize >> 8) & 0xFF;
+	listChunk[o++] = (payloadSize >> 16) & 0xFF;
+	listChunk[o++] = (payloadSize >> 24) & 0xFF;
+	// "INFO"
+	listChunk[o++] = 0x49; listChunk[o++] = 0x4E; listChunk[o++] = 0x46; listChunk[o++] = 0x4F;
+	// append tag chunks
+	for (const ch of tagChunks) {
+		listChunk.set(ch, o);
+		o += ch.length;
+	}
+	return listChunk;
+}
+
+AudioExporter.prototype.convertToWav = function(metadata = {}) {
+	const numChannels = this.channels || 1;
+	const samples = this.audioData;
+	const len = samples.length;
+	const bits = this.bits || 32;
+	const bytesPerSample = bits / 8;
+	
+	// Data chunk size (interleaving not needed for mono assumption; adjust for multi-channel)
+	const dataChunkSize = len * bytesPerSample;
+
+	// Build metadata LIST chunk (optional)
+	const listChunk = buildInfoListChunk(metadata);
+	const listChunkSizeBytes = listChunk ? listChunk.length : 0;
+
+	// fmt chunk size for PCM is 16
+	const fmtChunkSize = 16;
+	const fmtChunkTotal = 8 + fmtChunkSize; // "fmt " + size + payload
+	const dataChunkTotal = 8 + dataChunkSize; // "data" + size + payload
+	const listChunkTotal = listChunk ? (listChunkSizeBytes) : 0; // list chunk already includes "LIST"+size
+
+	// RIFF chunk size = 4 (WAVE) + fmtChunkTotal + dataChunkTotal + listChunkTotal
+	const riffChunkSize = 4 + fmtChunkTotal + dataChunkTotal + listChunkTotal;
+	const totalSize = 8 + riffChunkSize; // total file size = 8 + riffChunkSize
+
+	const buffer = new ArrayBuffer(totalSize);
+	const view = new DataView(buffer);
+	let offset = 0;
+
+	// RIFF header
+	this.writeString(view, offset, 'RIFF'); offset += 4;
+	view.setUint32(offset, riffChunkSize, true); offset += 4;
+	this.writeString(view, offset, 'WAVE'); offset += 4;
+
+	// fmt chunk
+	this.writeString(view, offset, 'fmt '); offset += 4;
+	view.setUint32(offset, fmtChunkSize, true); offset += 4;
+	// audioFormat: 1 = PCM integer, 3 = IEEE float, 7 = μ-law
+	let audioFormat = 1;
+	if (this.encoding.startsWith("pcmf")) audioFormat = 3;
+	else if (this.encoding === "ulaw") audioFormat = 7;
+	else audioFormat = 1;
+	view.setUint16(offset, audioFormat, true); offset += 2;
+	view.setUint16(offset, numChannels, true); offset += 2;
+	view.setUint32(offset, this.sampleRate, true); offset += 4;
+	view.setUint32(offset, this.sampleRate * numChannels * bytesPerSample, true); offset += 4; // byte rate
+	view.setUint16(offset, numChannels * bytesPerSample, true); offset += 2; // block align
+	view.setUint16(offset, bits, true); offset += 2;
+
+	// data chunk header
+	this.writeString(view, offset, 'data'); offset += 4;
+	view.setUint32(offset, dataChunkSize, true); offset += 4;
+
+	// write sample data
+	if (audioFormat === 3) { // float
+		if (bits === 32) {
+			for (let i = 0; i < len; i++) {
+				view.setFloat32(offset, samples[i], true);
+				offset += 4;
+			}
+		} else { // 64-bit float
+			for (let i = 0; i < len; i++) {
+				view.setFloat64(offset, samples[i], true);
+				offset += 8;
+			}
+		}
+	} else if (this.encoding === "ulaw") {
+		// convert to mu-law bytes
+		for (let i = 0; i < len; i++) {
+			const b = floatToMuLawByte(samples[i]);
+			view.setUint8(offset, b);
+			offset += 1;
+		}
+	} else { // PCM integer
+		if (bits === 8) {
+			for (let i = 0; i < len; i++) {
+				const b = floatToUint8(samples[i]);
+				view.setUint8(offset, b);
+				offset += 1;
+			}
+		} else if (bits === 16) {
+			for (let i = 0; i < len; i++) {
+				const s = floatToInt16(samples[i]);
+				view.setInt16(offset, s, true);
+				offset += 2;
+			}
+		} else if (bits === 32) {
+			// PCM 32-bit integer (rare); convert floats to 32-bit signed ints
+			for (let i = 0; i < len; i++) {
+				const v = Math.max(-1, Math.min(1, samples[i]));
+				const i32 = Math.round(v * 0x7FFFFFFF);
+				view.setInt32(offset, i32, true);
+				offset += 4;
+			}
+		}
+	}
+
+	// append LIST chunk bytes if present
+	if (listChunk) {
+		const final = new Uint8Array(buffer);
+		final.set(listChunk, offset);
+		// offset += listChunk.length; // not used further
+	}
+
+	return new Blob([buffer], { type: 'audio/wav' });
+};
+
