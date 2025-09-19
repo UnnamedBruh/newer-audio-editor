@@ -53,10 +53,10 @@ const effectsList = [
 	],
 	[
 		"Echo",
-		"explain this latwr",
-		'Echo Volume: <input id="echo0" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the echoing audio is.">%<br># Of Echoes: <input id="echo1" type="number" min="1" step="1" value="2" placeholder="Hover for info" style="width: 100px" title="How many of the same audio will be heard after a certain period."><br>Echo Delay: <input id="echo1" type="number" min="0" step="0.01" value="0.5" placeholder="Hover for info" style="width: 100px" title="An echo will be added after a second.">',
-		2,
+		"Repeats the audio N times, each repetition delaying itself after a specified time relative to the previous one.",
+		'Echo Volume: <input id="echo0" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the echoing audio is.">%<br># Of Echoes: <input id="echo1" type="number" min="1" step="1" value="2" placeholder="Hover for info" style="width: 100px" title="How many of the same audio will be heard after a certain period."><br>Echo Delay: <input id="echo2" type="number" min="0" step="0.01" value="0.5" placeholder="Hover for info" style="width: 100px" title="How long the delay is before the audio repeats itself, but at a quieter volume."><br>Echo Volume Multiplier: <input id="echo3" type="number" min="0" step="0.01" value="0.5" placeholder="Hover for info" style="width: 100px" title="How loud or quiet each repetition is, relative to the previous one.">%',
+		4,
 		"echo",
-		[Number, Number]
+		[Number, Number, Number, Number]
 	]
 ];
