@@ -219,12 +219,13 @@ effects["echo"] = function(buffer, volume, echoes, delay, volumeGainer) {
 	let vol = volume;
 	let k = 0;
 
-	if (volume === 1) {
+	if (volume === 1 && volumeGainer === 1) {
 		for (let i = 0; i < echoes; i++) {
 			if (delayAudio > v) break;
 			for (let j = delayAudio; j < v; j++, k++) {
 				audioPointer[j] += newData[k];
 			}
+			k = 0;
 			delayAudio += delay;
 		}
 	} else if (volumeGainer === 1) {
@@ -233,6 +234,7 @@ effects["echo"] = function(buffer, volume, echoes, delay, volumeGainer) {
 			for (let j = delayAudio; j < v; j++, k++) {
 				audioPointer[j] += newData[k] * volume;
 			}
+			k = 0;
 			delayAudio += delay;
 		}
 	} else {
@@ -241,6 +243,7 @@ effects["echo"] = function(buffer, volume, echoes, delay, volumeGainer) {
 			for (let j = delayAudio; j < v; j++, k++) {
 				audioPointer[j] += newData[k] * vol;
 			}
+			k = 0;
 			delayAudio += delay;
 			vol = vol * volumeGainer;
 		}
