@@ -50,5 +50,13 @@ const effectsList = [
 		2,
 		"distort",
 		[Number, identifier]
+	],
+	[
+		"Echo",
+		"explain this latwr",
+		'Echo Volume: <input id="echo0" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How.">%<br>Blending Method: <select id="distort1"><option value="s">sqrt(n)</option><option value="c">cbrt(n)</option><option value="sq">n * n</option><option value="h">n / (floor(n * 8) / 8)</option></select>',
+		2,
+		"echo",
+		[Number, Number]
 	]
 ];
