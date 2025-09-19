@@ -54,7 +54,7 @@ const effectsList = [
 	[
 		"Echo",
 		"explain this latwr",
-		'Echo Volume: <input id="echo0" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How.">%<br>Blending Method: <select id="distort1"><option value="s">sqrt(n)</option><option value="c">cbrt(n)</option><option value="sq">n * n</option><option value="h">n / (floor(n * 8) / 8)</option></select>',
+		'Echo Volume: <input id="echo0" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the echoing audio is.">%<br># Of Echoes: <input id="echo1" type="number" min="1" step="1" value="2" placeholder="Hover for info" style="width: 100px" title="How many of the same audio will be heard after a certain period."><br>Echo Delay: <input id="echo1" type="number" min="0" step="0.01" value="0.5" placeholder="Hover for info" style="width: 100px" title="An echo will be added after a second.">',
 		2,
 		"echo",
 		[Number, Number]
