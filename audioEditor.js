@@ -201,6 +201,7 @@ effects["echo"] = function(buffer, volume, echoes, delay, volumeGainer) {
 		return;
 	}
 	volume = volume * 0.01;
+	volumeGainer = volumeGainer * 0.01;
 	delay = round(delay * buffer.sampleRate);
 
 	const v = buffer.audioData.length;
