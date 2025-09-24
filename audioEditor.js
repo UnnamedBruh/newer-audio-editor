@@ -1,4 +1,4 @@
-const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round;
+const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round, tru = Math.trunc;
 
 function muLawCompress(a,t=255){return sign(a)*log1p(t*abs(a))/log1p(t)}function muLawExpand(a,t=255){return sign(a)*(1/t)*(pow(1+t,abs(a))-1)}function muLawQuantize(a,t=256,n=255){const u=muLawCompress(a,n);return muLawExpand(floor((u+1)/2*(t-1))/(t-1)*2-1,n)}
 
@@ -72,7 +72,7 @@ effects["quantize"] = function(buffer, bits, which) {
 	bits = bits - 1;
 	const precision = Math.pow(2, -bits), n = Math.pow(2, bits);
 	const len = buffer.audioData.length, pointer = buffer.audioData;
-	const trunc = which === "r" ? round : (which === "t" ? trunc : (which === "f" ? floor : ceil));
+	const trunc = which === "r" ? round : (which === "t" ? tru : (which === "f" ? floor : ceil));
 
 	if (which === "fl") {
 		if (f16round) {
