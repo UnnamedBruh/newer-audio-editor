@@ -146,13 +146,14 @@
 					bbb = 0;
 					playSound();
 				}
-				x.onclick = function(eve) {
-					const clickX = eve.clientX - xOff + window.pageXOffset;
+				function playWithTimeline(eve) {
+					const clickX = eve.clientX - xOff + window.scrollX;
 					const relativeX = clickX / x.clientWidth;
 					startAt = relativeX * sharedBuffer.duration; // Time in seconds
 
 					playSound();
 				}
+				x.onclick = playWithTimeline;
 				const label3 = document.createElement("a");
 				const co = document.createElement("input");
 				label3.textContent = "View at Sample-Level";
@@ -243,6 +244,7 @@
 							x.setAttribute("width", exp.audioData.length / sampleSkip);
 							v.style.width = (exp.audioData.length / sampleSkip) + "px";
 							n.setAttribute("d", data);
+							x.onclick = playWithTimeline; // Reset playing function, just in case browsers like Chrome misbehave every time an effect is applied
 						}
 					}
 					opt.oninput = function() {
