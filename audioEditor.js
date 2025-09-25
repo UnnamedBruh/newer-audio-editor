@@ -196,7 +196,7 @@ effects["distort"] = function(buffer, perc, method) {
 			for (let i = 0; i < v; i++) {
 				x = abs(z[i]);
 				x = pow(x, x);
-				z[i] = interpolate(z[i], x * sign(z[i])), perc);
+				z[i] = interpolate(z[i], x * sign(z[i]), perc);
 			}
 		} else {
 			let x = 0;
