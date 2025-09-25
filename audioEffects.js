@@ -46,7 +46,7 @@ const effectsList = [
 	[
 		"Distort",
 		"Distorts the audio using a mathematical formula. Simple, but still achieves wacky results.",
-		'Apply percentage: <input id="distort0" type="number" min="0" max="100" step="1" value="100" placeholder="Hover for info" style="width: 100px" title="How much this effect is applied. For example, 50% means the audio is half-distorted, 100% means the audio is fully distorted, and 0% means this effect won\'t apply.">%<br>Blending Method: <select id="distort1"><option value="s">sqrt(n)</option><option value="c">cbrt(n)</option><option value="sq">n * n</option><option value="h">n / (floor(n * 8) / 8)</option></select>',
+		'Apply percentage: <input id="distort0" type="number" min="0" max="100" step="1" value="100" placeholder="Hover for info" style="width: 100px" title="How much this effect is applied. For example, 50% means the audio is half-distorted, 100% means the audio is fully distorted, and 0% means this effect won\'t apply.">%<br>Blending Method: <select id="distort1"><option value="s">sqrt(n)</option><option value="c">cbrt(n)</option><option value="sq">n * n</option><option value="h">n / (floor(n * 8) / 8)</option><option value="xpo">n^n (n to the power of n)</option></select>',
 		2,
 		"distort",
 		[Number, identifier]
@@ -54,9 +54,17 @@ const effectsList = [
 	[
 		"Echo",
 		"Repeats the audio N times, each repetition delaying itself after a specified time relative to the previous one.",
-		'Echo Volume: <input id="echo0" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the echoing audio is.">%<br># Of Echoes: <input id="echo1" type="number" min="1" step="1" value="2" placeholder="Hover for info" style="width: 100px" title="How many of the same audio will be heard after a certain period."><br>Echo Delay: <input id="echo2" type="number" min="0" step="0.01" value="0.5" placeholder="Hover for info" style="width: 100px" title="How long the delay is before the audio repeats itself, but at a quieter volume."><br>Echo Volume Multiplier: <input id="echo3" type="number" min="0" step="0.01" value="0.5" placeholder="Hover for info" style="width: 100px" title="How loud or quiet each repetition is, relative to the previous one.">%',
+		'Echo Volume: <input id="echo0" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the echoing audio is.">%<br># Of Echoes: <input id="echo1" type="number" min="1" step="1" value="2" placeholder="Hover for info" style="width: 100px" title="How many of the same audio will be heard after a certain period."><br>Echo Delay: <input id="echo2" type="number" min="0" step="0.01" value="0.5" placeholder="Hover for info" style="width: 100px" title="How long the delay is before the audio repeats itself during playback."><br>Echo Volume Multiplier: <input id="echo3" type="number" min="0" step="0.01" value="50" placeholder="Hover for info" style="width: 100px" title="How loud or quiet each repetition is, relative to the previous one.">%',
 		4,
 		"echo",
 		[Number, Number, Number, Number]
+	],
+	[
+		"Infinite Echo",
+		"Plays back the audio infinitely. You can see its similarities by selecting the \"Echo\" effect.",
+		'Echo Volume & Volume Multiplier: <input id="echo_arbr0" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the echoing audio is.">%<br>Echo Delay: <input id="echo_arbr1" type="number" min="0" step="0.01" value="0.5" placeholder="Hover for info" style="width: 100px" title="How long the delay is before the audio repeats itself during playback.">',
+		2,
+		"echo_arbr",
+		[Number, Number]
 	]
 ];
