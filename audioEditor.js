@@ -159,6 +159,13 @@ effects["distort"] = function(buffer, perc, method) {
 				x = abs(z[i]);
 				z[i] = x * x * sign(z[i]);
 			}
+		} else if (method === "xpo") {
+			let x = 0;
+			for (let i = 0; i < v; i++) {
+				x = abs(z[i]);
+				x = pow(x, x);
+				z[i] = x * sign(z[i]);
+			}
 		} else {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
@@ -168,6 +175,7 @@ effects["distort"] = function(buffer, perc, method) {
 			}
 		}
 	} else {
+		if (perc === 0) return;
 		perc = perc / 100;
 		if (method === "s") {
 			for (let i = 0; i < v; i++) {
@@ -183,6 +191,13 @@ effects["distort"] = function(buffer, perc, method) {
 				x = abs(z[i]);
 				z[i] = interpolate(x, x * x * sign(z[i]), perc);
 			}
+		} else if (method === "xpo") {
+			let x = 0;
+			for (let i = 0; i < v; i++) {
+				x = abs(z[i]);
+				x = pow(x, x);
+				z[i] = interpolate(z[i], x * sign(z[i])), perc);
+			}
 		} else {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
@@ -197,14 +212,18 @@ effects["distort"] = function(buffer, perc, method) {
 effects["echo"] = function(buffer, volume, echoes, delay, volumeGainer) {
 	if (echoes < 1 || volume === 0 || delay < 0 || volumeGainer <= 0) return;
 	if (delay === 0) {
-		echo["gain"](buffer, 1 + Math.pow(volume * echoes, -volumeGainer));
+		effects["gain"](buffer, 1 + Math.pow(volume * echoes, -volumeGainer));
+		return;
+	}
+	const v = buffer.audioData.length;
+	if (volume === volumeGainer && v < echoes * delay) {
+		effects["echo_arbr"](buffer, volume, delay);
 		return;
 	}
 	volume = volume * 0.01;
 	volumeGainer = volumeGainer * 0.01;
 	delay = round(delay * buffer.sampleRate);
 
-	const v = buffer.audioData.length;
 	let newData;
 	if (!Object.prototype.hasOwnProperty.call(buffer.audioData, "slice")) {
 		newData = buffer.audioData instanceof Float32Array ? new Float32Array(round(v)) : new Float64Array(round(v));
@@ -246,6 +265,33 @@ effects["echo"] = function(buffer, volume, echoes, delay, volumeGainer) {
 			k = 0;
 			delayAudio += delay;
 			vol = vol * volumeGainer;
+		}
+	}
+}
+
+effects["echo_arbr"] = function(buffer, volume, delay) {
+	if (volume === 0 || delay < 0) return;
+	volume = volume * 0.01;
+	if (delay === 0) {
+		effects["gain"](buffer, 1 + volume);
+		return;
+	}
+	delay = round(delay * buffer.sampleRate);
+
+	const v = buffer.audioData.length;
+	const audioPointer = buffer.audioData;
+
+	let k = 0;
+
+	if (volume === 1) {
+		for (let i = delay; i < v; i++) {
+			audioPointer[i] += audioPointer[k];
+			k++;
+		}
+	} else {
+		for (let i = delay; i < v; i++) {
+			audioPointer[i] += audioPointer[k] * volume;
+			k++;
 		}
 	}
 }
