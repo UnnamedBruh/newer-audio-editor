@@ -1,6 +1,8 @@
 const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round, tru = Math.trunc;
 
-function muLawCompress(a,t=255){return sign(a)*log1p(t*abs(a))/log1p(t)}function muLawExpand(a,t=255){return sign(a)*(1/t)*(pow(1+t,abs(a))-1)}function muLawQuantize(a,t=256,n=255){const u=muLawCompress(a,n);return muLawExpand(floor((u+1)/2*(t-1))/(t-1)*2-1,n)}
+const muLawCache = Object.create(null);
+
+function muLawCompress(a,t=255){return sign(a)*log1p(t*abs(a))/log1p(t)}function muLawExpand(a,t=255){return sign(a)*(1/t)*(pow(1+t,abs(a))-1)}function muLawQuantize(a,t=256,n=255){const x=muLawCache[a];if(x!==undefined)return x;const u=muLawCompress(a,n);const r=muLawExpand(floor((u+1)/2*(t-1))/(t-1)*2-1,n);muLawCache[a]=r;return r}
 
 const effects = Object.create(null);
 
@@ -293,5 +295,14 @@ effects["echo_arbr"] = function(buffer, volume, delay) {
 			audioPointer[i] += audioPointer[k] * volume;
 			k++;
 		}
+	}
+}
+
+effects["noise"] = function(buffer, noiseType, volume) {
+	if (volume === 0) return;
+	volume = volume * 0.01;
+	const len = buffer.audioData.length, data = buffer.audioData;
+	for (let i = 0; i < len; i++) {
+		data[i] += Math.random() * volume;
 	}
 }
