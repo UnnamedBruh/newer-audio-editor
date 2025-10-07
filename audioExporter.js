@@ -1,5 +1,13 @@
 // G.711 μ-law encode: convert 16-bit signed int (linear PCM) to 8-bit μ-law
+// I did NOT write this function! GPT-4.0 Mini wrote this function, but was optimized by me.
+
+const muLawCache = Object.create(null);
+
 function linearToMuLaw(sample) {
+	const chose = muLawCache[sample];
+	if (chose !== undefined) {
+		return chose;
+	}
 	const MU_LAW_MAX = 0x7FFF;
 	const BIAS = 0x84;
 
@@ -19,12 +27,9 @@ function linearToMuLaw(sample) {
 
 	let mantissa = (sample >> (exponent + 3)) & 0x0F;
 	let muLawByte = ~(sign | (exponent << 4) | mantissa);
-	return muLawByte & 0xFF;
-}
-
-function scaEncode(floatData, sampleRate) {
-	const header = new Uint8Array(32);
-	
+	let result = muLawByte & 0xFF;
+	muLawCache[sample] = result;
+	return result;
 }
 
 class AudioExporter { // This class is meant for the original programmer's development, not for public use; implement error handling, and handle other bits if invalid types are expected 
@@ -35,7 +40,7 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		this.encoding = bits === 8 ? (audioData instanceof Int16Array ? "ulaw" : "pcm8") : (bits === 16 ? "pcm16" : bits === 32 ? (audioData instanceof Float32Array ? "pcmf32" : "pcm32") : "pcm16");
 		this.bits = bits;
 	}
-	convertToWav(metadata = {}) {
+	/*convertToWav(metadata = {}) {
 		const numChannels = this.channels, len = this.audioData.length;
 		const len2 = len * (this.bits / 8);
 
@@ -95,7 +100,7 @@ class AudioExporter { // This class is meant for the original programmer's devel
 		const finalArray = new Uint8Array(buffer);
 		finalArray.set(metaArray, offset);
 		return new Blob([view.buffer], { type: 'audio/wav' });
-	}
+	}*/
 	writeString(view, offset, string) {
 		for (let i = 0; i < string.length; i++) {
 			view.setUint8(offset + i, string.charCodeAt(i));
@@ -135,12 +140,12 @@ class AudioExporter { // This class is meant for the original programmer's devel
 
 // Helper: convert float [-1,1] to 16-bit signed integer
 function floatToInt16(sample) {
-	return Math.max(-1, Math.min(1, sample)) * 0x7FFF | 0;
+	return /*Math.max(-1, Math.min(1, */sample/*))*/ * 0x7FFF | 0;
 }
 
 // Helper: convert float [-1,1] to unsigned 8-bit PCM (0..255)
 function floatToUint8(sample) {
-	return Math.round((Math.max(-1, Math.min(1, sample)) + 1) * 127.5) & 0xFF;
+	return Math.round((/*Math.max(-1, Math.min(1, */sample/*))*/ + 1) * 127.5) & 0xFF;
 }
 
 // μ-law expects 16-bit signed ints. Reuse your linearToMuLaw but ensure you pass int16.
@@ -150,58 +155,61 @@ function floatToMuLawByte(sample) {
 }
 
 // Build the LIST/INFO metadata as a Uint8Array using UTF-8 encoding
-function buildInfoListChunk(metadataObj) {
+function buildInfoListChunk(metadataObj = {}) {
+	if (
+		!metadataObj ||
+		typeof metadataObj !== "object" ||
+		Object.keys(metadataObj).length === 0
+	) {
+		// Nothing to encode
+		return null;
+	}
+
+	const tags = Object.keys(metadataObj);
+	if (tags.length === 0) return null;
+
 	const enc = new TextEncoder();
-	// build tag payloads
-	const tagChunks = [];
-	let payloadLength = 4; // "INFO" (4 bytes)
-	for (const tag in metadataObj) {
-		const valueStr = String(metadataObj[tag] ?? "");
+	let payloadLen = 4; // for "INFO"
+	const tagBuffers = [];
+
+	for (const tag of tags) {
+		const valueStr = String(metadataObj[tag]);
 		const valueBytes = enc.encode(valueStr);
 		const valueLen = valueBytes.length;
-		// chunk: 4 bytes tag + 4 bytes size + value bytes + optional pad
-		const pad = (valueLen % 2 === 1) ? 1 : 0; // pad to even
-		const chunkLen = 4 + 4 + valueLen + pad;
+		const pad = valueLen % 2 === 1 ? 1 : 0;
+		const chunkLen = 8 + valueLen + pad; // tag + size + data + pad
+		payloadLen += chunkLen;
+
 		const chunk = new Uint8Array(chunkLen);
-		// tag
 		chunk[0] = tag.charCodeAt(0);
 		chunk[1] = tag.charCodeAt(1);
 		chunk[2] = tag.charCodeAt(2);
 		chunk[3] = tag.charCodeAt(3);
-		// size (little-endian)
-		const size = valueLen;
-		chunk[4] = size & 0xFF;
-		chunk[5] = (size >> 8) & 0xFF;
-		chunk[6] = (size >> 16) & 0xFF;
-		chunk[7] = (size >> 24) & 0xFF;
-		// value bytes
+		// size little-endian
+		chunk[4] = valueLen & 0xff;
+		chunk[5] = (valueLen >> 8) & 0xff;
+		chunk[6] = (valueLen >> 16) & 0xff;
+		chunk[7] = (valueLen >> 24) & 0xff;
 		chunk.set(valueBytes, 8);
-		// pad if necessary (already zeroed)
-		tagChunks.push(chunk);
-		payloadLength += chunkLen;
+		tagBuffers.push(chunk);
 	}
-	if (payloadLength === 4) return null; // no INFO tags present
 
-	// build LIST chunk: "LIST" + uint32(size) + "INFO" + payload
-	const totalListLen = 4 + 4 + payloadLength; // "LIST" + size + payload
-	const listChunk = new Uint8Array(totalListLen);
+	// "LIST" chunk header + "INFO" payload
+	const listLen = 8 + payloadLen;
+	const list = new Uint8Array(listLen);
 	let o = 0;
-	// "LIST"
-	listChunk[o++] = 0x4C; listChunk[o++] = 0x49; listChunk[o++] = 0x53; listChunk[o++] = 0x54;
-	// size of payload (payloadLength)
-	const payloadSize = payloadLength;
-	listChunk[o++] = payloadSize & 0xFF;
-	listChunk[o++] = (payloadSize >> 8) & 0xFF;
-	listChunk[o++] = (payloadSize >> 16) & 0xFF;
-	listChunk[o++] = (payloadSize >> 24) & 0xFF;
-	// "INFO"
-	listChunk[o++] = 0x49; listChunk[o++] = 0x4E; listChunk[o++] = 0x46; listChunk[o++] = 0x4F;
-	// append tag chunks
-	for (const ch of tagChunks) {
-		listChunk.set(ch, o);
+	list[o++] = 0x4c; list[o++] = 0x49; list[o++] = 0x53; list[o++] = 0x54; // LIST
+	list[o++] = payloadLen & 0xff;
+	list[o++] = (payloadLen >> 8) & 0xff;
+	list[o++] = (payloadLen >> 16) & 0xff;
+	list[o++] = (payloadLen >> 24) & 0xff;
+	list[o++] = 0x49; list[o++] = 0x4e; list[o++] = 0x46; list[o++] = 0x4f; // INFO
+
+	for (const ch of tagBuffers) {
+		list.set(ch, o);
 		o += ch.length;
 	}
-	return listChunk;
+	return list;
 }
 
 AudioExporter.prototype.convertToWav = function(metadata = {}) {
