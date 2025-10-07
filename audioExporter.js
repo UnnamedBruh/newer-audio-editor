@@ -11,6 +11,7 @@ function linearToMuLaw(sample) {
 	const MU_LAW_MAX = 0x7FFF;
 	const BIAS = 0x84;
 
+	const originalSampleUnchanged = sample;
 	let sign = (sample >> 8) & 0x80;
 	if (sign) sample = -sample;
 	if (sample > MU_LAW_MAX) sample = MU_LAW_MAX;
@@ -28,7 +29,7 @@ function linearToMuLaw(sample) {
 	let mantissa = (sample >> (exponent + 3)) & 0x0F;
 	let muLawByte = ~(sign | (exponent << 4) | mantissa);
 	let result = muLawByte & 0xFF;
-	muLawCache2[sample] = result;
+	muLawCache2[originalSampleUnchanged] = result;
 	return result;
 }
 
