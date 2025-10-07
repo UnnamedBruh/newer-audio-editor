@@ -66,5 +66,13 @@ const effectsList = [
 		2,
 		"echo_arbr",
 		[Number, Number]
-	]
+	],
+	[
+		"Noise (Static)",
+		"Adds static to the audio.",
+		'Noise Type: <select id="noise0"><option>white noise</option><option>brown noise</option></select><br>Smooth Audio: <input id="resample1" type="checkbox" checked>',
+		2,
+		"resample",
+		[Number, identifier]
+	],
 ];
