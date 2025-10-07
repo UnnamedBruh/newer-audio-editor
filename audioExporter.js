@@ -1,7 +1,7 @@
 // G.711 μ-law encode: convert 16-bit signed int (linear PCM) to 8-bit μ-law
 // I did NOT write this function! GPT-4.0 Mini wrote this function, but was optimized by me.
 
-const muLawCache = Object.create(null);
+//const muLawCache = Object.create(null); This is already defined in another JavaScript module.
 
 function linearToMuLaw(sample) {
 	const chose = muLawCache[sample];
