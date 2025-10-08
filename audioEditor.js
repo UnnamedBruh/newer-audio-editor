@@ -314,14 +314,52 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 		}
 	}
 	if (isAlgorithmistic) {
-		if (noiseType === "bn") {} else if (noiseType === "pn") {
-			// https://whoisryosuke.com/blog/2025/generating-pink-noise-for-audio-worklets
-			
+		if (noiseType === "bn") { // GPT-5.0 Mini wrote this implementation, but I adapted it to this function's standards.
+			// Algorithmistic brown: cumulative sum of small white noise steps
+			let last = 0;
+			const step = 0.02;
+			for (let i = 0; i < len; i++) {
+				last += (rand() - 0.5) * step;
+				last = last < -1 ? -1 : last > 1 ? 1 : last; // clamp
+				data[i] += last * volume;
+			}
+		} else if (noiseType === "pn") {
+			// https://whoisryosuke.com/blog/2025/generating-pink-noise-for-audio-worklets (algorithm is directly copied-and-pasted, then implemented here. I do NOT write, or claim to have written the marked section.)
+			volume *= 0.5;
+			let b0, b1, b2, b3, b4, b5, b6, pink, white;
+			b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0;
+			if (volume === 1) {
+				for (let i = 0; i < len; i++) {
+					white = rand(); 
+					b0 = 0.99886 * b0 + white * 0.0555179; // Start mark
+					b1 = 0.99332 * b1 + white * 0.0750759;
+					b2 = 0.969 * b2 + white * 0.153852;
+					b3 = 0.8665 * b3 + white * 0.3104856;
+					b4 = 0.55 * b4 + white * 0.5329522;
+					b5 = -0.7616 * b5 - white * 0.016898;
+					pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+					b6 = white * 0.115926; // End mark
+					data[i] += pink;
+				}
+			} else {
+				for (let i = 0; i < len; i++) {
+					white = rand();
+					b0 = 0.99886 * b0 + white * 0.0555179;
+					b1 = 0.99332 * b1 + white * 0.0750759;
+					b2 = 0.969 * b2 + white * 0.153852;
+					b3 = 0.8665 * b3 + white * 0.3104856;
+					b4 = 0.55 * b4 + white * 0.5329522;
+					b5 = -0.7616 * b5 - white * 0.016898;
+					pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+					b6 = white * 0.115926;
+					data[i] += pink * volume;
+				}
+			}
 		}
 	} else {
 		if (noiseType === "bn" || noiseType === "pn") {
-			const multiplier = (noiseType === "pn" ? 3 : 7) * 2;
-			let max = (Math.random() * multiplier) | 0, currentRandom = rand() - 0.5;
+			const multiplier = (noiseType === "pn" ? 3 : 10) * 2;
+			let max = (rand() * multiplier) | 0, currentRandom = rand() - 0.5;
 			if (volume === 1) {
 				for (let i = 0; i < len; i++) {
 					data[i] += currentRandom;
