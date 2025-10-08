@@ -378,3 +378,5 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 effects["reverse"] = function(buffer) {
 	buffer.audioData.reverse();
 }
+
+//effects["reverb"] = function(buffer, 
