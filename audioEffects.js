@@ -74,5 +74,13 @@ const effectsList = [
 		3,
 		"noise",
 		[Number, identifier, identifier]
+	],
+	[
+		"Reverse",
+		"Fully reverses the audio.",
+		'',
+		0,
+		"reverse",
+		[]
 	]
 ];
