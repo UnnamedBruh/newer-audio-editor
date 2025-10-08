@@ -1,4 +1,4 @@
-const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round, tru = Math.trunc;
+const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round, tru = Math.trunc, rand = Math.random;
 
 const muLawCache = Object.create(null);
 
@@ -298,11 +298,41 @@ effects["echo_arbr"] = function(buffer, volume, delay) {
 	}
 }
 
-effects["noise"] = function(buffer, noiseType, volume) {
+effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 	if (volume === 0) return;
-	volume = volume * 0.01;
+	volume = volume * 0.02;
 	const len = buffer.audioData.length, data = buffer.audioData;
-	for (let i = 0; i < len; i++) {
-		data[i] += Math.random() * volume;
+	if (noiseType === "wn") {
+		if (volume === 1) {
+			for (let i = 0; i < len; i++) {
+				data[i] += rand() - 0.5;
+			}
+		} else {
+			for (let i = 0; i < len; i++) {
+				data[i] += (rand() - 0.5) * volume;
+			}
+		}
+	}
+	if (isAlgorithmistic) {
+		if (noiseType === "bn") {} else if (noiseType === "pn") {
+			// https://whoisryosuke.com/blog/2025/generating-pink-noise-for-audio-worklets
+			
+		}
+	} else {
+		if (noiseType === "bn" || noiseType === "pn") {
+			const multiplier = (noiseType === "pn" ? 3 : 7) * 2;
+			let max = (Math.random() * multiplier) | 0, currentRandom = rand() - 0.5;
+			if (volume === 1) {
+				for (let i = 0; i < len; i++) {
+					data[i] += currentRandom;
+					if (i > max) max += (abs((currentRandom = rand() - 0.5)) * multiplier) | 0;
+				}
+			} else {
+				for (let i = 0; i < len; i++) {
+					data[i] += currentRandom * volume;
+					if (i > max) max += (abs((currentRandom = rand() - 0.5)) * multiplier) | 0;
+				}
+			}
+		}
 	}
 }
