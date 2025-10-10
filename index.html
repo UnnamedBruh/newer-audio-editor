@@ -24,7 +24,7 @@
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
-		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .mp4, .3gp, .3g2, .webm, .lsac, .fbac">
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac">
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
@@ -329,6 +329,38 @@
 				exportBtn.textContent = "Export as FBAC (Frame-Based Audio Codec)";
 				exportBtn.onclick = function() {
 					const blob = encodeFBAC(exporters.audioData, exporters.sampleRate);
+
+					const link = document.createElement("a");
+					link.download = "exportedAudio.fbac";
+					link.href = URL.createObjectURL(blob);
+					link.click();
+					link.remove();
+				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as MP3";
+				exportBtn.onclick = function() {
+					function floatTo16BitPCM(float32Array) {
+						const buffer = new Int16Array(float32Array.length);
+						let s = 0;
+						for (let i = 0; i < float32Array.length; i++) {
+							s = float32Array[i];
+							buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+						}
+						return buffer;
+					}
+
+					const channels = 1;
+					const sampleRate = exporters.sampleRate;
+					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 64, 80, 96, 128, 192, 256, 320)")) / 16) * 16;
+					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality, 9 = worst quality, 3 = balanced)") || 3));
+
+					const mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps, qual);
+
+					const totalFrames = Math.ceil(pcmData.length / FRAME_SIZE);
+					let mp3Data = [];
+
+					const pcmData = floatTo16BitPCM(exporter.audioData);
 
 					const link = document.createElement("a");
 					link.download = "exportedAudio.fbac";
