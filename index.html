@@ -352,16 +352,15 @@
 						return buffer;
 					}
 
-					const channels = 1;
 					const sampleRate = exporters.sampleRate;
 					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 64, 80, 96, 128, 192, 256, 320)")) / 16) * 16;
 					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality, 9 = worst quality, 3 = balanced)") || 3));
 
-					const mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps, qual);
+					const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, kbps, qual);
 
 					let mp3Data = [];
 
-					const pcmData = floatTo16BitPCM(exporter.audioData);
+					const pcmData = floatTo16BitPCM(exporters.audioData);
 					const len = pcmData.length;
 					const len2 = len - 1152;
 
