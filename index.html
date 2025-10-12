@@ -182,7 +182,7 @@
 						if (count++ < 4) return;
 						count = 0;
 						let data2 = ["M 0,100 L 0,100 "];
-						let xn = window.pageXOffset;
+						let xn = window.scrollX;
 						x.setAttribute("width", window.innerWidth);
 						x.style.marginLeft = (xn - xOff) + "px";
 						const len = Math.min(xn - xOff + window.innerWidth, yu), y = exp.audioData;
@@ -201,7 +201,7 @@
 					}
 				}
 				prevIntervalID = setInterval(function() {
-					xOff = window.pageXOffset + v.getBoundingClientRect().x;
+					xOff = window.scrollX + v.getBoundingClientRect().x;
 				}, 1000);
 				v.appendChild(document.createElement("br"));
 				const opt = document.createElement("select");
@@ -354,7 +354,7 @@
 
 					const sampleRate = exporters.sampleRate;
 					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 64, 80, 96, 128, 192, 256, 320)")) / 16) * 16;
-					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality, 9 = worst quality, 3 = balanced)") || 3));
+					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") || 3));
 
 					const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, kbps, qual);
 
