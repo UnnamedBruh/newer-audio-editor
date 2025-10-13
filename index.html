@@ -118,7 +118,7 @@
 					}
 					prev = y[i];
 				}
-				data2.push("L " + len + ",100");
+				data2.push("L " + (len / sampleSkip) + ",100");
 				return data2.join(" ");
 			}
 			function loadDiv(exp) {
@@ -191,7 +191,7 @@
 						x.style.marginLeft = (xn - xOff) + "px";
 						const len = Math.min(xn - xOff + window.innerWidth, yu), y = exp.audioData;
 						let prev = 0, val = y[0];
-						let ep = Number.EPSILON;
+						let ep = 0.004;
 						for (let i = xn, j = 0; i < len; i++, j++) {
 							if (Math.abs(prev - val) >= ep) {
 								data2.push("L " + j + "," + Math.round(100 + val * 100));
@@ -199,7 +199,7 @@
 							}
 							val = y[j];
 						}
-						data2.push("L " + len + ",100");
+						data2.push("L " + (len / sampleSkip) + ",100");
 						n.setAttribute("d", data2.join(" "));
 					}
 				}
