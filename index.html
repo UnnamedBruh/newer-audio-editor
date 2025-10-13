@@ -104,15 +104,17 @@
 				}
 			}
 			function generateWaveform(exp) {
-				let data2 = ["M 0,100 L 0,100 "];
+				let data2 = ["M 0,100 L 0,100"];
 				const len = exp.audioData.length, y = exp.audioData;
 				let prev = 0, val;
 				let ep = Number.EPSILON;
+				val = y[i];
 				for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
-					val = y[i];
-					if (Math.abs(prev - val) >= ep) data2.push("L " + j + "," + Math.round(100 + val * 100));
-					prev = val;
-					val = y[i];
+					if (Math.abs(prev - val) >= ep) {
+						data2.push("L " + j + "," + Math.round(100 + val * 100));
+						val = y[i + 1] || 0;
+					}
+					prev = y[i];
 				}
 				data2.push("L " + len + ",100");
 				return data2.join(" ");
@@ -181,7 +183,7 @@
 					if (sampleSkip === 1) {
 						if (count++ < 4) return;
 						count = 0;
-						let data2 = ["M 0,100 L 0,100 "];
+						let data2 = ["M 0,100 L 0,100"];
 						let xn = window.scrollX;
 						x.setAttribute("width", window.innerWidth);
 						x.style.marginLeft = (xn - xOff) + "px";
@@ -239,9 +241,10 @@
 							data = generateWaveform(exp);
 							sharedBuffer = audioContext.createBuffer(1, exp.audioData.length, exp.sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
-							for (let i = 0; i < ref.length; i++) {
+							/*for (let i = 0; i < ref.length; i++) {
 								ref[i] = exp.audioData[i];
-							}
+							}*/
+							ref.set(exp.audioData);
 							x.setAttribute("width", exp.audioData.length / sampleSkip);
 							v.style.width = (exp.audioData.length / sampleSkip) + "px";
 							n.setAttribute("d", data);
@@ -270,6 +273,8 @@
 				exportBtn.onclick = function() {
 					const metadata = {};
 					const author = prompt("Who is the author of this audio? (e.g. \"John Smith\") Leave the input blank if you don't want the author to be specified.");
+
+					if (author === "" || author === undefined || author === null) return;
 					const name = prompt("What is the name of this audio? (e.g. \"Electro Dance (Techno Mix)\") Leave the input blank if you don't want the name to be specified.");
 					const genre = prompt("What is the genre of this audio? (e.g. \"Techno\") Leave the input blank if you don't want the genre to be specified.");
 					const notes = prompt("Any notes or comments for this audio? (e.g. \"This audio is super cool\") Leave the input blank if you don't have any notes or comments.");
@@ -340,7 +345,7 @@
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as MP3";
-				exportBtn.onclick = function() {
+				exportBtn.onclick = async function() {
 					function floatTo16BitPCM(float32Array) {
 						const len = float32Array.length;
 						const buffer = new Int16Array(len);
@@ -354,26 +359,38 @@
 
 					const sampleRate = exporters.sampleRate;
 					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 64, 80, 96, 128, 192, 256, 320)")) / 16) * 16;
+					if (kbps === 0 || isNaN(kbps) || kbps === undefined || kbps === null) return;
+
 					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") || 3));
 
-					const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, kbps, qual);
+					const channels = confirm("Should the same buffer be split into two channels? (If so, the audio may sound a bit choppier)") + 1;
 
-					let mp3Data = [];
+					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
 
-					const pcmData = floatTo16BitPCM(exporters.audioData);
-					const len = pcmData.length;
-					const len2 = len - 1152;
+					let blob;
 
-					for (let i = 0; i < len2; i += 1152) {
-						const chunk = pcmData.subarray(i, i > len2 ? len2 : i + 1152);
+					for (let i = 0; i < lossTimes; i++) {
+						let buffer = i === 0 ? exporters.audioData : await audioContext.decodeAudioData(await blob.arrayBuffer());
+						if (i > 0) buffer = buffer.getChannelData(0);
+						const mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps, qual);
 
-						// For mono input, pass chunk for both channels if needed
-						const mp3Chunk = mp3Encoder.encodeBuffer(chunk, chunk);
-						mp3Data.push(mp3Chunk);
+						let mp3Data = [];
+
+						const pcmData = floatTo16BitPCM(buffer);
+						const len = pcmData.length;
+						const len2 = len - 1152;
+
+						for (let i = 0; i < len2; i += 1152) {
+							const chunk = pcmData.subarray(i, i > len2 ? len2 : i + 1152);
+
+							// For mono input, pass chunk for both channels if needed
+							const mp3Chunk = mp3Encoder.encodeBuffer(chunk, chunk);
+							mp3Data.push(mp3Chunk);
+						}
+
+						mp3Data.push(mp3Encoder.flush());
+						blob = new Blob(mp3Data, { type: "audio/mp3" });
 					}
-
-					mp3Data.push(mp3Encoder.flush());
-					const blob = new Blob(mp3Data, { type: "audio/mp3" });
 
 
 					const link = document.createElement("a");
