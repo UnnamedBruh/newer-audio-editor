@@ -107,14 +107,16 @@
 				let data2 = ["M 0,100 L 0,100"];
 				const len = exp.audioData.length, y = exp.audioData;
 				let prev = 0, val;
-				let ep = Number.EPSILON;
+				let ep = 0.004;
 				val = y[0];
-				for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
+				let b = 0;
+				for (let i = 0, j = 0; i < len; i = b, j++) {
+					b = i + sampleSkip;
 					if (Math.abs(prev - val) >= ep) {
 						data2.push("L " + j + "," + Math.round(100 + val * 100));
-						val = y[j + 1] || 0;
+						val = y[b] || 0;
 					}
-					prev = y[j];
+					prev = y[i];
 				}
 				data2.push("L " + len + ",100");
 				return data2.join(" ");
