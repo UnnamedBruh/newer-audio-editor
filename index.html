@@ -108,7 +108,7 @@
 				const len = exp.audioData.length, y = exp.audioData;
 				let prev = 0, val;
 				let ep = Number.EPSILON;
-				val = y[i];
+				val = y[0];
 				for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
 					if (Math.abs(prev - val) >= ep) {
 						data2.push("L " + j + "," + Math.round(100 + val * 100));
@@ -188,10 +188,9 @@
 						x.setAttribute("width", window.innerWidth);
 						x.style.marginLeft = (xn - xOff) + "px";
 						const len = Math.min(xn - xOff + window.innerWidth, yu), y = exp.audioData;
-						let prev = 0, val;
+						let prev = 0, val = y[0];
 						let ep = Number.EPSILON;
 						for (let i = xn, j = 0; i < len; i++, j++) {
-							val = y[j];
 							if (Math.abs(prev - val) >= ep) {
 								data2.push("L " + j + "," + Math.round(100 + val * 100));
 								prev = val;
