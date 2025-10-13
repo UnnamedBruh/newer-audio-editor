@@ -112,9 +112,9 @@
 				for (let i = 0, j = 0; i < len; i += sampleSkip, j++) {
 					if (Math.abs(prev - val) >= ep) {
 						data2.push("L " + j + "," + Math.round(100 + val * 100));
-						val = y[i + 1] || 0;
+						val = y[j + 1] || 0;
 					}
-					prev = y[i];
+					prev = y[j];
 				}
 				data2.push("L " + len + ",100");
 				return data2.join(" ");
@@ -191,12 +191,12 @@
 						let prev = 0, val;
 						let ep = Number.EPSILON;
 						for (let i = xn, j = 0; i < len; i++, j++) {
-							val = y[i];
+							val = y[j];
 							if (Math.abs(prev - val) >= ep) {
 								data2.push("L " + j + "," + Math.round(100 + val * 100));
 								prev = val;
 							}
-							val = y[i];
+							val = y[j];
 						}
 						data2.push("L " + len + ",100");
 						n.setAttribute("d", data2.join(" "));
