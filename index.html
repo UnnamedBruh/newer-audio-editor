@@ -347,18 +347,25 @@
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as MP3";
 				exportBtn.onclick = async function() {
-					function floatTo16BitPCM(float32Array) {
-						const len = float32Array.length;
+					function floatTo16BitPCM(float32Array, channels) {
+						const len = float32Array.length / channels;
 						const buffer = new Int16Array(len);
 						let s = 0;
-						for (let i = 0; i < len; i++) {
-							s = float32Array[i];
-							buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+						if (channels === 1) {
+							for (let i = 0; i < len; i++) {
+								s = float32Array[i];
+								buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+							}
+						} else {
+							for (let i = 0, j = 0; i < len; i++, j+=channels) {
+								s = float32Array[j];
+								buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+							}
 						}
 						return buffer;
 					}
 
-					const sampleRate = exporters.sampleRate;
+					let sampleRate = exporters.sampleRate;
 					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 64, 80, 96, 128, 192, 256, 320)")) / 16) * 16;
 					if (kbps === 0 || isNaN(kbps) || kbps === undefined || kbps === null) return;
 
@@ -372,17 +379,18 @@
 
 					for (let i = 0; i < lossTimes; i++) {
 						let buffer = i === 0 ? exporters.audioData : await audioContext.decodeAudioData(await blob.arrayBuffer());
+						let altRate = buffer.sampleRate;
 						if (i > 0) buffer = buffer.getChannelData(0);
-						const mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps, qual);
+						const mp3Encoder = new lamejs.Mp3Encoder(channels, i === 0 ? sampleRate : altRate, kbps, qual);
 
 						let mp3Data = [];
 
-						const pcmData = floatTo16BitPCM(buffer);
+						const pcmData = floatTo16BitPCM(buffer, channels);
 						const len = pcmData.length;
 						const len2 = len - 1152;
 
 						for (let i = 0; i < len2; i += 1152) {
-							const chunk = pcmData.subarray(i, i > len2 ? len2 : i + 1152);
+							const chunk = pcmData.subarray(i, i > len2 ? len : i + 1152);
 
 							// For mono input, pass chunk for both channels if needed
 							const mp3Chunk = mp3Encoder.encodeBuffer(chunk, chunk);
