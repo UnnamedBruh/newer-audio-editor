@@ -407,7 +407,6 @@ effects["repeat"] = function(buffer, times) {
 effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
 	if (volume === 0 || chorusFlange === 0) return;
 	const len = buffer.audioData.length;
-	const originalVolume = volume;
 	volume = volume * 0.01;
 
 	let newData;
@@ -418,9 +417,6 @@ effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
 		newData = buffer.audioData.slice();
 	}
 
-	effects["gain"](buffer, 1 / originalVolume);
-	effects["gain"]({audioData: newData}, 1 / originalVolume);
-
 	const sampleRate = buffer.sampleRate;
 	const pi = Math.PI;
 
@@ -430,9 +426,10 @@ effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
 	chorusFlange *= 2;
 	for (let i = 0; i < subLen; i++) {
 		fl = i + sin(i * pi * chorusFlange / sampleRate) * distance;
+		if (!(i % 48000)) console.log(fl, i);
 		trunc = tru(fl);
 		final = interpolate(newData[i], newData[trunc], abs(fl - trunc) % 1);
-		if (!isNaN(final)) audioPointer[i] += final;
+		if (!isNaN(final)) audioPointer[i] += final * volume;
 	}
 }
 
