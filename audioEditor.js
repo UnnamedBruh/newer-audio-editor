@@ -435,7 +435,7 @@ effects["repeat"] = function(buffer, times) {
 }*/
 
 // New code, refactored by GPT-5.0 Mini.
-effects["chorus"] = function(buffer, volume = 1, rate = 1, depth = 0.003, antiAliasing = true) {
+effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, antiAliasing = true) {
 	if (volume === 0) return;
 
 	const audioData = buffer.audioData;
@@ -468,7 +468,7 @@ effects["chorus"] = function(buffer, volume = 1, rate = 1, depth = 0.003, antiAl
 			delayedSample = readIndex >= 0 ? interpolate(audioData[int], audioData[int + 1], readIndex % 1) : 0;
 
 			// Mix dry + wet
-			modulated[i] = dryMix * audioData[i] + wetMix * delayedSample;
+			modulated[i] = dryMix * audioData[i] + (wetMix + 0.05 * sin(phase)) * delayedSample;
 
 			// Increment phase
 			phase += phaseIncrement;
@@ -484,7 +484,7 @@ effects["chorus"] = function(buffer, volume = 1, rate = 1, depth = 0.003, antiAl
 			delayedSample = readIndex >= 0 ? audioData[readIndex] : 0;
 
 			// Mix dry + wet
-			modulated[i] = dryMix * audioData[i] + wetMix * delayedSample;
+			modulated[i] = dryMix * audioData[i] + (wetMix + 0.05 * sin(phase)) * delayedSample;
 
 			// Increment phase
 			phase += phaseIncrement;
@@ -494,6 +494,8 @@ effects["chorus"] = function(buffer, volume = 1, rate = 1, depth = 0.003, antiAl
 
 	// Apply volume and copy back to buffer (the original line was optimized by me)
 	audioData.set(modulated);
+
+	volume *= 0.01;
 	for (let i = 0; i < len; i++) {
 		audioData[i] *= volume;
 	}
