@@ -214,7 +214,7 @@ effects["distort"] = function(buffer, perc, method) {
 effects["echo"] = function(buffer, volume, echoes, delay, volumeGainer) {
 	if (echoes < 1 || volume === 0 || delay < 0 || volumeGainer <= 0) return;
 	if (delay === 0) {
-		effects["gain"](buffer, 1 + Math.pow(volume * echoes, -volumeGainer));
+		effects["gain"](buffer, 1 + pow(volume * echoes, -volumeGainer));
 		return;
 	}
 	const v = buffer.audioData.length;
@@ -381,17 +381,59 @@ effects["reverse"] = function(buffer) {
 
 effects["repeat"] = function(buffer, times) {
 	const len = buffer.audioData.length;
+	const pointer = buffer.audioData;
 	if (times <= 0) {
 		buffer.audioData = new Float32Array([]);
 		return;
 	}
 	if (times === 1 || len === 0) return;
-	const newData = new Float32Array(len * times);
-	const newLen = newData.length;
-	for (let i = 0; i < times; i++) {
-		newData.set(buffer.audioData, i * len);
+	let newData;
+	if (times < 1 && Object.prototype.hasOwnProperty.call(pointer, "slice")) {
+		newData = buffer.audioData.slice(0, times * len);
+	} else {
+		newData = new Float32Array(len * times);
+		const newLen = newData.length;
+		const ti = floor(times);
+		for (let i = 0; i < ti; i++) {
+			newData.set(pointer, i * len);
+		}
+		if (ti !== times) { // Fill in the end gaps
+			result.set(pointer.subarray(0, floor((times - ti) * len)), ti * len);
+		}
 	}
 	buffer.audioData = newData;
+}
+
+effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
+	if (volume === 0 || chorusFlange === 0) return;
+	const len = buffer.audioData.length;
+	const originalVolume = volume;
+	volume = volume * 0.01;
+
+	let newData;
+	if (!Object.prototype.hasOwnProperty.call(buffer.audioData, "slice")) {
+		newData = buffer.audioData instanceof Float32Array ? new Float32Array(round(len)) : new Float64Array(round(len));
+		newData.set(buffer.audioData);
+	} else {
+		newData = buffer.audioData.slice();
+	}
+
+	effects["gain"](buffer, originalVolume);
+	effects["gain"]({audioData: newData}, originalVolume);
+
+	const sampleRate = buffer.sampleRate;
+	const pi = Math.PI;
+
+	const audioPointer = buffer.audioData;
+	let fl, subLen = len - 1, tru, final;
+
+	chorusFlange *= 2;
+	for (let i = 0; i < subLen; i++) {
+		fl = Math.sin(i / pi / sampleRate * chorusFlange) * distance;
+		tru = trunc(fl);
+		final = interpolate(newData[i], newData[i + tru], abs(fl - tru));
+		if (!isNaN(final)) audioPointer[i] += final;
+	}
 }
 
 //effects["reverb"] = function(buffer, 
