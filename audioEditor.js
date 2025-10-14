@@ -425,13 +425,13 @@ effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
 	const pi = Math.PI;
 
 	const audioPointer = buffer.audioData;
-	let fl, subLen = len - 1, tru, final;
+	let fl, subLen = len - 1, trunc, final;
 
 	chorusFlange *= 2;
 	for (let i = 0; i < subLen; i++) {
 		fl = i + sin(i * pi * chorusFlange / sampleRate) * distance;
-		tru = trunc(fl);
-		final = interpolate(newData[i], newData[fl], abs(fl - tru) % 1);
+		trunc = tru(fl);
+		final = interpolate(newData[i], newData[fl], abs(fl - trunc) % 1);
 		if (!isNaN(final)) audioPointer[i] += final;
 	}
 }
