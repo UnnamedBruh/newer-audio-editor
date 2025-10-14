@@ -429,9 +429,9 @@ effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
 
 	chorusFlange *= 2;
 	for (let i = 0; i < subLen; i++) {
-		fl = Math.sin(i / pi / sampleRate * chorusFlange) * distance;
+		fl = i + sin(i * pi * chorusFlange / sampleRate) * distance;
 		tru = trunc(fl);
-		final = interpolate(newData[i], newData[i + tru], abs(fl - tru));
+		final = interpolate(newData[i], newData[fl], abs(fl - tru) % 1);
 		if (!isNaN(final)) audioPointer[i] += final;
 	}
 }
