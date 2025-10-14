@@ -404,7 +404,8 @@ effects["repeat"] = function(buffer, times) {
 	buffer.audioData = newData;
 }
 
-effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
+// Old code; this was really quirky and unstable, since I couldn't grasp the idea of a flanger well. :/
+/*effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
 	if (volume === 0 || chorusFlange === 0) return;
 	const len = buffer.audioData.length;
 	volume = volume * 0.01;
@@ -431,6 +432,71 @@ effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
 		final = interpolate(newData[i], newData[trunc], abs(fl - trunc) % 1);
 		if (!isNaN(final)) audioPointer[i] += final * volume;
 	}
-}
+}*/
+
+// New code, refactored by GPT-5.0 Mini.
+effects["chorus"] = function(buffer, volume = 1, rate = 1, depth = 0.003, antiAliasing = true) {
+	if (volume === 0) return;
+
+	const audioData = buffer.audioData;
+	const sampleRate = buffer.sampleRate;
+	const len = audioData.length;
+
+	const dryMix = 0.5;  // original signal
+	const wetMix = 0.5;  // modulated signal
+
+	const modulated = new Float32Array(len);
+
+	// Phase for sine LFO
+	let phase = 0;
+	const pi = 2 * Math.PI;
+	const phaseIncrement = pi * rate / sampleRate;
+
+	depth *= sampleRate; // An optimization to reduce computation (added by me)
+
+	let delaySamples, readIndex, delaySample, int;
+
+	if (antiAliasing) {
+		for (let i = 0; i < len; i++) {
+			// LFO modulates the delay
+			delaySamples = sin(phase) * depth; // non-integer delay
+			readIndex = i - delaySamples;
+
+			int = delaySamples | 0;
+
+			// Safe read: use original if out of bounds
+			delayedSample = readIndex >= 0 ? interpolate(audioData[int], audioData[int + 1], readIndex % 1) : 0;
+
+			// Mix dry + wet
+			modulated[i] = dryMix * audioData[i] + wetMix * delayedSample;
+
+			// Increment phase
+			phase += phaseIncrement;
+			if (phase > pi) phase -= pi;
+		}
+	} else {
+		for (let i = 0; i < len; i++) {
+			// LFO modulates the delay
+			delaySamples = (sin(phase) * depth) | 0; // integer delay
+			readIndex = i - delaySamples;
+
+			// Safe read: use original if out of bounds
+			delayedSample = readIndex >= 0 ? audioData[readIndex] : 0;
+
+			// Mix dry + wet
+			modulated[i] = dryMix * audioData[i] + wetMix * delayedSample;
+
+			// Increment phase
+			phase += phaseIncrement;
+			if (phase > pi) phase -= pi;
+		}
+	}
+
+	// Apply volume and copy back to buffer (the original line was optimized by me)
+	audioData.set(modulated);
+	for (let i = 0; i < len; i++) {
+		audioData[i] *= volume;
+	}
+};
 
 //effects["reverb"] = function(buffer, 
