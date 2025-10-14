@@ -73,7 +73,7 @@ const effectsList = [
 		'Noise Type: <select id="noise0"><option value="wn">white noise</option><option value="bn">brown noise</option><option value="pn">pink noise</option></select><br>Volume: <input id="noise1" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the static is.">%<br>Is "Algorithmistic": <input id="noise2" type="checkbox" checked title="Determines whether their noise\'s implementations adhere to faithful algorithms, or default to generic or approximate programs.">',
 		3,
 		"noise",
-		[Number, identifier, identifier]
+		[identifier, Number, identifier]
 	],
 	[
 		"Reverse",
@@ -82,5 +82,13 @@ const effectsList = [
 		0,
 		"reverse",
 		[]
+	],
+	[
+		"Repeat",
+		"Repeats the audio a certain number of times. The number of times can be a decimal value.",
+		'Repeats: <input id="repeat0" type="number" min="0" step="0.1" value="2" style="width: 100px">',
+		1,
+		"repeat",
+		[Number]
 	]
 ];
