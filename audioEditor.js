@@ -448,7 +448,7 @@ effects["chorus"] = function(buffer, volume = 1, rate = 1, depth = 0.003, antiAl
 	const modulated = new Float32Array(len);
 
 	// Phase for sine LFO
-	let phase = 0;
+	let phase = Math.PI / 2;
 	const pi = 2 * Math.PI;
 	const phaseIncrement = pi * rate / sampleRate;
 
