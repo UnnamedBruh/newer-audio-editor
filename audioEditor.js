@@ -398,7 +398,7 @@ effects["repeat"] = function(buffer, times) {
 			newData.set(pointer, i * len);
 		}
 		if (ti !== times) { // Fill in the end gaps
-			result.set(pointer.subarray(0, floor((times - ti) * len)), ti * len);
+			newData.set(pointer.subarray(0, floor((times - ti) * len)), ti * len);
 		}
 	}
 	buffer.audioData = newData;
