@@ -442,8 +442,8 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 	const sampleRate = buffer.sampleRate;
 	const len = audioData.length;
 
-	const dryMix = 0.8;  // original signal
-	const wetMix = 0.2;  // modulated signal
+	const dryMix = 0.3;  // original signal
+	const wetMix = 0.7;  // modulated signal
 
 	const modulated = new Float32Array(len);
 
