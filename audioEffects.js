@@ -94,7 +94,7 @@ const effectsList = [
 	[
 		"Chorus",
 		"Alters the audio like one of those classic rocket whoosh sounds. To better grasp it, layer the original audio on top of another copy of the audio (whose speed \"swings\" overtime). The distance can be negated.",
-		'Volume: <input id="chorus" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Chorus Speed (in secs): <input id="chorus1" type="number" min="0" step="0.1" value="1" style="width: 100px"><br>Distance (in samples): <input id="chorus2" type="number" min="0" step="1" value="1" style="width: 100px">',
+		'Volume: <input id="chorus0" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Chorus Speed (in secs): <input id="chorus1" type="number" min="0" step="0.1" value="1" style="width: 100px"><br>Distance (in samples): <input id="chorus2" type="number" min="0" step="1" value="1" style="width: 100px">',
 		3,
 		"chorus",
 		[Number, Number, Number]
