@@ -379,4 +379,19 @@ effects["reverse"] = function(buffer) {
 	buffer.audioData.reverse();
 }
 
+effects["repeat"] = function(buffer, times) {
+	const len = buffer.audioData.length;
+	if (times <= 0) {
+		buffer.audioData = new Float32Array([]);
+		return;
+	}
+	if (times === 1 || len === 0) return;
+	const newData = new Float32Array(len * times);
+	const newLen = newData.length;
+	for (let i = 0; i < times; i++) {
+		newData.set(buffer.audioData, i * len);
+	}
+	buffer.audioData = newData;
+}
+
 //effects["reverb"] = function(buffer, 
