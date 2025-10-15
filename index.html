@@ -457,7 +457,7 @@
 							const channel = sharedBuffer.getChannelData(channelNum);
 							if (sharedBuffer.numberOfChannels === 2) {
 								if (confirm("Should the current channel be subtracted by another? (If you want to only edit the audio, just press Cancel)")) {
-									const channelOtherNum = sharedBuffer.numberOfChannels - channelNum;
+									const channelOtherNum = sharedBuffer.numberOfChannels - channelNum - 1;
 									const len = channel.length;
 									const channelOther = sharedBuffer.getChannelData(channelOtherNum);
 									if (confirm("Okay then! Which formula do you want to choose? (OK = channel" + channelNum + " + otherChannel | Cancel = otherChannel + channel" + channelNum + ")")) {
