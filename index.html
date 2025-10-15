@@ -455,10 +455,26 @@
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
 							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1;
 							const channel = sharedBuffer.getChannelData(channelNum);
+							if (sharedBuffer.numberOfChannels === 2) {
+								if (confirm("Should the current channel be subtracted by another? (If you want to only edit the audio, just press Cancel)")) {
+									const channelOtherNum = sharedBuffer.numberOfChannels - channelNum;
+									const len = channel.length;
+									const channelOther = sharedBuffer.getChannelData(channelOtherNum);
+									if (confirm("Okay then! Which formula do you want to choose? (OK = channel" + channelNum + " + otherChannel | Cancel = otherChannel + channel" + channelNum + ")")) {
+										for (let i = 0; i < len; i++) {
+											channel[i] -= channelOther[i];
+										}
+									} else {
+										for (let i = 0; i < len; i++) {
+											channel[i] = channelOther[i] - channel[i];
+										}
+									}
+								}
+							}
 							if (sharedBuffer.numberOfChannels > 1) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
 								for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
 									if (i === channelNum) continue;
-									const silentBuffer = sharedBuffer.getChannelData(sharedBuffer.numberOfChannels - (channelNum + 1));
+									const silentBuffer = sharedBuffer.getChannelData(i);
 									if (silentBuffer) silentBuffer.set(channel);
 								}
 							}
