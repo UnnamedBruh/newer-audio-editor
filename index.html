@@ -290,23 +290,23 @@
 
 					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit integer. 1 = 16-bit integer. 2 = 32-bit integer. 3 = 32-bit float. 4 = 64-bit float. 5 - mu-law encoding.");
 					const oldBits = exporters.bits;
-					if (encodeBits === 0) {
+					if (encodeBits == 0) {
 						exporters.bits = 8;
 						exporters.encoding = "pcm";
-					} else if (!encodeBits || encodeBits === 1) {
+					} else if (!encodeBits || encodeBits == 1) {
 						exporters.bits = 16;
 						exporters.encoding = "pcm";
-					} else if (encodeBits === 2) {
+					} else if (encodeBits == 2) {
 						exporters.bits = 32;
 						exporters.encoding = "pcm";
-					} else if (encodeBits === 3) {
+					} else if (encodeBits == 3) {
 						exporters.bits = 32;
 						exporters.encoding = "pcmf32";
-					} else if (encodeBits === 4) {
+					} else if (encodeBits == 4) {
 						exporters.bits = 64;
 						exporters.encoding = "pcmf64";
 					} else {
-						exporters.encoding = "mu-law";
+						exporters.encoding = "mulaw";
 					}
 					
 					const blob = exporters.convertToWav(metadata);
