@@ -453,11 +453,19 @@
 							sampleData = null;
 							sampleSkip = 480;
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
-							const channel = sharedBuffer.getChannelData(Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1);
+							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1;
+							const channel = sharedBuffer.getChannelData(channelNum);
+							if (sharedBuffer.numberOfChannels > 1) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
+								for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
+									if (i === channelNum) continue;
+									const silentBuffer = sharedBuffer.getChannelData(sharedBuffer.numberOfChannels - (channelNum + 1));
+									if (silentBuffer) silentBuffer.set(channel);
+								}
+							}
 							exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
 							loadDiv(exporters);
 						} catch (err) {
-							alert("The audio could not be properly loaded! Due to unhelpful strip-aways from viewing metadata, we cannot provide much info on what exactly failed.");
+							alert("The audio could not be properly loaded! We couldn't gather any info on what exactly failed, so the best we can say is: try selecting another audio file, or using another browser.");
 							console.log(err.message + err.stack);
 						}
 					}
