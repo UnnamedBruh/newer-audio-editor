@@ -31,10 +31,16 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineStart = null, timelineEnd = null, highlight = null, timelineStartNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineIter = 0, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
 			const interpretFiles = document.getElementById("which");
 			let whichInterpret = false;
+			window.onkeydown = function(key) {
+				isPressingShift = key.key === "Shift";
+			}
+			window.onkeyup = function(key) {
+				if (isPressingShift) isPressingShift = !(key.key === "Shift");
+			}
 			interpretFiles.onclick = function() {
 				whichInterpret = !whichInterpret;
 				interpretFiles.textContent = whichInterpret ? "Treat File Data As Audio" : "Decode The Audio File";
@@ -84,11 +90,15 @@
 			}
 			function tick() {
 				if (timeline && playing) {
-					const x = Date.now() - whenPlayed;
+					let x = (Date.now() - whenPlayed) / 1000;
 					if (sampleSkip === 1) {
-						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb - window.pageXOffset);
+						timeline.setAttribute("x", x * sharedBuffer.sampleRate / sampleSkip + bbb - window.pageXOffset);
 					} else {
-						timeline.setAttribute("x", x / 1000 * sharedBuffer.sampleRate / sampleSkip + bbb);
+						timeline.setAttribute("x", x * sharedBuffer.sampleRate / sampleSkip + bbb);
+					}
+					if (timelineBeginEnd !== 0 && x > timelineEndNumCache) {
+						playing = false;
+						src.stop();
 					}
 				}
 				requestAnimationFrame(() => tick());
@@ -102,6 +112,7 @@
 				src = audioContext.createBufferSource();
 				src.buffer = sharedBuffer;
 				src.connect(gainNode);
+				startAt += timelineBeginNum / div.clientWidth * sharedBuffer.duration;
 				src.start(0, startAt);
 				whenPlayed = Date.now() - startAt * 1000;
 				playing = true;
@@ -130,7 +141,7 @@
 				return data2.join(" ");
 			}
 			function loadDiv(exp) {
-				if (prevIntervalId !== undefined) clearInterval(prevIntervalID);
+				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 				document.body.appendChild(v);
@@ -153,14 +164,78 @@
 				timeline.setAttribute("width", 2);
 				timeline.setAttribute("fill", "none");
 				timeline.setAttribute("x", 0);
+				timelineStart = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+				timelineStart.setAttribute("height", 200);
+				timelineStart.setAttribute("width", 2);
+				timelineStart.setAttribute("fill", "none");
+				timelineStart.setAttribute("x", 0);
+				timelineEnd = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+				timelineEnd.setAttribute("height", 200);
+				timelineEnd.setAttribute("width", 2);
+				timelineEnd.setAttribute("fill", "none");
+				timelineEnd.setAttribute("x", 0);
+				highlight = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+				highlight.setAttribute("height", 200);
+				highlight.setAttribute("width", 2);
+				highlight.setAttribute("fill", "none");
+				highlight.setAttribute("x", 0);
 				x.appendChild(timeline);
+				function restartSelect() {
+					timelineIter = -1;
+					timelineBegin.setAttribute("fill", "none");
+					timelineBegin.setAttribute("x", 0);
+					timelineEnd.setAttribute("fill", "none");
+					timelineEnd.setAttribute("x", 0);
+					highlight.setAttribute("fill", "none");
+					highlight.setAttribute("x", 0);
+					timelineBeginNum = 0;
+					timelineEndNum = 0;
+					timelineEndNumCache = 0;
+					timelineBeginAudio = 0;
+					timelineEndAudio = 0;
+				}
 				play.onclick = () => {
 					startAt = 0;
 					bbb = 0;
 					playSound();
 				}
+				document.body.onclick = restartSelect;
 				function playWithTimeline(eve) {
 					const clickX = eve.clientX - xOff + window.scrollX;
+					if (isPressingShift) {
+						switch (timelineIter) {
+							case 0: {
+								timelineBegin.setAttribute("x", clickX);
+								timelineBegin.setAttribute("fill", "#00AAFF");
+								timelineBeginNum = clickX;
+								timelineBeginAudio = timelineBeginNum * x.clientWidth * sampleSkip;
+								break;
+							}
+							case 1: {
+								timelineEnd.setAttribute("x", clickX);
+								timelineEnd.setAttribute("fill", "#00AAFF");
+								highlight.setAttribute("fill", "#00AAFF");
+								highlight.setAttribue("fill-opacity", 0.3);
+								timelineEndNum = clickX;
+								if (timelineEndNum < timelineBeginNum) {
+									const temp = timelineEndNum;
+									timelineEndNum = timelineBeginNum;
+									timelineBeginNum = temp;
+								}
+								timelineEndNumCache = (timelineEndNum * sampleSkip * sharedBuffer.sampleRate) / 1000;
+								timelineEndAudio = timelineEndNum * x.clientWidth * sampleSkip;
+								highlight.setAttribute("x", timelineBeginNum);
+								highlight.setAttribute("width", timelineEndNum - timelineBeginNum);
+								break;
+							}
+							case 2: {
+								restartSelect();
+								break;
+							}
+						}
+						timelineIter++;
+						return;
+					}
 					const relativeX = clickX / x.clientWidth;
 					startAt = relativeX * sharedBuffer.duration; // Time in seconds
 
@@ -246,6 +321,7 @@
 									return effect[5][i](x.value);
 								}
 							})];
+							if (timelineBeginAudio !== 0) values[0] = {audioData: exp.audioData.subarray(timelineBeginAudio, timelineEndAudio). sampleRate: exp.sampleRate};
 							effects[effect[4]](...values);
 							data = generateWaveform(exp);
 							sharedBuffer = audioContext.createBuffer(1, exp.audioData.length, exp.sampleRate);
@@ -416,6 +492,7 @@
 					link.remove();
 				}
 				ed = v;
+				div = x;
 			}
 			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
