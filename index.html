@@ -130,7 +130,7 @@
 				return data2.join(" ");
 			}
 			function loadDiv(exp) {
-				if (typeof prevIntervalId === "number") clearInterval(prevIntervalID);
+				if (prevIntervalId !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 				document.body.appendChild(v);
@@ -212,7 +212,7 @@
 					}
 				}
 				prevIntervalID = setInterval(function() {
-					xOff = window.scrollX + v.getBoundingClientRect().x;
+					xOff = v.getBoundingClientRect().x;
 				}, 1000);
 				v.appendChild(document.createElement("br"));
 				const opt = document.createElement("select");
