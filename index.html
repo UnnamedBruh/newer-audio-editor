@@ -164,11 +164,11 @@
 				timeline.setAttribute("width", 2);
 				timeline.setAttribute("fill", "none");
 				timeline.setAttribute("x", 0);
-				timelineStart = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-				timelineStart.setAttribute("height", 200);
-				timelineStart.setAttribute("width", 2);
-				timelineStart.setAttribute("fill", "none");
-				timelineStart.setAttribute("x", 0);
+				timelineBegin = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+				timelineBegin.setAttribute("height", 200);
+				timelineBegin.setAttribute("width", 2);
+				timelineBegin.setAttribute("fill", "none");
+				timelineBegin.setAttribute("x", 0);
 				timelineEnd = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 				timelineEnd.setAttribute("height", 200);
 				timelineEnd.setAttribute("width", 2);
@@ -287,7 +287,7 @@
 					}
 				}
 				prevIntervalID = setInterval(function() {
-					xOff = v.getBoundingClientRect().x;
+					xOff = v.getBoundingClientRect().x + window.pageXOffset;
 				}, 1000);
 				v.appendChild(document.createElement("br"));
 				const opt = document.createElement("select");
