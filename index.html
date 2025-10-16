@@ -25,19 +25,26 @@
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
-		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac">
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac"><br>
+		<button id="which">Decode The Audio File</button>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
 			let exporters = null;
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, startAt = 0, bbb = 0, ed = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
+			const interpretFiles = document.getElementById("which");
+			let whichInterpret = false;
+			interpretFiles.onclick = function() {
+				whichInterpret = !whichInterpret;
+				interpretFiles.textContent = whichInterpret ? "Treat File Data As Audio" : "Decode The Audio File";
+			}
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
 			volume.oninput = function() {
 				if (volumeWarning) {
 					volumeWarning = false;
-					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly, and ethically, as these are very experimental features.");
+					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly and ethically, as these are very experimental features.");
 					volume.value = 1;
 				}
 				let x = +volume.value;
@@ -57,7 +64,7 @@
 			volume2.oninput = function() {
 				if (volumeWarning) {
 					volumeWarning = false;
-					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly, and ethically, as these are very experimental features.");
+					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly and ethically, as these are very experimental features.");
 					volume.value = 1;
 				}
 				let x = +volume2.value;
@@ -401,7 +408,6 @@
 						blob = new Blob(mp3Data, { type: "audio/mp3" });
 					}
 
-
 					const link = document.createElement("a");
 					link.download = "exportedAudio.mp3";
 					link.href = URL.createObjectURL(blob);
@@ -413,7 +419,7 @@
 			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
 				const firstFile = eve.target.files[0];
-				if (firstFile.name.endsWith(".lsac") || firstFile.name.endsWith(".fbac")) {
+				if (!whichInterpret && (firstFile.name.endsWith(".lsac") || firstFile.name.endsWith(".fbac"))) {
 					try {
 						exporters = null;
 						if (ed) {
@@ -452,6 +458,30 @@
 							data = null;
 							sampleData = null;
 							sampleSkip = 480;
+							if (whichInterpret) {
+								const data = event.target.result;
+								const bits = Math.max(prompt("What is the bits per sample of the audio?") >> 3, 1);
+								sharedBuffer = audioContext.createBuffer(1, data.byteLength / bits, prompt("What is the samplerate of the audio?"));
+								const channel = sharedBuffer.getChannelData(0);
+								const len = sharedBuffer.length;
+								const buffer = new Uint8Array(data);
+								if (bits === 1) {} else if (bits === 2) {
+									for (let i = 0, j = 0; i < len; i += bits, j++) {
+										channel[j] = ((buffer[i + 1] << 8) | buffer[i]) / 0x7FFF - 0.5;
+									}
+								} else if (bits === 2) {
+									for (let i = 0, j = 0; i < len; i += bits, j++) {
+										channel[j] = ((buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x7FFFFF - 0.5;
+									}
+								} else if (bits === 3) {
+									for (let i = 0, j = 0; i < len; i += bits, j++) {
+										channel[j] = ((buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x7FFFFFFF - 0.5;
+									}
+								}
+								exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
+								loadDiv(exporters);
+								return;
+							}
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
 							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1;
 							const channel = sharedBuffer.getChannelData(channelNum);
@@ -475,7 +505,7 @@
 										}
 									} else if (choice === 3) {
 										for (let i = 0; i < len; i++) {
-											channel[i] += channelOther[i];
+											channel[i] = (channel[i] + channelOther[i]) * 0.5;
 										}
 									}
 								}
