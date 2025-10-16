@@ -321,7 +321,7 @@
 									return effect[5][i](x.value);
 								}
 							})];
-							if (timelineBeginAudio !== 0) values[0] = {audioData: exp.audioData.subarray(timelineBeginAudio, timelineEndAudio). sampleRate: exp.sampleRate};
+							if (timelineBeginAudio !== 0) values[0] = {audioData: exp.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exp.sampleRate};
 							effects[effect[4]](...values);
 							data = generateWaveform(exp);
 							sharedBuffer = audioContext.createBuffer(1, exp.audioData.length, exp.sampleRate);
