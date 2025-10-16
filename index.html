@@ -467,19 +467,19 @@
 								const buffer = new Uint8Array(data);
 								if (bits === 1) {
 									for (let i = 0; i < len; i++) {
-										channel[i] = (buffer[i] - 128) / 0xFF;
+										channel[i] = (buffer[i] - 128) / 0x80;
 									}
 								} else if (bits === 2) {
 									for (let i = 0, j = 0; i < len; i += bits, j++) {
-										channel[j] = ((buffer[i + 1] << 8) | buffer[i]) / 0x7FFF - 0.5;
+										channel[j] = ((buffer[i + 1] << 8) | buffer[i]) / 0x8000 - 0.5;
 									}
 								} else if (bits === 3) {
 									for (let i = 0, j = 0; i < len; i += bits, j++) {
-										channel[j] = ((buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x7FFFFF - 0.5;
+										channel[j] = ((buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x800000 - 0.5;
 									}
 								} else if (bits === 4) {
 									for (let i = 0, j = 0; i < len; i += bits, j++) {
-										channel[j] = ((buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x7FFFFFFF - 0.5;
+										channel[j] = ((buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x80000000 - 0.5;
 									}
 								}
 								exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
