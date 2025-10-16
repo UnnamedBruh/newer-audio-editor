@@ -96,7 +96,7 @@
 					} else {
 						timeline.setAttribute("x", x * sharedBuffer.sampleRate / sampleSkip + bbb);
 					}
-					if (timelineBeginEnd !== 0 && x > timelineEndNumCache) {
+					if (timelineEndNum !== 0 && x > timelineEndNumCache) {
 						playing = false;
 						src.stop();
 					}
