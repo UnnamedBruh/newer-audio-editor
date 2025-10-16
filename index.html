@@ -465,7 +465,11 @@
 								const channel = sharedBuffer.getChannelData(0);
 								const len = sharedBuffer.length;
 								const buffer = new Uint8Array(data);
-								if (bits === 1) {} else if (bits === 2) {
+								if (bits === 1) {
+									for (let i = 0; i < len; i++) {
+										channel[i] = (buffer[i] - 128) / 0xFF;
+									}
+								} else if (bits === 2) {
 									for (let i = 0, j = 0; i < len; i += bits, j++) {
 										channel[j] = ((buffer[i + 1] << 8) | buffer[i]) / 0x7FFF - 0.5;
 									}
