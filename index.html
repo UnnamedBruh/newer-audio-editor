@@ -576,7 +576,7 @@
 									const channelOtherNum = sharedBuffer.numberOfChannels - channelNum - 1;
 									const len = channel.length;
 									const channelOther = sharedBuffer.getChannelData(channelOtherNum);
-									const choice = prompt("Okay then! Which formula do you want to choose? (0 = channel" + channelNum + " - otherChannel | 1 = channel" + channelNum + " * 2 - otherChannel | 2 = channel" + channelNum + " - (otherChannel - channel" + channelNum + ") / 2 | 3 = 2 but channel" + channelNum + " * 2 | 4 = channel" + channelNum + " + otherChannel)") | 0;
+									const choice = prompt("Okay then! Which formula do you want to choose? (0 = channel" + channelNum + " - otherChannel | 1 = channel" + channelNum + " * 2 - otherChannel | 2 = channel" + channelNum + " - (otherChannel - channel" + channelNum + ") / 2 | 3 = 2 but otherChannel" + channelNum + " * 2 | 4 = channel" + channelNum + " + otherChannel)") | 0;
 									if (choice === 0) {
 										for (let i = 0; i < len; i++) {
 											channel[i] -= channelOther[i];
@@ -591,7 +591,7 @@
 										}
 									} else if (choice === 3) {
 										for (let i = 0; i < len; i++) {
-											channel[i] -= channelOther[i] - channel[i] * 2;
+											channel[i] -= channelOther[i] * 2 - channel[i];
 										}
 									} else if (choice === 4) {
 										for (let i = 0; i < len; i++) {
