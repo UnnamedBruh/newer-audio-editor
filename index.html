@@ -38,6 +38,7 @@
 			interpretFiles.onclick = function() {
 				whichInterpret = !whichInterpret;
 				interpretFiles.textContent = whichInterpret ? "Treat File Data As Audio" : "Decode The Audio File";
+				audioInput.accept = whichInterpret ? "*" : ".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac";
 			}
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
