@@ -36,10 +36,10 @@
 			const interpretFiles = document.getElementById("which");
 			let whichInterpret = false;
 			window.onkeydown = function(key) {
-				isPressingShift = key.key === "KeyS";
+				isPressingShift = key.key.toLowerCase() === "s";
 			}
 			window.onkeyup = function(key) {
-				if (isPressingShift) isPressingShift = !(key.key === "KeyS");
+				if (isPressingShift) isPressingShift = !(key.key.toLowerCase() === "s");
 			}
 			interpretFiles.onclick = function() {
 				whichInterpret = !whichInterpret;
