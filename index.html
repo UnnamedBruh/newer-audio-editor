@@ -287,6 +287,11 @@
 						n.setAttribute("d", data2.join(" "));
 					}
 				}
+				window.onkeydown = function(key) {
+					if (key.key === " ") {
+						playWithTimeline({clientX: 0});
+					}
+				}
 				prevIntervalID = setInterval(function() {
 					xOff = v.getBoundingClientRect().x + window.pageXOffset;
 				}, 1000);
