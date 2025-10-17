@@ -327,11 +327,15 @@
 							effects[effect[4]](...values);
 							if (timelineBeginAudio !== 0) {
 								if (values[0].audioData.buffer !== exp.audioData.buffer) {
-									const data = new Float32Array(values[0].audioData.length + exp.audioData.length - le);
-									data.set(exp.audioData.subarray(0, timelineBeginAudio), 0);
-									data.set(values[0].audioData, timelineBeginAudio);
-									data.set(exp.audioData.subarray(timelineEndAudio, exp.audioData.length), values[0].audioData.length + timelineBeginAudio);
-									exp.audioData = data;
+									if (values[0].audioData.length === timelineEndAudio - timelineBeginAudio) {
+										exp.audioData.set(values[0].audioData, timelineBeginAudio);
+									} else {
+										const data = new Float32Array(values[0].audioData.length + exp.audioData.length - le);
+										data.set(exp.audioData.subarray(0, timelineBeginAudio), 0);
+										data.set(values[0].audioData, timelineBeginAudio);
+										data.set(exp.audioData.subarray(timelineEndAudio, exp.audioData.length), values[0].audioData.length + timelineBeginAudio);
+										exp.audioData = data;
+									}
 								}
 							}
 							data = generateWaveform(exp);
