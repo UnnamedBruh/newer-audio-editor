@@ -32,7 +32,7 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
 			const interpretFiles = document.getElementById("which");
 			let whichInterpret = false;
