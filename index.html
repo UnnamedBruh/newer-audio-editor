@@ -331,6 +331,7 @@
 									data.set(exp.audioData.subarray(0, timelineBeginAudio), 0);
 									data.set(values[0].audioData, timelineBeginAudio);
 									data.set(exp.audioData.subarray(timelineEndAudio, exp.audioData.length), values[0].audioData.length + timelineBeginAudio);
+									exp.audioData = data;
 								}
 							}
 							data = generateWaveform(exp);
