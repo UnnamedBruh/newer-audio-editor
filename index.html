@@ -558,27 +558,45 @@
 							sampleSkip = 480;
 							if (whichInterpret) {
 								const data = event.target.result;
+								const type = Number(prompt("How will the audio be interpreted? (0 = integers, 1 = floats)"));
 								const bits = Math.max(prompt("What is the bits per sample of the audio?") >> 3, 1);
 								sharedBuffer = audioContext.createBuffer(1, data.byteLength / bits, prompt("What is the samplerate of the audio?"));
 								const channel = sharedBuffer.getChannelData(0);
 								const len = sharedBuffer.length;
 								const buffer = new Uint8Array(data);
-								if (bits === 1) {
-									const bufferInt = new Int8Array(data);
-									for (let i = 0; i < len; i++) {
-										channel[i] = bufferInt[i] / 0x80;
+								if (type === 0) {
+									if (bits === 1) {
+										const bufferInt = new Int8Array(data);
+										for (let i = 0; i < len; i++) {
+											channel[i] = bufferInt[i] / 0x80;
+										}
+									} else if (bits === 2) {
+										for (let i = 0, j = 0; i < len; i += bits, j++) {
+											channel[j] = ((buffer[i + 1] << 8) | buffer[i]) / 0x8000 - 0.5;
+										}
+									} else if (bits === 3) {
+										for (let i = 0, j = 0; i < len; i += bits, j++) {
+											channel[j] = ((buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x800000 - 0.5;
+										}
+									} else if (bits === 4) {
+										for (let i = 0, j = 0; i < len; i += bits, j++) {
+											channel[j] = ((buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x80000000 - 0.5;
+										}
 									}
-								} else if (bits === 2) {
-									for (let i = 0, j = 0; i < len; i += bits, j++) {
-										channel[j] = ((buffer[i + 1] << 8) | buffer[i]) / 0x8000 - 0.5;
-									}
-								} else if (bits === 3) {
-									for (let i = 0, j = 0; i < len; i += bits, j++) {
-										channel[j] = ((buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x800000 - 0.5;
-									}
-								} else if (bits === 4) {
-									for (let i = 0, j = 0; i < len; i += bits, j++) {
-										channel[j] = ((buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x80000000 - 0.5;
+								} else if (type === 1) {
+									if (bits === 4) {
+										const f = new Float32Array(data.slice(0, data.byteLength >> 2 << 2));
+										buffer.set(f, 0);
+									} else if (bits === 8) {
+										const f = new Float64Array(data.slice(0, data.byteLength >> 3 << 3));
+										const lenF = f.length;
+										try {
+											buffer.set(f, 0);
+										} catch {
+											for (let i = 0; i < lenF; i++) {
+												channel[i] = f[i];
+											}
+										}
 									}
 								}
 								exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
