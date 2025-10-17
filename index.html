@@ -224,7 +224,7 @@
 									timelineEndNum = timelineBeginNum;
 									timelineBeginNum = temp;
 								}
-								timelineEndNumCache = (timelineEndNum * sharedBuffer.sampleRate) / 1000;
+								timelineEndNumCache = timelineEndNum / div.clientWidth * sharedBuffer.duration;
 								timelineEndAudio = timelineEndNum * sampleSkip;
 								highlight.setAttribute("x", timelineBeginNum);
 								highlight.setAttribute("width", timelineEndNum - timelineBeginNum);
