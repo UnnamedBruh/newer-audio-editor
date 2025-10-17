@@ -22,26 +22,22 @@
 		<script src="audioFBAC.js"></script>
 		<script src="lame.min.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
-		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%">
+		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
+		Selecting A Certain Region? <input type="checkbox" id="select">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac"><br>
 		<button id="which">Decode The Audio File</button>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2");
+			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select");
 			let exporters = null;
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineIter = 0, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
 			const interpretFiles = document.getElementById("which");
 			let whichInterpret = false;
-			window.onkeydown = function(key) {
-				isPressingShift = key.code === "Space";
-				console.log(key.code);
-			}
-			window.onkeyup = function(key) {
-				if (isPressingShift) isPressingShift = !(key.code === "Space");
-				console.log(key.code);
+			selectBox.oninput = function() {
+				isPressingShift = selectBox.checked;
 			}
 			interpretFiles.onclick = function() {
 				whichInterpret = !whichInterpret;
