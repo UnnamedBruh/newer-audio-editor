@@ -210,7 +210,7 @@
 								timelineBegin.setAttribute("x", clickX);
 								timelineBegin.setAttribute("fill", "#00AAFF");
 								timelineBeginNum = clickX;
-								timelineBeginAudio = timelineBeginNum * x.clientWidth * sampleSkip;
+								timelineBeginAudio = timelineBeginNum * sampleSkip;
 								break;
 							}
 							case 1: {
@@ -224,8 +224,8 @@
 									timelineEndNum = timelineBeginNum;
 									timelineBeginNum = temp;
 								}
-								timelineEndNumCache = (timelineEndNum * sampleSkip * sharedBuffer.sampleRate) / 1000;
-								timelineEndAudio = timelineEndNum * x.clientWidth * sampleSkip;
+								timelineEndNumCache = (timelineEndNum * sharedBuffer.sampleRate) / 1000;
+								timelineEndAudio = timelineEndNum * sampleSkip;
 								highlight.setAttribute("x", timelineBeginNum);
 								highlight.setAttribute("width", timelineEndNum - timelineBeginNum);
 								break;
