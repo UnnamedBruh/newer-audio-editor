@@ -323,7 +323,16 @@
 								}
 							})];
 							if (timelineBeginAudio !== 0) values[0] = {audioData: exp.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exp.sampleRate};
+							const le = values[0].audioData.length;
 							effects[effect[4]](...values);
+							if (timelineBeginAudio !== 0) {
+								if (values[0].audioData.length !== le) {
+									const data = new Float32Array(values[0].audioData.length + exp.audioData.length - le);
+									data.set(exp.audioData.subarray(0, timelineBeginAudio), 0);
+									data.set(values[0].audioData, timelineBeginAudio);
+									data.set(exp.audioData.subarray(timelineEndAudio, exp.audioData.length), values[0].audioData.length + timelineBeginAudio);
+								}
+							}
 							data = generateWaveform(exp);
 							sharedBuffer = audioContext.createBuffer(1, exp.audioData.length, exp.sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
