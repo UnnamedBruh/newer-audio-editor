@@ -459,7 +459,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 	if (antiAliasing) {
 		for (let i = 0; i < len; i++) {
 			// LFO modulates the delay
-			delaySamples = sin(phase) * depth; // non-integer delay
+			delaySamples = (sin(phase) * 0.5 + 0.5) * depth; // non-integer delay
 			readIndex = i - delaySamples;
 
 			int = delaySamples | 0;
@@ -477,7 +477,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 	} else {
 		for (let i = 0; i < len; i++) {
 			// LFO modulates the delay
-			delaySamples = (sin(phase) * depth) | 0; // integer delay
+			delaySamples = ((sin(phase) * 0.5 + 0.5) * depth) | 0; // integer delay
 			readIndex = i - delaySamples;
 
 			// Safe read: use original if out of bounds
