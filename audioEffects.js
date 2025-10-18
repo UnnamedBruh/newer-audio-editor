@@ -107,11 +107,4 @@ const effectsList = [
 		"difference",
 		[Number, Number]
 	]
-].sort((x, y) => {
-	const b = x[0].split("").map(x => x.charCodeAt());
-	const bb = y[0].split("").map(x => x.charCodeAt());
-	for (let i = 0; i < b.length && i < bb.length; i++) {
-		if (b[i] > bb[i]) return true; else if (b[i] < bb[i]) return false;
-	}
-	return b.length > bb.length;
-});
+].sort((a, b) => a[0].localeCompare(b[0]));
