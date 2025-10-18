@@ -434,7 +434,7 @@ effects["repeat"] = function(buffer, times) {
 	}
 }*/
 
-// New code, refactored by GPT-5.0 Mini.
+// New code, refactored by GPT-5.0 Mini. Okay, even with the fixes, this effect allows the buffer to cancel itself out (silence itself), which is not what I wanted
 effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, antiAliasing = true) {
 	if (volume === 0) return;
 
@@ -442,8 +442,8 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 	const sampleRate = buffer.sampleRate;
 	const len = audioData.length;
 
-	const dryMix = 0.3;  // original signal
-	const wetMix = 0.7;  // modulated signal
+	const dryMix = 0.5;  // original signal
+	const wetMix = 0.5;  // modulated signal
 
 	const modulated = new Float32Array(len);
 
@@ -468,7 +468,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 			delayedSample = readIndex >= 0 ? interpolate(audioData[int], audioData[int + 1], readIndex % 1) : 0;
 
 			// Mix dry + wet
-			modulated[i] = dryMix * audioData[i] + (wetMix + 0.05 * sin(phase)) * delayedSample;
+			modulated[i] = dryMix * audioData[i] + wetMix * delayedSample;
 
 			// Increment phase
 			phase += phaseIncrement;
@@ -484,7 +484,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 			delayedSample = readIndex >= 0 ? audioData[readIndex] : 0;
 
 			// Mix dry + wet
-			modulated[i] = dryMix * audioData[i] + (wetMix + 0.05 * sin(phase)) * delayedSample;
+			modulated[i] = dryMix * audioData[i] + wetMix * delayedSample;
 
 			// Increment phase
 			phase += phaseIncrement;
