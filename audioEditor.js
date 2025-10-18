@@ -529,7 +529,7 @@ effects["difference"] = function(buffer, interpolation = 1, step = -1) {
 	}
 }
 
-effects["pitch"] = function(buffer, pitch, frames) {
+/*effects["pitch"] = function(buffer, pitch, frames) { // This is the old implementation I wrote.
 	if (pitch === 0 || frames <= 2) return;
 	const len = buffer.audioData.length;
 	const pointer = buffer.audioData;
@@ -549,4 +549,48 @@ effects["pitch"] = function(buffer, pitch, frames) {
 		interpolated[i] = sample1 * (1 - frac) + sample2 * frac;
 	}
 	pointer.set(interpolated);
-}
+}*/
+
+effects["pitch"] = function(buffer, pitch, frameSize) { // This was written entirely by GPT-5.0 Mini. Not me! All I did was make a few basic precomputing optimizations! I'm going to test this to check its reliability.
+	if (pitch === 0 || frameSize < 2) return;
+
+	const audio = buffer.audioData;
+	const len = audio.length;
+	const pitchFactor = pow(2, pitch); // convert octave shift to factor
+	const output = new Float32Array(len);
+
+	let writePos = 0; // position in output
+	let readPos = 0;  // position in input
+
+	const min = Math.min;
+	const backtrackFactor = floor(frameSize / pitchFactor / 2);
+
+	while (writePos < len) {
+		// Determine frame bounds
+		const frameEnd = min(readPos + frameSize, len);
+		const frame = audio.subarray(readPos, frameEnd);
+		const frameLen = frame.length;
+		const frameLenSub = frameLen - 1;
+
+		// Process each sample in the frame
+		for (let i = 0; i < frameLen && writePos < len; i++) {
+			// Calculate interpolated position
+			const pos = i * pitchFactor;
+
+			const i0 = floor(pos);
+			const i1 = min(i0 + 1, frameLenSub);
+			const frac = pos - i0;
+
+			// Linear interpolation
+			output[writePos] = frame[i0] * (1 - frac) + frame[i1] * frac;
+
+			writePos++;
+		}
+
+		// Back-track a bit to blend frames (avoids gaps)
+		readPos += backtrackFactor;
+	}
+
+	buffer.audioData.set(output);
+};
+
