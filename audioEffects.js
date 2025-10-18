@@ -98,5 +98,15 @@ const effectsList = [
 		4,
 		"chorus",
 		[Number, Number, Number, identifier]
+	],
+	[
+		"Previous-Door Subtraction",
+		"Alters the audio's frequencies by subtracting the current samples by the previous ones. (Apply percentage = -100% gives you in-place processing, and 100% gives you full difference in new buffer. Step controls the harshness of the effect.)",
+		'Apply percentage: <input id="difference0" type="number" min="0" step="1" value="100" style="width: 100px">%<br>Step: <input id="difference1" type="number" min="0" max="1" step="0.01" value="1" style="width: 100px">',
+		2,
+		"difference",
+		[Number, Number]
 	]
-];
+].sort((x, y) => {
+	return x[0].split("").map(x => x.charCodeAt()).reduce((x, y) => x + y) - y[0].split("").map(x => x.charCodeAt()).reduce((x, y) => x + y);
+});
