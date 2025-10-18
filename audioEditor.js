@@ -467,7 +467,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 
 //effects["reverb"] = function(buffer, 
 
-effect["difference"] = function(buffer, interpolation = 1, step = -1) {
+effects["difference"] = function(buffer, interpolation = 1, step = -1) {
 	if (interpolation === 0 || step === 0) return;
 	const len = buffer.audioData.length;
 	const pointer = buffer.audioData;
