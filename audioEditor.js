@@ -528,3 +528,25 @@ effects["difference"] = function(buffer, interpolation = 1, step = -1) {
 		}
 	}
 }
+
+effects["pitch"] = function(buffer, pitch, frames) {
+	if (pitch === 0 || frames <= 2) return;
+	const len = buffer.audioData.length;
+	const pointer = buffer.audioData;
+	const pitchShift = pow(2, pitch);
+	const newAudioData = buffer.audioData.slice();
+	let affectedAudio = {audioData: newAudioData, sampleRate: buffer.sampleRate};
+	const speed = _resampleAudio(affectedAudio, pitchShift, true);
+	affectedAudio = affectedAudio.audioData;
+	const interpolated = new Float32Array(len);
+	const affectedLen = affectedAudio.length;
+	for (let i = 0; i < len; i++) { // This loop was implemented by GPT-5.0 Mini. I wasn't sure how to properly implement the idea I thought myself.
+		let srcIndex = i * (affectedLen / len);
+		let indexInt = floor(srcIndex);
+		let frac = srcIndex - indexInt;
+		let sample1 = affectedAudio[indexInt] || 0;
+		let sample2 = affectedAudio[indexInt + 1] || 0;
+		interpolated[i] = sample1 * (1 - frac) + sample2 * frac;
+	}
+	pointer.set(interpolated);
+}
