@@ -317,7 +317,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 		if (noiseType === "bn") { // GPT-5.0 Mini wrote this implementation, but I adapted it to this function's standards.
 			// Algorithmistic brown: cumulative sum of small white noise steps
 			let last = 0;
-			const step = 0.02;
+			const step = 0.2;
 			for (let i = 0; i < len; i++) {
 				last += (rand() - 0.5) * step;
 				last = last < -1 ? -1 : last > 1 ? 1 : last; // clamp
@@ -326,8 +326,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 		} else if (noiseType === "pn") {
 			// https://whoisryosuke.com/blog/2025/generating-pink-noise-for-audio-worklets (algorithm is directly copied-and-pasted, then implemented here. I do NOT write, or claim to have written the marked section.)
 			volume *= 0.5;
-			let b0, b1, b2, b3, b4, b5, b6, pink, white;
-			b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0;
+			let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0, pink=0, white=0;
 			if (volume === 1) {
 				for (let i = 0; i < len; i++) {
 					white = rand(); 
@@ -404,37 +403,7 @@ effects["repeat"] = function(buffer, times) {
 	buffer.audioData = newData;
 }
 
-// Old code; this was really quirky and unstable, since I couldn't grasp the idea of a flanger well. :/
-/*effects["chorus"] = function(buffer, volume, chorusFlange, distance) {
-	if (volume === 0 || chorusFlange === 0) return;
-	const len = buffer.audioData.length;
-	volume = volume * 0.01;
-
-	let newData;
-	if (!Object.prototype.hasOwnProperty.call(buffer.audioData, "slice")) {
-		newData = buffer.audioData instanceof Float32Array ? new Float32Array(round(len)) : new Float64Array(round(len));
-		newData.set(buffer.audioData);
-	} else {
-		newData = buffer.audioData.slice();
-	}
-
-	const sampleRate = buffer.sampleRate;
-	const pi = Math.PI;
-
-	const audioPointer = buffer.audioData;
-	let fl, trunc, final;
-
-	chorusFlange *= 2;
-	for (let i = 0; i < len; i++) {
-		fl = i + sin(i * pi * chorusFlange) * distance;
-		if (!(i % 24000)) console.log(fl, i);
-		trunc = tru(fl);
-		final = interpolate(newData[i], newData[trunc], abs(fl - trunc) % 1);
-		if (!isNaN(final)) audioPointer[i] += final * volume;
-	}
-}*/
-
-// New code, refactored by GPT-5.0 Mini. Okay, even with the fixes, this effect allows the buffer to cancel itself out (silence itself), which is not what I wanted
+// New code, refactored by GPT-5.0 Mini.
 effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, antiAliasing = true) {
 	if (volume === 0) return;
 
@@ -443,7 +412,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 	const len = audioData.length;
 
 	const dryMix = 0.5;  // original signal
-	const wetMix = 0.5;  // modulated signal
+	const wetMix = volume * 0.01;  // modulated signal
 
 	const modulated = new Float32Array(len);
 
@@ -494,11 +463,67 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 
 	// Apply volume and copy back to buffer (the original line was optimized by me)
 	audioData.set(modulated);
-
-	volume *= 0.01;
-	for (let i = 0; i < len; i++) {
-		audioData[i] *= volume;
-	}
 };
 
 //effects["reverb"] = function(buffer, 
+
+effect["difference"] = function(buffer, interpolation = 1, step = -1) {
+	if (interpolation === 0 || step === 0) return;
+	const len = buffer.audioData.length;
+	const pointer = buffer.audioData;
+	if (step === -1) {
+		if (interpolation === -1) {
+			let prev = 0;
+			for (let i = 1; i < len; i++) {
+				pointer[i] -= pointer[prev];
+				prev = i;
+			}
+		} else if (interpolation === 1) {
+			let x = new Float32Array(len);
+			let prev = 0;
+			for (let i = 1; i < len; i++) {
+				x[i] = pointer[i] - pointer[prev];
+				prev = i;
+			}
+			buffer.audioData = x;
+		} else {
+			let x = new Float32Array(len);
+			let prev = 0;
+			for (let i = 1; i < len; i++) {
+				x[i] = interpolate(pointer[i], pointer[i] - pointer[prev], interpolation);
+				prev = i;
+			}
+			buffer.audioData = x;
+		}
+	} else {
+		if (interpolation === -1) {
+			let prev = 0;
+			let acc = 0;
+			for (let i = 1; i < len; i++) {
+				acc = interpolate(acc, pointer[prev], step);
+				pointer[i] -= acc;
+				prev = i;
+			}
+		} else if (interpolation === 1) {
+			let x = new Float32Array(len);
+			let prev = 0;
+			let acc = 0;
+			for (let i = 1; i < len; i++) {
+				acc = interpolate(acc, pointer[prev], step);
+				x[i] = pointer[i] - acc;
+				prev = i;
+			}
+			buffer.audioData = x;
+		} else {
+			let x = new Float32Array(len);
+			let prev = 0;
+			let acc = 0;
+			for (let i = 1; i < len; i++) {
+				acc = interpolate(acc, pointer[prev], step);
+				x[i] = interpolate(pointer[i], pointer[i] - acc, interpolation);
+				prev = i;
+			}
+			buffer.audioData = x;
+		}
+	}
+}
