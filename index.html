@@ -290,7 +290,7 @@
 				window.onkeydown = function(key) {
 					if (key.key === " ") {
 						src = null;
-						playWithTimeline({clientX: 0});
+						playWithTimeline({clientX: Math.max(xOff - window.pageXOffset, 9)});
 					}
 				}
 				prevIntervalID = setInterval(function() {
