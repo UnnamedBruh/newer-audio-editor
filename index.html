@@ -593,7 +593,7 @@
 										let x;
 										for (let i = 0; i < lenF; i++) {
 											x = f[i];
-											channel[i] = Number.isNaN(x) ? 0 : (!Number.isFinite(x) ? s(x) : x);
+											channel[i] = (x === Infinity ? 1 : (x === -Infinity ? -1 : (isNaN(x) ? 0 : x))) || 0;
 										}
 									} else if (bits === 8) {
 										const f = new Float64Array(data.slice(0, data.byteLength >> 3 << 3));
@@ -601,7 +601,7 @@
 										let x;
 										for (let i = 0; i < lenF; i++) {
 											x = f[i];
-											channel[i] = Number.isNaN(x) ? 0 : (!Number.isFinite(x) ? s(x) : x);
+											channel[i] = (x === Infinity ? 1 : (x === -Infinity ? -1 : (isNaN(x) ? 0 : x))) || 0;
 										}
 									}
 								}
