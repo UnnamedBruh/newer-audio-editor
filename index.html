@@ -341,6 +341,7 @@
 										data.set(values[0].audioData, timelineBeginAudio);
 										data.set(exp.audioData.subarray(timelineEndAudio, exp.audioData.length), values[0].audioData.length + timelineBeginAudio);
 										exp.audioData = data;
+										timelineEndAudio = values[0].audioData.length + timelineBeginAudio;
 									}
 								}
 							}
@@ -561,7 +562,7 @@
 								const data = event.target.result;
 								const type = Number(prompt("How will the audio be interpreted? (0 = integers, 1 = floats)"));
 								const bits = Math.max(prompt("What is the bits per sample of the audio?") >> 3, 1);
-								sharedBuffer = audioContext.createBuffer(1, data.byteLength / bits, prompt("What is the samplerate of the audio?"));
+								sharedBuffer = audioContext.createBuffer(1, data.byteLength / bits, prompt("What is the samplerate of the audio?") || 48000);
 								const channel = sharedBuffer.getChannelData(0);
 								const len = sharedBuffer.length;
 								const buffer = new Uint8Array(data);
