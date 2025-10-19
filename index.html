@@ -594,6 +594,7 @@
 										for (let i = 0; i < lenF; i++) {
 											x = f[i];
 											channel[i] = (x === Infinity ? 1 : (x === -Infinity ? -1 : (isNaN(x) ? 0 : x))) || 0;
+											channel[i] = channel[i] > 1 ? 1 : (channel[i] < -1 ? -1 : channel[i]);
 										}
 									} else if (bits === 8) {
 										const f = new Float64Array(data.slice(0, data.byteLength >> 3 << 3));
@@ -602,6 +603,7 @@
 										for (let i = 0; i < lenF; i++) {
 											x = f[i];
 											channel[i] = (x === Infinity ? 1 : (x === -Infinity ? -1 : (isNaN(x) ? 0 : x))) || 0;
+											channel[i] = channel[i] > 1 ? 1 : (channel[i] < -1 ? -1 : channel[i]);
 										}
 									}
 								}
