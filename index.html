@@ -293,7 +293,10 @@
 				}
 				window.onkeydown = function(key) {
 					if (key.key === " ") {
+						const s = isPressingShift;
+						isPressingShift = false;
 						playWithTimeline({clientX: Math.max(xOff - window.pageXOffset, 9)});
+						isPressingShift = s;
 					}
 				}
 				prevIntervalID = setInterval(function() {
