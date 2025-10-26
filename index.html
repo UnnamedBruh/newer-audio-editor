@@ -283,6 +283,7 @@
 				v.appendChild(document.createElement("br"));
 				const opt = document.createElement("select");
 				const apply = document.createElement("button");
+				const params = document.createElement("div");
 				{
 					const label = document.createElement("a");
 					label.textContent = "Effect To Apply: ";
@@ -298,7 +299,6 @@
 						option.value = effect[4];
 						opt.appendChild(option);
 					}
-					const params = document.createElement("div");
 					v.appendChild(params);
 					apply.textContent = "Apply";
 					v.appendChild(apply);
@@ -499,6 +499,9 @@
 					link.remove();
 				}
 				window.onscroll = function() {
+					apply.style.marginLeft = window.scrollX + "px";
+					opt.style.marginLeft = apply.style.marginLeft;
+					params.style.marginLeft = apply.style.marginLeft;
 					if (sampleSkip === 1) {
 						count++;
 						if (count < 4) return;
@@ -520,8 +523,6 @@
 						data2.push("L " + (len / sampleSkip) + ",100");
 						n.setAttribute("d", data2.join(" "));
 					}
-					apply.style.marginLeft = window.scrollX + "px";
-					opt.style.marginLeft = apply.style.marginLeft;
 				}
 				ed = v;
 				div = x;
