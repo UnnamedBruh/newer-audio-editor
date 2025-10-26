@@ -282,6 +282,7 @@
 				}, 1000);
 				v.appendChild(document.createElement("br"));
 				const opt = document.createElement("select");
+				const apply = document.createElement("button");
 				{
 					const label = document.createElement("a");
 					label.textContent = "Effect To Apply: ";
@@ -299,7 +300,6 @@
 					}
 					const params = document.createElement("div");
 					v.appendChild(params);
-					const apply = document.createElement("button");
 					apply.textContent = "Apply";
 					v.appendChild(apply);
 					let currentSelected = null, paramElements = null, effect;
