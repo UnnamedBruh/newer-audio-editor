@@ -500,7 +500,8 @@
 				}
 				window.onscroll = function() {
 					if (sampleSkip === 1) {
-						if (count++ < 4) return;
+						count++;
+						if (count < 4) return;
 						count = 0;
 						let data2 = ["M 0,100 L 0,100"];
 						let xn = window.scrollX;
