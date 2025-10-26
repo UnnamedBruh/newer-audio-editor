@@ -274,7 +274,7 @@
 						if (count++ < 4) return;
 						count = 0;
 						let data2 = ["M 0,100 L 0,100"];
-						let xn = window.scrollX;
+						let xn = window.scrollX * 2;
 						x.setAttribute("width", window.innerWidth);
 						x.style.marginLeft = (xn - xOff) + "px";
 						const len = Math.min(xn - xOff + window.innerWidth, yu), y = exp.audioData;
@@ -347,7 +347,7 @@
 										data.set(values[0].audioData, timelineBeginAudio);
 										data.set(exp.audioData.subarray(timelineEndAudio, exp.audioData.length), values[0].audioData.length + timelineBeginAudio);
 										exp.audioData = data;
-										timelineEndAudio += values[0].audioData.length - timelineBeginAudio;
+										//timelineEndAudio = values[0].audioData.length - timelineBeginAudio;
 									}
 								}
 							}
