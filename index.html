@@ -269,28 +269,6 @@
 				}
 				let count = 0;
 				let yu = exp.audioData.length;
-				window.onscroll = function() {
-					if (sampleSkip === 1) {
-						if (count++ < 4) return;
-						count = 0;
-						let data2 = ["M 0,100 L 0,100"];
-						let xn = window.scrollX * 2;
-						x.setAttribute("width", window.innerWidth);
-						x.style.marginLeft = (xn - xOff) + "px";
-						const len = Math.min(xn - xOff + window.innerWidth, yu), y = exp.audioData;
-						let prev = 0, val = y[0];
-						let ep = 0.004;
-						for (let i = xn, j = 0; i < len; i++, j++) {
-							if (Math.abs(prev - val) >= ep) {
-								data2.push("L " + j + "," + Math.round(100 + val * 100));
-								prev = val;
-							}
-							val = y[j];
-						}
-						data2.push("L " + (len / sampleSkip) + ",100");
-						n.setAttribute("d", data2.join(" "));
-					}
-				}
 				window.onkeydown = function(key) {
 					if (key.key === " ") {
 						const s = isPressingShift;
@@ -362,6 +340,7 @@
 							v.style.width = (exp.audioData.length / sampleSkip) + "px";
 							n.setAttribute("d", data);
 							x.onclick = playWithTimeline; // Reset playing function, just in case browsers like Chrome misbehave every time an effect is applied
+							yu = exp.audioData.length;
 						}
 					}
 					opt.oninput = function() {
@@ -518,6 +497,30 @@
 					link.href = URL.createObjectURL(blob);
 					link.click();
 					link.remove();
+				}
+				window.onscroll = function() {
+					if (sampleSkip === 1) {
+						if (count++ < 4) return;
+						count = 0;
+						let data2 = ["M 0,100 L 0,100"];
+						let xn = window.scrollX;
+						x.setAttribute("width", window.innerWidth);
+						x.style.marginLeft = (xn - xOff) + "px";
+						const len = Math.min(xn - xOff + window.innerWidth, yu), y = exp.audioData;
+						let prev = 0, val = y[0];
+						let ep = 0.004;
+						for (let i = xn, j = 0; i < len; i++, j++) {
+							if (Math.abs(prev - val) >= ep) {
+								data2.push("L " + j + "," + Math.round(100 + val * 100));
+								prev = val;
+							}
+							val = y[i];
+						}
+						data2.push("L " + (len / sampleSkip) + ",100");
+						n.setAttribute("d", data2.join(" "));
+					}
+					apply.style.marginLeft = window.scrollX + "px";
+					opt.style.marginLeft = apply.style.marginLeft;
 				}
 				ed = v;
 				div = x;
