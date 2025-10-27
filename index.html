@@ -665,6 +665,7 @@
 											} else alert("Looks like the audio files' metadata doesn't exactly match each other well! You can still edit the main audio, though.");
 										}
 									}
+									fileReader2.readAsArrayBuffer(secondFile);
 								} catch {
 									alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
 								}
