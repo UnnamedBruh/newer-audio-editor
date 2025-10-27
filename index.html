@@ -644,31 +644,35 @@
 								alert("The first audio file was decoded.");
 								const fileReader2 = new FileReader();
 								let secondSharedBuffer;
-								try {
-									fileReader2.onload = async function(eve) {
-										try {
-											secondSharedBuffer = await audioContext.decodeAudioData(event.target.result);
-										} catch {
-											alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
-										}
-										if (secondSharedBuffer && confirm("Would you like to layer both audio files together?")) {
-											if (sharedBuffer.sampleRate === secondSharedBuffer.sampleRate && sharedBuffer.numberOfChannels === secondSharedBuffer.numberOfChannels) {
-												let len;
-												if (sharedBuffer.length > secondSharedBuffer.length) len = secondSharedBuffer.length; else len = sharedBuffer.length;
-												for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
-													const pointer1 = sharedBuffer.getChannelData(i);
-													const pointer2 = secondSharedBuffer.getChannelData(i);
-													for (let j = 0; j < len; i++) {
-														pointer1[j] += pointer2[j];
+								await new Promise(function(resolve) {
+									try {
+										fileReader2.onload = async function(eve) {
+											try {
+												secondSharedBuffer = await audioContext.decodeAudioData(eve.target.result);
+											} catch {
+												alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
+											}
+											if (secondSharedBuffer && confirm("Would you like to layer both audio files together?")) {
+												if (sharedBuffer.sampleRate === secondSharedBuffer.sampleRate && sharedBuffer.numberOfChannels === secondSharedBuffer.numberOfChannels) {
+													let len;
+													if (sharedBuffer.length > secondSharedBuffer.length) len = secondSharedBuffer.length; else len = sharedBuffer.length;
+													for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
+														const pointer1 = sharedBuffer.getChannelData(i);
+														const pointer2 = secondSharedBuffer.getChannelData(i);
+														for (let j = 0; j < len; j++) {
+															pointer1[j] += pointer2[j];
+														}
 													}
-												}
-											} else alert("Looks like the audio files' metadata doesn't exactly match each other well! You can still edit the main audio, though.");
+												} else alert("Looks like the audio files' metadata doesn't exactly match each other well! You can still edit the main audio, though.");
+											}
+											resolve();
 										}
+										fileReader2.readAsArrayBuffer(secondFile);
+									} catch {
+										alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
+										resolve();
 									}
-									fileReader2.readAsArrayBuffer(secondFile);
-								} catch {
-									alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
-								}
+								});
 							}
 							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the maintainer's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1;
 							const channel = sharedBuffer.getChannelData(channelNum);
