@@ -623,7 +623,7 @@ effects["tvnormalize"] = function(exporter) {
 		n = 1 / n;
 		n = isFinite(n) ? n : Number.MAX_VALUE;
 		max = interpolate(max, n, sampleRate);
-		max = max > 1 ? 1 : max;
+		max = max > 9880 ? 9880 : max;
 		pointer[i] *= max;
 	}
 }
