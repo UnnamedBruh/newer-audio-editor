@@ -109,10 +109,18 @@ const effectsList = [
 	],
 	[
 		"Pitch Shift (Simple)",
-		"Pitch-shifts the audio by interpolating and back-tracking the audio. This can sound a bit uncanny.",
+		"Pitch-shifts the audio by interpolating and back-tracking the audio. This can sound a bit uncanny.<br>THIS SOUND EFFECT DOES NOT WORK CORRECTLY!",
 		'Pitch (in octaves): <input id="pitch0" type="number" min="0" step="0.083333333333333" value="1" style="width: 100px"><br>Frame Size: <input id="pitch1" type="number" min="4" step="4" value="32" style="width: 100px">',
 		2,
 		"pitch",
 		[Number, Number]
+	],
+	[
+		"Normalize Audio",
+		"Normalizes the audio so it does not clip or glitch when it is exported.",
+		'',
+		0,
+		"normalize",
+		[]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
