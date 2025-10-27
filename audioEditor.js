@@ -618,9 +618,9 @@ effects["tvnormalize"] = function(exporter) {
 
 	let max = 0, n = 0;
 	for (let i = 0; i < len; i++) {
-		n = abs(pointer[i] || 0);
-		if (n > 1) {
-			max = 1 / pointer[i];
+		n = 1 / abs(pointer[i] || 0);
+		if (n < 1) {
+			max = pointer[i];
 			n = max;
 		} else if (n > max) max = interpolate(max, n, sampleRate);
 		pointer[i] *= max;
