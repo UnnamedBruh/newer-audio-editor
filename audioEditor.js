@@ -594,3 +594,35 @@ effects["pitch"] = function(buffer, pitch, frameSize) { // This was written enti
 	buffer.audioData.set(output);
 };
 
+effects["normalize"] = function(exporter) {
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+	
+	let max = pointer[0], n = 0;
+	for (let i = 1; i < len; i++) {
+		n = abs(pointer[i] || 0);
+		if (n > max) max = n;
+	}
+	max = (1 / max) * 0.9;
+	for (let i = 0; i < len; i++) {
+		pointer[i] *= max;
+	}
+}
+
+effects["tvnormalize"] = function(exporter) {
+	const pointer = exporter.audioData;
+	const sampleRate = 1 / exporter.sampleRate * 0.5;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	let max = 0, n = 0;
+	for (let i = 0; i < len; i++) {
+		n = abs(pointer[i] || 0);
+		if (n > 1) {
+			max = 1 / pointer[i];
+			n = max;
+		} else if (n > max) max = interpolate(max, n, sampleRate);
+		pointer[i] *= max;
+	}
+}
