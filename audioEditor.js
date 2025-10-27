@@ -621,10 +621,12 @@ effects["tvnormalize"] = function(exporter) {
 		n = abs(pointer[i]);
 		if (n > 1) n = 1;
 		n = 1 / n;
-		n = isFinite(n) ? n : Number.MAX_VALUE;
+		n = isFinite(n) ? n : 1;
 		max = interpolate(max, n, sampleRate);
 		pointer[i] *= max;
-		//if (abs(pointer[i]) > 1) {max = 1 / abs(pointer[i]); pointer[i] = sign(pointer[i]);}
+		if (abs(pointer[i]) > 1) {
+			max = 1 / abs(pointer[i]);
+			pointer[i] = sign(pointer[i]);
+		}
 	}
-	effects["normalize"](exporter);
 }
