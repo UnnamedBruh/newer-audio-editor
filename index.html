@@ -26,7 +26,7 @@
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select">
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
-		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac"><br>
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac" multiple><br>
 		<button id="which">Decode The Audio File</button>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -532,7 +532,21 @@
 			}
 			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
-				const firstFile = eve.target.files[0];
+				let firstFile = eve.target.files[0];
+				let secondFile = eve.target.files[1];
+				let isCorrect;
+				function swapFiles() {
+					const temp = secondFile;
+					secondFile = firstFile;
+					firstFile = temp;
+				}
+				if (secondFile) {
+					isCorrect = confirm("It seems like you selected two audio files. Is this correct?");
+					if (isCorrect) alert("*This editor cannot interpret the second file as raw audio because the maintainer of this editor has not implemented this feature... yet." + (whichInterpret ? " Not that the audio won't be decoded." : ""));
+					if (!confirm("Which file is the one you want to edit?\nOK = " + firstFile.name.trim() + "\nCancel (or X) = " + secondFile.name.trim())) {
+						swapFiles();
+					}
+				}
 				if (!whichInterpret && (firstFile.name.endsWith(".lsac") || firstFile.name.endsWith(".fbac"))) {
 					try {
 						exporters = null;
@@ -626,7 +640,36 @@
 								return;
 							}
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
-							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the creator's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1;
+							if (isCorrect) {
+								alert("The first audio file was decoded.");
+								const fileReader2 = new FileReader();
+								let secondSharedBuffer;
+								try {
+									fileReader2.onload = async function(eve) {
+										try {
+											secondSharedBuffer = await audioContext.decodeAudioData(event.target.result);
+										} catch {
+											alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
+										}
+										if (secondSharedBuffer && confirm("Would you like to layer both audio files together?")) {
+											if (sharedBuffer.sampleRate === secondSharedBuffer.sampleRate && sharedBuffer.numberOfChannels === secondSharedBuffer.numberOfChannels) {
+												let len;
+												if (sharedBuffer.length > secondSharedBuffer.length) len = secondSharedBuffer.length; else len = sharedBuffer.length;
+												for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
+													const pointer1 = sharedBuffer.getChannelData(i);
+													const pointer2 = secondSharedBuffer.getChannelData(i);
+													for (let j = 0; j < len; i++) {
+														pointer1[j] += pointer2[j];
+													}
+												}
+											} else alert("Looks like the audio files' metadata doesn't exactly match each other well! You can still edit the main audio, though.");
+										}
+									}
+								} catch {
+									alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
+								}
+							}
+							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the maintainer's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1;
 							const channel = sharedBuffer.getChannelData(channelNum);
 							if (sharedBuffer.numberOfChannels === 2) {
 								if (confirm("Should the current channel be subtracted by another? (If you want to only edit the audio, just press Cancel)")) {
