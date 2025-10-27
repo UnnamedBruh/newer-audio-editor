@@ -612,14 +612,14 @@ effects["normalize"] = function(exporter) {
 
 effects["tvnormalize"] = function(exporter) {
 	const pointer = exporter.audioData;
-	const sampleRate = 1 / exporter.sampleRate / 8;
+	const sampleRate = 1 / exporter.sampleRate / 4;
 	const len = pointer.length;
 	if (len === 0) return;
 
 	let max = 1, n = 0;
 	for (let i = 0; i < len; i++) {
 		n = abs(pointer[i]);
-		if (n > 1) n = max = 1;
+		if (n > 1) n = 1;
 		n = 1 / n;
 		n = isFinite(n) ? n : Number.MAX_VALUE;
 		max = interpolate(max, n, sampleRate);
