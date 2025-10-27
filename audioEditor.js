@@ -626,7 +626,7 @@ effects["tvnormalize"] = function(exporter) {
 		pointer[i] *= max;
 		if (abs(pointer[i]) > 0.5) {
 			max /= 1.1;
-			pointer[i] /= pointer[i] * 1.1;
+			//pointer[i] /= pointer[i] * 1.1;
 		}
 	}
 }
