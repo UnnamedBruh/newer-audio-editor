@@ -117,10 +117,18 @@ const effectsList = [
 	],
 	[
 		"Normalize Audio",
-		"Normalizes the audio so it does not clip or glitch when it is exported.",
+		"Normalizes the audio so it does not clip or glitch when it is exported. The underlying algorithm finds the highest peak.",
 		'',
 		0,
 		"normalize",
+		[]
+	],
+	[
+		"Normalize Audio (Dynamic/TV)",
+		"Dynamically normalizes the audio so it does not clip or glitch when it is exported. The underlying algorithm dynamically adjusts the volume of the audio, making sure the loudest sections are safely clipped.",
+		'',
+		0,
+		"tvnormalize",
 		[]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
