@@ -623,6 +623,6 @@ effects["tvnormalize"] = function(exporter) {
 			max = pointer[i];
 			n = max;
 		} else if (n > max) max = interpolate(max, n, sampleRate);
-		pointer[i] *= max;
+		pointer[i] /= max;
 	}
 }
