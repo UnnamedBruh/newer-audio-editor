@@ -612,7 +612,7 @@ effects["normalize"] = function(exporter) {
 
 effects["tvnormalize"] = function(exporter) {
 	const pointer = exporter.audioData;
-	const sampleRate = 1 / exporter.sampleRate;
+	const sampleRate = 1 / exporter.sampleRate / 8;
 	const len = pointer.length;
 	if (len === 0) return;
 
