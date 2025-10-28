@@ -133,10 +133,10 @@ const effectsList = [
 	],
 	[
 		"Fade",
-		"Linearly fades the audio in a specified direction.",
-		'Direction: <select id="fade0"><option>in</option><option>out</option></select>',
-		1,
+		"Fades the audio in a specified direction.",
+		'Direction: <select id="fade0"><option>in</option><option>out</option></select><br>Tween: <select id="fade1"><option value="l">linear</option><option value="ein">ease in</option><option value="eout">ease out</option></select>',
+		2,
 		"fade",
-		[identifier]
+		[identifier, identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
