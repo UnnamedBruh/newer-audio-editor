@@ -551,7 +551,8 @@ effects["difference"] = function(buffer, interpolation = 1, step = -1) {
 	pointer.set(interpolated);
 }*/
 
-effects["pitch"] = function(buffer, pitch, frameSize) { // This was written entirely by GPT-5.0 Mini. Not me! All I did was make a few basic precomputing optimizations! I'm going to test this to check its reliability.
+effects["pitch"] = function(buffer, pitch, frameSize) { // This was written entirely by GPT-5.0 Mini. Not me! All I did was make a few basic precomputing optimizations!
+	// But this effect isn't reliable either! It slows down the audio significantly.
 	if (pitch === 0 || frameSize < 2) return;
 
 	const audio = buffer.audioData;
@@ -612,9 +613,10 @@ effects["normalize"] = function(exporter) {
 
 effects["tvnormalize"] = function(exporter) {
 	const pointer = exporter.audioData;
-	const sampleRate = 1 / exporter.sampleRate / 4;
 	const len = pointer.length;
 	if (len === 0) return;
+
+	const sampleRate = 1 / exporter.sampleRate / 4;
 
 	let max = 1, n = 0;
 	for (let i = 0; i < len; i++) {
@@ -628,6 +630,22 @@ effects["tvnormalize"] = function(exporter) {
 			max /= 1.1;
 			if (abs(pointer[i]) > 10) max = 1;
 			//pointer[i] /= pointer[i] * 1.1;
+		}
+	}
+}
+
+effects["fade"] = function(exporter, direction = "in") {
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	if (direction === "in") {
+		for (let i = 0; i < len; i++) {
+			pointer[i] *= i / len;
+		}
+	} else if (direction === "out") {
+		for (let i = 0; i < len; i++) {
+			pointer[i] *= (len - i) / len;
 		}
 	}
 }
