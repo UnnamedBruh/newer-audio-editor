@@ -130,5 +130,13 @@ const effectsList = [
 		0,
 		"tvnormalize",
 		[]
+	],
+	[
+		"Fade",
+		"Linearly fades the audio in a specified direction.",
+		'Direction: <select id="fade0"><option>in</option><option>out</option></select>',
+		1,
+		"fade",
+		[identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
