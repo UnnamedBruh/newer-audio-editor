@@ -1,4 +1,4 @@
-const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round, tru = Math.trunc, rand = Math.random, sin = Math.sin;
+const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round, tru = Math.trunc, rand = Math.random, sin = Math.sin, cos = Math.cos;
 
 const muLawCache = Object.create(null);
 
@@ -634,18 +634,42 @@ effects["tvnormalize"] = function(exporter) {
 	}
 }
 
-effects["fade"] = function(exporter, direction = "in") {
+effects["fade"] = function(exporter, direction = "in", easing = "l") {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
 
-	if (direction === "in") {
-		for (let i = 0; i < len; i++) {
-			pointer[i] *= i / len;
+	if (easing === "l") { // linear
+		if (direction === "in") {
+			for (let i = 0; i < len; i++) {
+				pointer[i] *= i / len;
+			}
+		} else if (direction === "out") {
+			for (let i = 0; i < len; i++) {
+				pointer[i] *= (len - i) / len;
+			}
 		}
-	} else if (direction === "out") {
-		for (let i = 0; i < len; i++) {
-			pointer[i] *= (len - i) / len;
+	} else if (easing === "eout") { // ease out
+		const pi2 = Math.PI / 2 / len;
+		if (direction === "in") {
+			for (let i = 0; i < len; i++) {
+				pointer[i] *= sin(i * pi2);
+			}
+		} else if (direction === "out") {
+			for (let i = 0; i < len; i++) {
+				pointer[i] *= 1 - sin(i * pi2);
+			}
+		}
+	} else if (easing === "ein") { // ease in
+		const pi2 = Math.PI / 2 / len;
+		if (direction === "in") {
+			for (let i = 0; i < len; i++) {
+				pointer[i] *= 1 - cos(i * pi2);
+			}
+		} else if (direction === "out") {
+			for (let i = 0; i < len; i++) {
+				pointer[i] *= cos(i * pi2);
+			}
 		}
 	}
 }
