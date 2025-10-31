@@ -54,7 +54,10 @@ effects["speed"] = function(buffer, speed, shouldSmooth) {
 
 effects["gain"] = function(buffer, multiplier) {
 	if (multiplier === 1) return;
-	if (multiplier === 0) buffer.audioData.fill(0); else if (multiplier === -1) {
+	if (multiplier === 0) {
+		buffer.audioData.fill(0);
+		// or manually set the whole buffer to 0, but modern engines can significantly optimize .fill very well.
+	} else if (multiplier === -1) {
 		const len = buffer.audioData.length, data = buffer.audioData;
 		for (let i = 0; i < len; i++) {
 			data[i] = -data[i];
@@ -621,6 +624,9 @@ effects["tvnormalize"] = function(exporter) {
 	let max = 1, n = 0;
 	for (let i = 0; i < len; i++) {
 		n = abs(pointer[i]);
+		if (n === 0) {
+			max = 1 + (max - 1) / 1.5; continue;
+		}
 		if (n > 1) n = 1;
 		n = 1 / n;
 		n = isFinite(n) ? n : 1;
@@ -628,7 +634,7 @@ effects["tvnormalize"] = function(exporter) {
 		pointer[i] *= max;
 		if (abs(pointer[i]) > 0.5) {
 			max /= 1.1;
-			if (abs(pointer[i]) > 10) max = 1;
+			if (abs(pointer[i]) > 10) max /= 1.3;
 			//pointer[i] /= pointer[i] * 1.1;
 		}
 	}
