@@ -698,6 +698,13 @@
 										for (let i = 0; i < len; i++) {
 											channel[i] -= channelOther[i] * 2 - channel[i];
 										}
+									} else if (choice === 3.5) {
+										for (let i = 0; i < len; i++) {
+											const x = channel[i] - (channelOther[i] * 2 - channel[i]);
+											if (channel[i] < 0) {
+												channel[i] += (x > 0 ? -x : x);
+											} else channel[i] -= (x > 0 ? -x : x);
+										}
 									} else if (choice === 4) {
 										for (let i = 0; i < len; i++) {
 											channel[i] = (channel[i] + channelOther[i]) * 0.5;
