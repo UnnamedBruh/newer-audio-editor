@@ -700,7 +700,7 @@
 										}
 									} else if (choice === 3.5) {
 										for (let i = 0; i < len; i++) {
-											channel[i] += channel[i] - (channelOther[i] * 2 - channel[i]);
+											channel[i] -= channelOther[i] - channel[i] * 2;
 										}
 									} else if (choice === 4) {
 										for (let i = 0; i < len; i++) {
