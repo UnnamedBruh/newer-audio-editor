@@ -653,14 +653,42 @@
 												alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
 											}
 											if (secondSharedBuffer && confirm("Would you like to layer both audio files together?")) {
+												const inway = Number(prompt("Alright! Which way should the audio editor layer the audio files together? (0 = audioFile1 + audioFile2, 1 = audioFile1 - audioFile2, 2 = audioFile2 - audioFile1") || 0);
 												if (sharedBuffer.sampleRate === secondSharedBuffer.sampleRate && sharedBuffer.numberOfChannels === secondSharedBuffer.numberOfChannels) {
 													let len;
 													if (sharedBuffer.length > secondSharedBuffer.length) len = secondSharedBuffer.length; else len = sharedBuffer.length;
-													for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
-														const pointer1 = sharedBuffer.getChannelData(i);
-														const pointer2 = secondSharedBuffer.getChannelData(i);
-														for (let j = 0; j < len; j++) {
-															pointer1[j] += pointer2[j];
+													if (inway === 0) {
+														for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
+															const pointer1 = sharedBuffer.getChannelData(i);
+															const pointer2 = secondSharedBuffer.getChannelData(i);
+															for (let j = 0; j < len; j++) {
+																pointer1[j] += pointer2[j];
+															}
+														}
+													} else if (inway === 1 || inway === 2 || inway === 3 || inway === 4) {
+														if (inway === 3 || inway === 4) {
+															for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
+																const pointer = (inway === 3 ? sharedBuffer.getChannelData(i) : secondSharedBuffer.getChannelData(i));
+																for (let j = 0; j < len; j++) {
+																	pointer[j] *= 0.5;
+																}
+															}
+															inway -= 2;
+														}
+														for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
+															let pointer1;
+															let pointer2;
+															if (inway === 1) {
+																pointer1 = sharedBuffer.getChannelData(i);
+																pointer2 = secondSharedBuffer.getChannelData(i);
+															} else {
+																pointer2 = sharedBuffer.getChannelData(i);
+																pointer1 = secondSharedBuffer.getChannelData(i);
+															}
+															for (let j = 0; j < len; j++) {
+																pointer1[j] -= pointer2[j];
+																if (inway === 2) pointer2[j] = pointer[i];
+															}
 														}
 													}
 												} else alert("Looks like the audio files' metadata doesn't exactly match each other well! You can still edit the main audio, though.");
