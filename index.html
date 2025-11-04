@@ -653,7 +653,7 @@
 												alert("Looks like the second audio file has failed to be decoded! However, you can still edit the main audio.");
 											}
 											if (secondSharedBuffer && confirm("Would you like to layer both audio files together?")) {
-												const inway = Number(prompt("Alright! Which way should the audio editor layer the audio files together? (0 = audioFile1 + audioFile2, 1 = audioFile1 - audioFile2, 2 = audioFile2 - audioFile1") || 0);
+												let inway = Number(prompt("Alright! Which way should the audio editor layer the audio files together? (0 = audioFile1 + audioFile2, 1 = audioFile1 - audioFile2, 2 = audioFile2 - audioFile1") || 0);
 												if (sharedBuffer.sampleRate === secondSharedBuffer.sampleRate && sharedBuffer.numberOfChannels === secondSharedBuffer.numberOfChannels) {
 													let len;
 													if (sharedBuffer.length > secondSharedBuffer.length) len = secondSharedBuffer.length; else len = sharedBuffer.length;
