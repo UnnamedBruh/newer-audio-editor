@@ -134,7 +134,7 @@ const effectsList = [
 	[
 		"Fade",
 		"Fades the audio in a specified direction.",
-		'Direction: <select id="fade0"><option>in</option><option>out</option></select><br>Tween: <select id="fade1"><option value="l">linear</option><option value="ein">ease in</option><option value="eout">ease out</option></select>',
+		'Direction: <select id="fade0"><option>in</option><option>out</option></select><br>Tween: <select id="fade1"><option value="l">linear</option><option value="ein">ease in</option><option value="eout">ease out</option><option value="cub">cubic</option></select>',
 		2,
 		"fade",
 		[identifier, identifier]
