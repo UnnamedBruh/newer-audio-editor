@@ -645,14 +645,16 @@ effects["fade"] = function(exporter, direction = "in", easing = "l") {
 	const len = pointer.length;
 	if (len === 0) return;
 
+	const invLen = 1 / len;
+
 	if (easing === "l") { // linear
 		if (direction === "in") {
 			for (let i = 0; i < len; i++) {
-				pointer[i] *= i / len;
+				pointer[i] *= i * invLen;
 			}
 		} else if (direction === "out") {
 			for (let i = 0; i < len; i++) {
-				pointer[i] *= (len - i) / len;
+				pointer[i] *= (len - i) * invLen;
 			}
 		}
 	} else if (easing === "eout") { // ease out
@@ -675,6 +677,16 @@ effects["fade"] = function(exporter, direction = "in", easing = "l") {
 		} else if (direction === "out") {
 			for (let i = 0; i < len; i++) {
 				pointer[i] *= cos(i * pi2);
+			}
+		}
+	} else if (easing === "cub") { // cubic
+		if (direction === "in") {
+			for (let i = 0; i < len; i++) {
+				pointer[i] *= pow(i * invLen, 3)
+			}
+		} else if (direction === "out") {
+			for (let i = 0; i < len; i++) {
+				pointer[i] *= 1 - pow(i * invLen, 3);
 			}
 		}
 	}
