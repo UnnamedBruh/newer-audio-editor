@@ -171,6 +171,13 @@ effects["distort"] = function(buffer, perc, method) {
 				x = pow(x, x);
 				z[i] = x * sign(z[i]);
 			}
+		} else if (method === "hi") {
+			let y = 0, a = 0;
+			for (let i = 0; i < v; i++) {
+				y = z[i];
+				if (y > a) z[i] = 1; else if (y < a) z[i] = -1; else z[i] = 0;
+				a = y;
+			}
 		} else {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
@@ -180,7 +187,6 @@ effects["distort"] = function(buffer, perc, method) {
 			}
 		}
 	} else {
-		if (perc === 0) return;
 		perc = perc / 100;
 		if (method === "s") {
 			for (let i = 0; i < v; i++) {
@@ -202,6 +208,13 @@ effects["distort"] = function(buffer, perc, method) {
 				x = abs(z[i]);
 				x = pow(x, x);
 				z[i] = interpolate(z[i], x * sign(z[i]), perc);
+			}
+		} else if (method === "hi") {
+			let y = 0, a = 0;
+			for (let i = 0; i < v; i++) {
+				y = z[i];
+				if (y > a) z[i] = interpolate(z[i], 1, perc); else if (y < a) interpolate(z[i], -1, perc); else z[i] = interpolate(z[i], 0, perc);
+				a = y;
 			}
 		} else {
 			let x = 0;
