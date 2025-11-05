@@ -178,6 +178,11 @@ effects["distort"] = function(buffer, perc, method) {
 				if (y > a) z[i] = 1; else if (y < a) z[i] = -1; else z[i] = 0;
 				a = y;
 			}
+		} else if (method === "sin") {
+			const p = Math.PI * 0.5;
+			for (let i = 0; i < v; i++) {
+				z[i] = sin(z[i] * p);
+			}
 		} else {
 			let x = 0;
 			for (let i = 0; i < v; i++) {
@@ -215,6 +220,11 @@ effects["distort"] = function(buffer, perc, method) {
 				y = z[i];
 				if (y > a) z[i] = interpolate(z[i], 1, perc); else if (y < a) interpolate(z[i], -1, perc); else z[i] = interpolate(z[i], 0, perc);
 				a = y;
+			}
+		} else if (method === "sin") {
+			const p = Math.PI * 0.5;
+			for (let i = 0; i < v; i++) {
+				z[i] = interpolate(z[i], sin(z[i] * p), perc);
 			}
 		} else {
 			let x = 0;
