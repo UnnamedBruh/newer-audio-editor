@@ -185,6 +185,7 @@
 				x.appendChild(timelineBegin);
 				x.appendChild(timelineEnd);
 				x.appendChild(highlight);
+				let bpmMarks = [];
 				function restartSelect() {
 					timelineIter = -1;
 					timelineBegin.setAttribute("fill", "none");
@@ -273,7 +274,7 @@
 					if (key.key === " ") {
 						const s = isPressingShift;
 						isPressingShift = false;
-						playWithTimeline({clientX: Math.max(xOff - window.pageXOffset, 9)});
+						playWithTimeline({clientX: (timelineIter === -1 ? 9 : Math.max(xOff - window.pageXOffset, 9))});
 						isPressingShift = s;
 					}
 				}
@@ -284,6 +285,34 @@
 				const opt = document.createElement("select");
 				const apply = document.createElement("button");
 				const params = document.createElement("div");
+				const bpm = document.createElement("button");
+				v.appendChild(bpm);
+				bpm.textContent = "Label BPM";
+				bpm.onclick = function() {
+					if (bpmMarks.length > 0) {
+						for (const b of bpmMarks) b.remove();
+					}
+					bpmMarks = [];
+					const bpmNum = Number(prompt("What is the amount of beats per minute of this track?") || NaN);
+					if (!isNaN(bpmNum)) {
+						if (bpmNum > 1000) {
+							alert("There are too many BPM.");
+							return;
+						} else if (bpmNum <= 1) {
+							alert("The amount of BPM is too low.")
+							return;
+						}
+						const inc = 1 / bpmNum * (sharedBuffer.duration / div.clientWidth);
+						for (let i = 0, j = 0; i < sharedBuffer.duration; i += inc, j++) {
+							const mark = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+							mark.setAttribute("height", 200);
+							mark.setAttribute("width", 2);
+							mark.setAttribute("x", Math.round(inc));
+							if ((j & 3) === 0) mark.setAttribute("fill", "yellow"); else mark.setAttribute("fill", "orange");
+							x.appendChild(mark);
+						}
+					}
+				}
 				{
 					const label = document.createElement("a");
 					label.textContent = "Effect To Apply: ";
@@ -505,6 +534,7 @@
 					selectLabel.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
+					if (window.scrollX > window.innerWidth - (document.body.getBoundingClientRect().x - window.scrollX)) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
 					if (sampleSkip === 1) {
 						count++;
 						if (count < 4) return;
