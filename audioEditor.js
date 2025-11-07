@@ -641,11 +641,10 @@ effects["tvnormalize"] = function(exporter) {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
-	let max = 1, n = 0, maxIncrease = 0;
 	let i = 0;
 
 	const chunkSize = 16;
-	const trackVolume = new Float32Array(len / chunkSize);
+	const trackVolume = new Float32Array(ceil(len / chunkSize) * chunkSize);
 
 	for (let i = 0, k = 0; i < trackVolume.length; i += chunkSize, k++) {
 		const goUntil = Math.min(i + chunkSize, trackVolume.length);
@@ -653,7 +652,7 @@ effects["tvnormalize"] = function(exporter) {
 		for (let j = i; j < goUntil; j++) {
 			sum += abs(pointer[j]);
 		}
-		sum /= chunkSize;
+		sum /= chunkSize * 2;
 		trackVolume[k] = sum;
 	}
 	i = 0;
@@ -661,11 +660,11 @@ effects["tvnormalize"] = function(exporter) {
 	for (; i < len; i++) {
 		const x = i / chunkSize;
 		if ((x | 0) !== x) {
-			let inter = interpolate(trackVolume[floor(x)], trackVolume[ceil(x)] || 0, x % 1) * 2;
+			let inter = interpolate(trackVolume[floor(x)], trackVolume[ceil(x)] || 0, x % 1);
 			if (!isFinite(inter) || isNaN(inter) || inter === 0) inter = 2;
 			pointer[i] /= inter;
 		} else {
-			let inter = trackVolume[x] * 2;
+			let inter = trackVolume[x];
 			if (!isFinite(inter) || isNaN(inter) || inter === 0) inter = 2;
 			pointer[i] /= inter;
 		}
