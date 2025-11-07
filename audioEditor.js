@@ -646,29 +646,32 @@ effects["tvnormalize"] = function(exporter) {
 
 	let max = 1, n = 0, maxIncrease = 0;
 	let i = 0;
-	for (; i < len; i++) {
-		n = abs(pointer[i]);
-		if (n === 0) {
-			const incUntil = Math.min(i + 16, len);
-			while (i < incUntil) {
-				if (pointer[i] !== 0) break;
-				i++;
-			}
-			if (i === incUntil) {
-				max = maxIncrease; continue;
-			}
+
+	const chunkSize = round(exporter.sampleRate / 48000 * 8);
+	const trackVolume = new Float32Array(len / chunkSize);
+
+	for (let i = 0, k = 0; i < trackVolume.length; i += chunkSize, k++) {
+		const goUntil = Math.min(i + chunkSize, trackVolume.length);
+		let sum = 0;
+		for (let j = i; j < goUntil; j++) {
+			sum += abs(pointer[j]);
 		}
-		if (n > 0.5) n = 0.5;
-		n = isFinite(n) ? n : 1;
-		max = interpolate(max, 0.5 / n, sampleRate * n);
-		pointer[i] *= max;
-		if (maxIncrease < max) maxIncrease = sampleRate;
-		/*if (abs(pointer[i]) > 0.5) {
-			max = 1 / abs(pointer[i]) - 0.5;
-			pointer[i] = sign(pointer[i]) * 0.5;
-		}*/
-		maxIncrease -= sampleRate;
-		if (maxIncrease < 0) maxIncrease = 0;
+		sum /= chunkSize;
+		trackVolume[k] = sum;
+	}
+	i = 0;
+	
+	for (; i < len; i++) {
+		const x = i / chunkSize;
+		if ((x | 0) !== x) {
+			let inter = interpolate(trackVolume[floor(x)], trackVolume[ceil(x)] || 0, x % 1) * 2;
+			if (!isFinite(inter) || isNaN(inter) || inter === 0) inter = 1;
+			pointer[i] /= inter;
+		} else {
+			let inter = trackVolume[x];
+			if (!isFinite(inter) || isNaN(inter) || inter === 0) inter = 1;
+			pointer[i] /= inter * 2;
+		}
 	}
 }
 
