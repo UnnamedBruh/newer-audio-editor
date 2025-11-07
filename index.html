@@ -302,15 +302,35 @@
 							alert("The amount of BPM is too low.")
 							return;
 						}
-						const inc = 1 / bpmNum * (sharedBuffer.duration / div.clientWidth);
+						const inc = (60 / bpmNum) * (div.clientWidth / sharedBuffer.duration);
+						/*const fragment = document.createDocumentFragment(); // This idea was recommended to me by GPT-5.0 Mini.
 						for (let i = 0, j = 0; i < sharedBuffer.duration; i += inc, j++) {
 							const mark = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 							mark.setAttribute("height", 200);
 							mark.setAttribute("width", 2);
-							mark.setAttribute("x", Math.round(inc));
+							mark.setAttribute("x", Math.round(i));
 							if ((j & 3) === 0) mark.setAttribute("fill", "yellow"); else mark.setAttribute("fill", "orange");
-							x.appendChild(mark);
+							fragment.appendChild(mark);
 						}
+						x.appendChild(fragment);*/
+						const data1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+						data1.setAttribute("stroke", "yellow");
+						data1.setAttribute("fill", "none");
+						data1.setAttribute("width", div.clientWidth);
+						data1.setAttribute("height", "200");
+						const data2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+						data2.setAttribute("stroke", "orange");
+						data1.setAttribute("fill", "none");
+						data2.setAttribute("width", div.clientWidth);
+						data1.setAttribute("height", "200");
+						let data1Data = [], data2Data = [];
+						for (let i = 0, j = 0; i < sharedBuffer.duration; i += inc, j++) {
+							if ((j & 3) === 0) data1Data.push(`M${i},0 V200`); else data2Data.push(`M${i},0 V200`);
+						}
+						data1.setAttribute("d", data1Data.join(" "));
+						data2.setAttribute("d", data2Data.join(" "));
+						x.appendChild(data1);
+						x.appendChild(data2);
 					}
 				}
 				{
