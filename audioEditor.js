@@ -648,7 +648,13 @@ effects["tvnormalize"] = function(exporter) {
 	for (let i = 0; i < len; i++) {
 		n = abs(pointer[i]);
 		if (n === 0) {
-			max = 1 + (max - 1) / 1.5; continue;
+			const incUntil = Math.min(i + 16, len);
+			while (i < incUntil) {
+				if (pointer[i] !== 0) break;
+			}
+			if (i === incUntil) {
+				max = 1; continue;
+			}
 		}
 		if (n > 1) n = 1;
 		n = 1 / n;
@@ -656,9 +662,8 @@ effects["tvnormalize"] = function(exporter) {
 		max = interpolate(max, n, sampleRate);
 		pointer[i] *= max;
 		if (abs(pointer[i]) > 0.5) {
-			max /= 1.1;
-			if (abs(pointer[i]) > 10) max /= 1.3;
-			//pointer[i] /= pointer[i] * 1.1;
+			max = 1 / abs(pointer[i]) - 0.5;
+			pointer[i] = sign(pointer[i]) * 0.5;
 		}
 	}
 }
