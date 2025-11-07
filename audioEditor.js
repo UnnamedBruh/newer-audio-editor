@@ -652,6 +652,7 @@ effects["tvnormalize"] = function(exporter) {
 			const incUntil = Math.min(i + 16, len);
 			while (i < incUntil) {
 				if (pointer[i] !== 0) break;
+				i++;
 			}
 			if (i === incUntil) {
 				max = 1; continue;
