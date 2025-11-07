@@ -658,10 +658,10 @@ effects["tvnormalize"] = function(exporter) {
 				max = maxIncrease; continue;
 			}
 		}
-		if (n > 1) n = 1;
-		n = 1 / n;
+		if (n > 0.5) n = 0.5;
+		n = 0.5 / n;
 		n = isFinite(n) ? n : 1;
-		max = interpolate(max, 0.5 / n, sampleRate);
+		max = interpolate(max, n, sampleRate);
 		pointer[i] *= max;
 		if (maxIncrease < max) maxIncrease = sampleRate;
 		/*if (abs(pointer[i]) > 0.5) {
