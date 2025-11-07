@@ -645,7 +645,8 @@ effects["tvnormalize"] = function(exporter) {
 	const sampleRate = 1 / exporter.sampleRate / 4;
 
 	let max = 1, n = 0;
-	for (let i = 0; i < len; i++) {
+	let i = 0;
+	for (; i < len; i++) {
 		n = abs(pointer[i]);
 		if (n === 0) {
 			const incUntil = Math.min(i + 16, len);
