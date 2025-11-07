@@ -643,7 +643,7 @@ effects["tvnormalize"] = function(exporter) {
 	if (len === 0) return;
 	let i = 0;
 
-	const chunkSize = 16;
+	const chunkSize = 64;
 	const trackVolume = new Float32Array(ceil(len / chunkSize) * chunkSize);
 
 	for (let i = 0, k = 0; i < trackVolume.length; i += chunkSize, k++) {
@@ -652,7 +652,7 @@ effects["tvnormalize"] = function(exporter) {
 		for (let j = i; j < goUntil; j++) {
 			sum += abs(pointer[j]);
 		}
-		sum /= chunkSize * 2;
+		sum /= chunkSize / 4;
 		trackVolume[k] = sum;
 	}
 	i = 0;
