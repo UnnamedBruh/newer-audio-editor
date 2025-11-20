@@ -370,7 +370,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 				for (let i = 0; i < len; i++) {
 					white = rand();
 					b0 = 0.99886 * b0 + white * 0.0555179;
-					b1 = 0.99332 * b1 + white * 0.0750759;
+					b1 = 0.99332 * b1 + white * 0.0750759;7
 					b2 = 0.969 * b2 + white * 0.153852;
 					b3 = 0.8665 * b3 + white * 0.3104856;
 					b4 = 0.55 * b4 + white * 0.5329522;
@@ -643,11 +643,14 @@ effects["tvnormalize"] = function(exporter) {
 	if (len === 0) return;
 	let i = 0;
 
-	const chunkSize = 1024;
+	const chunkSize = 256;
+	const chunkSizeDiv = 1 / chunkSize;
 	const trackVolume = new Float32Array(ceil(len / chunkSize) * chunkSize);
 
+	const trackLen = trackVolume.length;
+
 	for (let i = 0, k = 0; i < trackVolume.length; i += chunkSize, k++) {
-		const goUntil = Math.min(i + chunkSize, trackVolume.length);
+		const goUntil = Math.min(i + chunkSize, trackLen);
 		let sum = 0;
 		for (let j = i; j < goUntil; j++) {
 			sum += abs(pointer[j]);
@@ -658,7 +661,7 @@ effects["tvnormalize"] = function(exporter) {
 	i = 0;
 	
 	for (; i < len; i++) {
-		const x = i / chunkSize;
+		const x = i * chunkSizeDiv;
 		if ((x | 0) !== x) {
 			let inter = interpolate(trackVolume[floor(x)], trackVolume[ceil(x)] || 0, x % 1);
 			if (!isFinite(inter) || isNaN(inter) || inter === 0) inter = 2;
