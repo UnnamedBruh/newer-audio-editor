@@ -431,29 +431,31 @@
 					if (software) metadata["ISFT"] = software === "UAE" ? "UnnamedBruh's Audio Editor" : software;
 
 					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit integer. 1 = 16-bit integer. 2 = 32-bit integer. 3 = 32-bit float. 4 = 64-bit float. 5 - mu-law encoding.");
-					const oldBits = exporters.bits;
+
+					const exporters2 = timelineBeginAudio ? {audioData: exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters.sampleRate, bits: exporters.bits, encoding: exporters.encoding, convertToWav: exporters.convertToWav} : exporters;
+					const oldBits = exporters2.bits;
 					if (encodeBits == 0) {
-						exporters.bits = 8;
-						exporters.encoding = "pcm";
+						exporters2.bits = 8;
+						exporters2.encoding = "pcm";
 					} else if (!encodeBits || encodeBits == 1) {
-						exporters.bits = 16;
-						exporters.encoding = "pcm";
+						exporters2.bits = 16;
+						exporters2.encoding = "pcm";
 					} else if (encodeBits == 2) {
-						exporters.bits = 32;
-						exporters.encoding = "pcm";
+						exporters2.bits = 32;
+						exporter2s.encoding = "pcm";
 					} else if (encodeBits == 3) {
-						exporters.bits = 32;
-						exporters.encoding = "pcmf32";
+						exporters2.bits = 32;
+						exporters2.encoding = "pcmf32";
 					} else if (encodeBits == 4) {
-						exporters.bits = 64;
-						exporters.encoding = "pcmf64";
+						exporters2.bits = 64;
+						exporters2.encoding = "pcmf64";
 					} else {
-						exporters.encoding = "mulaw";
+						exporters2.encoding = "mulaw";
 					}
 					
-					const blob = exporters.convertToWav(metadata);
+					const blob = exporters2.convertToWav(metadata);
 
-					exporters.bits = encodeBits;
+					exporters2.bits = encodeBits;
 
 					const link = document.createElement("a");
 					link.download = (name || "exportedAudio") + ".wav";
@@ -520,7 +522,7 @@
 					let blob;
 
 					for (let i = 0; i < lossTimes; i++) {
-						let buffer = i === 0 ? exporters.audioData : await audioContext.decodeAudioData(await blob.arrayBuffer());
+						let buffer = i === 0 ? (timelineBeginAudio ? exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
 						let altRate = buffer.sampleRate;
 						if (i > 0) buffer = buffer.getChannelData(0);
 						const mp3Encoder = new lamejs.Mp3Encoder(channels, i === 0 ? sampleRate : altRate, kbps, qual);
