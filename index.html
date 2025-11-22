@@ -207,7 +207,7 @@
 				}
 				//document.body.onclick = restartSelect;
 				function playWithTimeline(eve) {
-					const clickX = eve.clientX - (timelineBeginNum ? (v.getBoundingClientRect().x - window.pageXOffset) : -(xOff + window.scrollX));
+					const clickX = eve.clientX - (timelineBeginNum ? (v.getBoundingClientRect().x - window.pageXOffset) : -(xOff + window.scrollX + v.getBoundingClientRect().x));
 					if (isPressingShift) {
 						timelineIter++;
 						switch (timelineIter) {
@@ -568,8 +568,8 @@
 						n.setAttribute("d", data2.join(" "));
 					}
 				}
-				effects["trim"] = function(exp) {
-					if (timelineBeginAudio) exp.audioData = exp.audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
+				effects["trim"] = function() {
+					if (timelineBeginAudio) exporters.audioData = exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
 				}
 				ed = v;
 				div = x;
