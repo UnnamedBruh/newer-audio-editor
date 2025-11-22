@@ -207,7 +207,7 @@
 				}
 				//document.body.onclick = restartSelect;
 				function playWithTimeline(eve) {
-					const clickX = eve.clientX - (timelineBeginNum ? (v.getBoundingClientRect().x - window.pageXOffset) : -(xOff - document.body.getBoundingClientRect().x + window.scrollX*2));
+					const clickX = eve.clientX - (timelineBeginNum ? (v.getBoundingClientRect().x - window.pageXOffset) : xOff + window.scrollX);
 					if (isPressingShift) {
 						timelineIter++;
 						switch (timelineIter) {
