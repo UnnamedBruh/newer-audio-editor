@@ -207,7 +207,7 @@
 				}
 				//document.body.onclick = restartSelect;
 				function playWithTimeline(eve) {
-					const clickX = eve.clientX - xOff + window.scrollX;
+					const clickX = eve.clientX - (timelineBeginNum ? 0 : xOff + window.scrollX);
 					if (isPressingShift) {
 						timelineIter++;
 						switch (timelineIter) {
@@ -274,7 +274,7 @@
 					if (key.key === " ") {
 						const s = isPressingShift;
 						isPressingShift = false;
-						playWithTimeline({clientX: (timelineIter === -1 ? 9 : Math.max(xOff - window.pageXOffset, 9))});
+						playWithTimeline({clientX: (timelineIter === -1 ? v.getBoundingClientRect().x : Math.max(xOff - window.pageXOffset, 9))});
 						isPressingShift = s;
 					}
 				}
@@ -295,7 +295,7 @@
 					bpmMarks = [];
 					const bpmNum = Number(prompt("What is the amount of beats per minute of this track?") || NaN);
 					if (!isNaN(bpmNum)) {
-						if (bpmNum > 1000) {
+						if (bpmNum > 2400) {
 							alert("There are too many BPM.");
 							return;
 						} else if (bpmNum <= 1) {
@@ -303,7 +303,7 @@
 							return;
 						}
 						const inc = (60 / bpmNum) * (div.clientWidth / sharedBuffer.duration);
-						/*const fragment = document.createDocumentFragment(); // This idea was recommended to me by GPT-5.0 Mini.
+						/*const fragment = document.createDocumentFragment(); // This idea was recommended to me by GPT-5.0 Mini, but in my opinion, this was a horrible idea. We shouldn't have the browser iterate through more than 500 elements in one go just to render the website.
 						for (let i = 0, j = 0; i < sharedBuffer.duration; i += inc, j++) {
 							const mark = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 							mark.setAttribute("height", 200);
@@ -581,9 +581,22 @@
 						n.setAttribute("d", data2.join(" "));
 					}
 				}
+				effects["trim"] = function(exp) {
+					if (timelineBeginAudio) exp.audioData = exp.audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
+				}
 				ed = v;
 				div = x;
 			}
+
+			effectsList.push([
+				"Trim",
+				"Removes all of the contents that is not selected by the blue selection box.",
+				'',
+				0,
+				"trim",
+				[]
+			]);
+
 			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
 				let firstFile = eve.target.files[0];
