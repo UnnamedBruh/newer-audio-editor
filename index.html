@@ -207,7 +207,7 @@
 				}
 				//document.body.onclick = restartSelect;
 				function playWithTimeline(eve) {
-					const clickX = eve.clientX - (timelineBeginNum ? (v.getBoundingClientRect().x - window.pageXOffset) : xOff + window.scrollX);
+					const clickX = eve.clientX - (timelineBeginNum ? (v.getBoundingClientRect().x - window.pageXOffset) : -(xOff + window.scrollX));
 					if (isPressingShift) {
 						timelineIter++;
 						switch (timelineIter) {
@@ -545,7 +545,7 @@
 					selectLabel.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
-					if (window.scrollX > window.innerWidth) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
+					if (window.scrollX > window.innerWidth - selectLabel.getBoundingClientRect().width) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
 					if (sampleSkip === 1) {
 						count++;
 						if (count < 4) return;
