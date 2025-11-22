@@ -207,7 +207,7 @@
 				}
 				//document.body.onclick = restartSelect;
 				function playWithTimeline(eve) {
-					const clickX = eve.clientX - (timelineBeginNum ? 0 : xOff + window.scrollX);
+					const clickX = eve.clientX - (timelineBeginNum ? (v.getBoundingClientRect().x - window.pageXOffset) : xOff + window.scrollX);
 					if (isPressingShift) {
 						timelineIter++;
 						switch (timelineIter) {
@@ -274,7 +274,7 @@
 					if (key.key === " ") {
 						const s = isPressingShift;
 						isPressingShift = false;
-						playWithTimeline({clientX: (timelineIter === -1 ? v.getBoundingClientRect().x : Math.max(xOff - window.pageXOffset, 9))});
+						playWithTimeline({clientX: (timelineIter === -1 ? (v.getBoundingClientRect().x - window.pageXOffset) : Math.max(xOff - window.pageXOffset, 9))});
 						isPressingShift = s;
 					}
 				}
@@ -303,16 +303,6 @@
 							return;
 						}
 						const inc = (60 / bpmNum) * (div.clientWidth / sharedBuffer.duration);
-						/*const fragment = document.createDocumentFragment(); // This idea was recommended to me by GPT-5.0 Mini, but in my opinion, this was a horrible idea. We shouldn't have the browser iterate through more than 500 elements in one go just to render the website.
-						for (let i = 0, j = 0; i < sharedBuffer.duration; i += inc, j++) {
-							const mark = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-							mark.setAttribute("height", 200);
-							mark.setAttribute("width", 2);
-							mark.setAttribute("x", Math.round(i));
-							if ((j & 3) === 0) mark.setAttribute("fill", "yellow"); else mark.setAttribute("fill", "orange");
-							fragment.appendChild(mark);
-						}
-						x.appendChild(fragment);*/
 						const data1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
 						data1.setAttribute("stroke", "yellow");
 						data1.setAttribute("fill", "none");
@@ -383,9 +373,6 @@
 							data = generateWaveform(exp);
 							sharedBuffer = audioContext.createBuffer(1, exp.audioData.length, exp.sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
-							/*for (let i = 0; i < ref.length; i++) {
-								ref[i] = exp.audioData[i];
-							}*/
 							ref.set(exp.audioData);
 							x.setAttribute("width", exp.audioData.length / sampleSkip);
 							v.style.width = (exp.audioData.length / sampleSkip) + "px";
@@ -558,7 +545,7 @@
 					selectLabel.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
-					if (window.scrollX > window.innerWidth - (document.body.getBoundingClientRect().x - window.scrollX)) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
+					if (window.scrollX > window.innerWidth) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
 					if (sampleSkip === 1) {
 						count++;
 						if (count < 4) return;
