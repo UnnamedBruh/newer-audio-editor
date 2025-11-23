@@ -549,7 +549,7 @@
 						encoder.configure({
 							sampleRate: exporters.sampleRate,
 							channels: 1,
-							vbrQuality: Number(prompt("How high can the quality of the audio be? (1 = worst quality, big differences, low sizes; 6 = best quality, nearly-neglible differences, higher sizes; 4 = balanced quality, minimal differences, medium sizes)")) || 2,
+							vbrQuality: Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0,
 						});
 
 						const encodedData = encoder.encode([exporters.audioData]);
