@@ -964,7 +964,7 @@
 									if (silentBuffer) silentBuffer.set(channel);
 								}
 							}
-							if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(channelNum - 1), sharedBuffer.sampleRate, 1, 32)];
+							if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
 							else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 							loadDiv(exporters);
 						} catch (err) {
