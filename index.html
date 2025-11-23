@@ -529,7 +529,7 @@
 							vbrQuality: Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0,
 						});
 
-						const encodedData = encoder.encode([exporters.audioData]);
+						const encodedData = encoder.encode([timelineBeginAudio ? exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters.audioData;]);
 						const encodedCopy = new Uint8Array(encodedData).buffer;
 						const finalData = encoder.finalize();
 
@@ -544,53 +544,100 @@
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as FLAC";
-				exportBtn.disabled = true;
-				exportBtn.onclick = async function() {
-// Convert Float32Array to packed 24-bit samples in a Uint8Array (this function was written by Claude Sonnet 4.5)
-function float32ToInt24Packed(float32Array) {
-	const length = float32Array.length;
-	const buffer = new Uint8Array(length * 3); // 3 bytes per sample
-  
-	for (let i = 0; i < length; i++) {
-		// Convert float [-1, 1] to 24-bit int [-8388608, 8388607]
-		let sample = Math.max(-1, Math.min(1, float32Array[i]));
-		let int24 = Math.round(sample * 8388607);
-    
-		// Handle negative numbers (two's complement)
-		if (int24 < 0) {
-			int24 = 0x1000000 + int24; // 16777216 + negative value
-		}
-    
-		// Pack as 3 bytes (little-endian)
-		const offset = i * 3;
-		buffer[offset] = int24 & 0xFF;           // LSB
-		buffer[offset + 1] = (int24 >> 8) & 0xFF;  // middle byte
-		buffer[offset + 2] = (int24 >> 16) & 0xFF; // MSB
-	}
-	
-	return buffer;
-}
+				exportBtn.textContent = "Export as FLAC (libflac.js)";
+				exportBtn.onclick = async function() { // This function was written entirely by Claude Sonnet 4.5. I did not make any modifications to the original code, aside from the fact that I padded the whitespace.
 					try {
-						const encoder = await WasmMediaEncoder.createOggEncoder();
+						// Setup for collecting encoded data
+						const encBuffer = [];
 
-						encoder.configure({
-							sampleRate: exporters.sampleRate,
-							channels: 1,
-							vbrQuality: Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0,
-						});
+						// Callback to receive encoded FLAC data
+						function write_callback_fn(buffer) {
+							// Copy the buffer immediately (same issue as with OGG Vorbis!)
+							const copy = new Uint8Array(buffer);
+							encBuffer.push(copy);
+						}
 
-						const encodedData = encoder.encode([exporters.audioData]);
-						const encodedCopy = new Uint8Array(encodedData).buffer;
-						const finalData = encoder.finalize();
+						// Create encoder
+						const CHANNELS = 1;
+						const SAMPLERATE = exporters.sampleRate;
+						const BPS = 24; // 24-bit encoding
+						const COMPRESSION = Number(prompt("What is the quality of the audio? (In accurate terms, how aggressive is the lossless compression? 0 = fastest compression, largest file, 8 = slower compression, smaller file, 5 = balanced compression, balanced file)") || 5);
+						const VERIFY = false;
+						const BLOCK_SIZE = 0; // 0 = let encoder decide
 
+						const flac_encoder = Flac.create_libflac_encoder(
+							SAMPLERATE,
+							CHANNELS,
+							BPS,
+							COMPRESSION,
+							0, // total_samples (0 = unknown)
+							VERIFY,
+							BLOCK_SIZE
+						);
+
+						// Initialize encoder with write callback
+						const initStatus = Flac.init_encoder_stream(
+							flac_encoder,
+							write_callback_fn
+						);
+
+						if (initStatus !== 0) {
+							throw new Error("FLAC encoder initialization failed");
+						}
+
+						// Convert Float32 to 24-bit integers (packed as Int32Array)
+						const audioData = timelineBeginAudio ? 
+							exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) :
+							exporters.audioData;
+
+						const int24Buffer = new Int32Array(audioData.length);
+						for (let i = 0; i < audioData.length; i++) {
+							const sample = audioData[i];
+							// Scale to 24-bit range and store in 32-bit container
+							int24Buffer[i] = Math.round(sample * 8388607);
+						}
+
+						// Encode
+						const encodeStatus = Flac.FLAC__stream_encoder_process_interleaved(
+							flac_encoder,
+							int24Buffer,
+							audioData.length
+						);
+
+						if (!encodeStatus) {
+							throw new Error("FLAC encoding failed");
+						}
+
+						// Finish encoding
+						const finishStatus = Flac.FLAC__stream_encoder_finish(flac_encoder);
+
+						if (!finishStatus) {
+							throw new Error("FLAC finalization failed");
+						}
+
+						// Clean up
+						Flac.FLAC__stream_encoder_delete(flac_encoder);
+
+						// Combine all encoded chunks
+						const totalLength = encBuffer.reduce((sum, chunk) => sum + chunk.length, 0);
+						const flacData = new Uint8Array(totalLength);
+						let offset = 0;
+						for (const chunk of encBuffer) {
+							flacData.set(chunk, offset);
+							offset += chunk.length;
+						}
+
+						// Download
+						const blob = new Blob([flacData], { type: "audio/flac" });
 						const link = document.createElement("a");
-						link.download = "exportedAudio.ogg";
-						link.href = URL.createObjectURL(new Blob([encodedCopy, finalData], { type: "audio/ogg" }));
+						link.download = "exportedAudio.flac";
+						link.href = URL.createObjectURL(blob);
 						link.click();
 						link.remove();
-					} catch {
-						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
+		
+					} catch (err) {
+						alert("The FLAC encoding failed: " + err.message);
+						console.error(err);
 					}
 				}
 				exportBtn = document.createElement("button");
