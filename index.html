@@ -510,7 +510,7 @@
 						let xx;
 
 						for (let i = 0; i < len2; i += 1152) {
-							x = i > len2 ? len : i + 1152;
+							xx = i > len2 ? len : i + 1152;
 							const chunk = [pcmData[0].subarray(i, x), pcmData[1].subarray(i, x)];
 
 							// For mono input, pass chunk for both channels if needed
