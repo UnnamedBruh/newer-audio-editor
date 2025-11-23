@@ -567,8 +567,9 @@
 						link.href = URL.createObjectURL(blob);
 						link.click();
 						link.remove();
-					} catch {
+					} catch (err) {
 						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
+						console.log(err.message, err.stack);
 					}
 				}
 				exportBtn = document.createElement("button");
