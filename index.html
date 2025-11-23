@@ -21,6 +21,7 @@
 		<script src="audioLSAC.js"></script>
 		<script src="audioFBAC.js"></script>
 		<script src="lame.min.js"></script>
+		<script src="audioEncoders.unpkg.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select">
@@ -537,6 +538,31 @@
 					link.href = URL.createObjectURL(blob);
 					link.click();
 					link.remove();
+				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as OGG (Vorbis format)";
+				exportBtn.onclick = async function() {
+					try {
+						const encoder = await WasmMediaEncoder.createOggEncoder();
+
+						encoder.configure({
+							sampleRate: exporters.sampleRate, // or whatever your editor uses
+							channels: 1,
+							vbrQuality: Number(prompt("How high can the quality of the audio be? (1 = worst quality, big differences, low sizes; 6 = best quality, nearly-neglible differences, higher sizes; 4 = balanced quality, minimal differences, medium sizes)")) || 2,
+						});
+
+						const encodedData = encoder.encode([exporters.audioData]);
+						const finalData = encoder.finalize();
+
+						const link = document.createElement("a");
+						link.download = "exportedAudio.ogg";
+						link.href = URL.createObjectURL(new Blob([encodedData, finalData], { type: "audio/ogg" }));
+						link.click();
+						link.remove();
+					} catch {
+						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
+					}
 				}
 				window.onscroll = function() {
 					apply.style.marginLeft = window.scrollX + "px";
