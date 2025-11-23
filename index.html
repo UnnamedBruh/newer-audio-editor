@@ -557,8 +557,8 @@
 						const finalData = encoder.finalize();
 						console.log('Final length:', finalData.length);
 
-						console.log('First 20 of encoded:', Array.from(encoded).slice(0, 20));
-						console.log('First 20 of final:', Array.from(final).slice(0, 20));
+						console.log('First 20 of encoded:', Array.from(encodedData).slice(0, 20));
+						console.log('First 20 of final:', Array.from(finalData).slice(0, 20));
 
 						const link = document.createElement("a");
 						link.download = "exportedAudio.ogg";
