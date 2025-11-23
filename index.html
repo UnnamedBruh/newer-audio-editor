@@ -453,30 +453,6 @@
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as LSAC (LoSsy Audio Codec)";
-				exportBtn.onclick = function() {
-					const blob = encodeLSAC(exporters.audioData, exporters.sampleRate);
-
-					const link = document.createElement("a");
-					link.download = "exportedAudio.lsac";
-					link.href = URL.createObjectURL(blob);
-					link.click();
-					link.remove();
-				}
-				exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as FBAC (Frame-Based Audio Codec)";
-				exportBtn.onclick = function() {
-					const blob = encodeFBAC(exporters.audioData, exporters.sampleRate);
-
-					const link = document.createElement("a");
-					link.download = "exportedAudio.fbac";
-					link.href = URL.createObjectURL(blob);
-					link.click();
-					link.remove();
-				}
-				exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as MP3";
 				exportBtn.onclick = async function() {
 					function floatTo16BitPCM(float32Array, channels) {
@@ -553,13 +529,8 @@
 						});
 
 						const encodedData = encoder.encode([exporters.audioData]);
-						const encodedCopy = new Uint8Array(encodedData).buffer; // Copy immediately!
-						console.log('Encoded length:', encodedData.length);
+						const encodedCopy = new Uint8Array(encodedData).buffer;
 						const finalData = encoder.finalize();
-						console.log('Final length:', finalData.length);
-
-						console.log('First 20 of encoded:', Array.from(encodedData).slice(0, 20));
-						console.log('First 20 of final:', Array.from(finalData).slice(0, 20));
 
 						const link = document.createElement("a");
 						link.download = "exportedAudio.ogg";
@@ -569,6 +540,30 @@
 					} catch {
 						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
 					}
+				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as LSAC (LoSsy Audio Codec)";
+				exportBtn.onclick = function() {
+					const blob = encodeLSAC(exporters.audioData, exporters.sampleRate);
+
+					const link = document.createElement("a");
+					link.download = "exportedAudio.lsac";
+					link.href = URL.createObjectURL(blob);
+					link.click();
+					link.remove();
+				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as FBAC (Frame-Based Audio Codec)";
+				exportBtn.onclick = function() {
+					const blob = encodeFBAC(exporters.audioData, exporters.sampleRate);
+
+					const link = document.createElement("a");
+					link.download = "exportedAudio.fbac";
+					link.href = URL.createObjectURL(blob);
+					link.click();
+					link.remove();
 				}
 				window.onscroll = function() {
 					apply.style.marginLeft = window.scrollX + "px";
