@@ -570,7 +570,7 @@
 							CHANNELS,
 							BPS,
 							COMPRESSION,
-							exporters.audioData.length, // total_samples (0 = unknown)
+							timelineBeginAudio ? (timelineEndAudio - timelineBeginAudio) : exporters.audioData.length, // total_samples (0 = unknown)
 							VERIFY,
 							BLOCK_SIZE
 						);
