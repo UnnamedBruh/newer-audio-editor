@@ -854,7 +854,7 @@
 									}
 								}
 								exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
-								loadDiv(exporters[0]);
+								loadDiv(exporters);
 								return;
 							}
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
@@ -966,7 +966,7 @@
 							}
 							if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(channelNum - 1), sharedBuffer.sampleRate, 1, 32)];
 							else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
-							loadDiv(exporters[0]);
+							loadDiv(exporters);
 						} catch (err) {
 							alert("The audio could not be properly loaded! We couldn't gather any info on what exactly failed, so the best we can say is: try selecting another audio file, or using another browser.");
 							console.log(err.message + err.stack);
