@@ -547,13 +547,15 @@
 						const encoder = await WasmMediaEncoder.createOggEncoder();
 
 						encoder.configure({
-							sampleRate: exporters.sampleRate, // or whatever your editor uses
+							sampleRate: exporters.sampleRate,
 							channels: 1,
 							vbrQuality: Number(prompt("How high can the quality of the audio be? (1 = worst quality, big differences, low sizes; 6 = best quality, nearly-neglible differences, higher sizes; 4 = balanced quality, minimal differences, medium sizes)")) || 2,
 						});
 
 						const encodedData = encoder.encode([exporters.audioData]);
+						console.log('Encoded length:', encodedData.length);
 						const finalData = encoder.finalize();
+						console.log('Final length:', finalData.length);
 
 						const link = document.createElement("a");
 						link.download = "exportedAudio.ogg";
