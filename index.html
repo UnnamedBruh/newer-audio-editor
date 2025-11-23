@@ -546,7 +546,7 @@
 							let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
 							let altRate = buffer.sampleRate;
 							if (i > 0) {
-								if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0), buffer.getChannelData(0)];
+								if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0)];
 							}
 
 							encoder.configure({
