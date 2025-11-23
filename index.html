@@ -22,7 +22,7 @@
 		<script src="audioFBAC.js"></script>
 		<script src="lame.min.js"></script>
 		<script src="audioEncoders.unpkg.js"></script>
-		<script src="flacjs/FlacEncoder.js"></script>
+		<script src="flacjs/libflac.min.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select">
@@ -520,6 +520,57 @@
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as OGG (Vorbis format)";
 				exportBtn.onclick = async function() {
+					try {
+						const encoder = await WasmMediaEncoder.createOggEncoder();
+
+						encoder.configure({
+							sampleRate: exporters.sampleRate,
+							channels: 1,
+							vbrQuality: Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0,
+						});
+
+						const encodedData = encoder.encode([exporters.audioData]);
+						const encodedCopy = new Uint8Array(encodedData).buffer;
+						const finalData = encoder.finalize();
+
+						const link = document.createElement("a");
+						link.download = "exportedAudio.ogg";
+						link.href = URL.createObjectURL(new Blob([encodedCopy, finalData], { type: "audio/ogg" }));
+						link.click();
+						link.remove();
+					} catch {
+						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
+					}
+				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as FLAC";
+				exportBtn.disabled = true;
+				exportBtn.onclick = async function() {
+// Convert Float32Array to packed 24-bit samples in a Uint8Array (this function was written by Claude Sonnet 4.5)
+function float32ToInt24Packed(float32Array) {
+	const length = float32Array.length;
+	const buffer = new Uint8Array(length * 3); // 3 bytes per sample
+  
+	for (let i = 0; i < length; i++) {
+		// Convert float [-1, 1] to 24-bit int [-8388608, 8388607]
+		let sample = Math.max(-1, Math.min(1, float32Array[i]));
+		let int24 = Math.round(sample * 8388607);
+    
+		// Handle negative numbers (two's complement)
+		if (int24 < 0) {
+			int24 = 0x1000000 + int24; // 16777216 + negative value
+		}
+    
+		// Pack as 3 bytes (little-endian)
+		const offset = i * 3;
+		buffer[offset] = int24 & 0xFF;           // LSB
+		buffer[offset + 1] = (int24 >> 8) & 0xFF;  // middle byte
+		buffer[offset + 2] = (int24 >> 16) & 0xFF; // MSB
+	}
+	
+	return buffer;
+}
 					try {
 						const encoder = await WasmMediaEncoder.createOggEncoder();
 
