@@ -157,7 +157,7 @@
 				x.appendChild(n);
 				n.setAttribute("fill", "white");
 				n.setAttribute("stroke-width", 1);
-				data = generateWaveform(exp);
+				data = generateWaveform(exp[0]);
 				n.setAttribute("d", data);
 				v.appendChild(document.createElement("br"));
 				const play = document.createElement("button");
@@ -259,14 +259,14 @@
 				co.oninput = function() {
 					if (co.checked) {
 						sampleSkip = 1;
-						x.setAttribute("width", exp.audioData.length);
-						v.style.width = exp.audioData.length + "px";
+						x.setAttribute("width", exp[0].audioData.length);
+						v.style.width = exp[0].audioData.length + "px";
 					} else {
 						sampleSkip = 480;
-						if (!data) data = generateWaveform(exp);
-						x.setAttribute("width", exp.audioData.length / sampleSkip);
+						if (!data) data = generateWaveform(exp[0]);
+						x.setAttribute("width", exp[0].audioData.length / sampleSkip);
 						x.style.marginLeft = "0px";
-						v.style.width = (exp.audioData.length / sampleSkip) + "px";
+						v.style.width = (exp[0].audioData.length / sampleSkip) + "px";
 						n.setAttribute("d", data);
 					}
 				}
@@ -276,7 +276,7 @@
 					if (key.key === " ") {
 						const s = isPressingShift;
 						isPressingShift = false;
-						playWithTimeline({clientX: (timelineIter === -1 ? (v.getBoundingClientRect().x - window.pageXOffset) : Math.max(xOff - window.pageXOffset, 9))});
+						playWithTimeline({clientX: (timelineIter === -1 ? (v.getBoundingClientRect().x - window.pageXOffset) : Math.max(xOff - window.pageXOffset, (v.getBoundingClientRect().x - window.pageXOffset)))});
 						isPressingShift = s;
 					}
 				}
@@ -348,39 +348,45 @@
 					let currentSelected = null, paramElements = null, effect;
 					apply.onclick = function() {
 						if (currentSelected) {
-							const values = [exp, ...paramElements.map((x, i) => {
-								if (x.type === "checkbox") {
-									return effect[5][i](x.checked);
-								} else {
-									return effect[5][i](x.value);
-								}
-							})];
-							if (timelineBeginAudio !== 0) values[0] = {audioData: exp.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exp.sampleRate};
-							const le = values[0].audioData.length;
-							effects[effect[4]](...values);
-							if (timelineBeginAudio !== 0) {
-								if (values[0].audioData.buffer !== exp.audioData.buffer) {
-									if (values[0].audioData.length === timelineEndAudio - timelineBeginAudio) {
-										exp.audioData.set(values[0].audioData, timelineBeginAudio);
+							for (const expor of exp) {
+								const values = [expor, ...paramElements.map((x, i) => {
+									if (x.type === "checkbox") {
+										return effect[5][i](x.checked);
 									} else {
-										const data = new Float32Array(values[0].audioData.length + exp.audioData.length - le);
-										data.set(exp.audioData.subarray(0, timelineBeginAudio), 0);
-										data.set(values[0].audioData, timelineBeginAudio);
-										data.set(exp.audioData.subarray(timelineEndAudio, exp.audioData.length), values[0].audioData.length + timelineBeginAudio);
-										exp.audioData = data;
-										//timelineEndAudio = values[0].audioData.length - timelineBeginAudio;
+										return effect[5][i](x.value);
+									}
+								})];
+								if (timelineBeginAudio !== 0) values[0] = {audioData: expor.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: expor.sampleRate};
+								const le = values[0].audioData.length;
+								effects[effect[4]](...values);
+								if (timelineBeginAudio !== 0) {
+									if (values[0].audioData.buffer !== exp.audioData.buffer) {
+										if (values[0].audioData.length === timelineEndAudio - timelineBeginAudio) {
+											expor.audioData.set(values[0].audioData, timelineBeginAudio);
+										} else {
+											const data = new Float32Array(values[0].audioData.length + expor.audioData.length - le);
+											data.set(exp.audioData.subarray(0, timelineBeginAudio), 0);
+											data.set(values[0].audioData, timelineBeginAudio);
+											data.set(exp.audioData.subarray(timelineEndAudio, expor.audioData.length), values[0].audioData.length + timelineBeginAudio);
+											expor.audioData = data;
+											//timelineEndAudio = values[0].audioData.length - timelineBeginAudio;
+										}
 									}
 								}
 							}
-							data = generateWaveform(exp);
-							sharedBuffer = audioContext.createBuffer(1, exp.audioData.length, exp.sampleRate);
+							data = generateWaveform(exp[0]);
+							sharedBuffer = audioContext.createBuffer(exp.length, exp[0].audioData.length, exp[0].sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
-							ref.set(exp.audioData);
+							ref.set(exp[0].audioData);
+							if (exp.length === 2) {
+								const ref2 = sharedBuffer.getChannelData(1);
+								ref2.set(exp[1].audioData);
+							}
 							x.setAttribute("width", exp.audioData.length / sampleSkip);
 							v.style.width = (exp.audioData.length / sampleSkip) + "px";
 							n.setAttribute("d", data);
 							x.onclick = playWithTimeline; // Reset playing function, just in case browsers like Chrome misbehave every time an effect is applied
-							yu = exp.audioData.length;
+							yu = exp[0].audioData.length;
 						}
 					}
 					opt.oninput = function() {
@@ -421,7 +427,7 @@
 
 					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit integer. 1 = 16-bit integer. 2 = 32-bit integer. 3 = 32-bit float. 4 = 64-bit float. 5 - mu-law encoding.");
 
-					const exporters2 = timelineBeginAudio ? {audioData: exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters.sampleRate, bits: exporters.bits, encoding: exporters.encoding, convertToWav: exporters.convertToWav} : exporters;
+					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
 					const oldBits = exporters2.bits;
 					if (encodeBits == 0) {
 						exporters2.bits = 8;
@@ -474,35 +480,40 @@
 						return buffer;
 					}
 
-					let sampleRate = exporters.sampleRate;
+					let sampleRate = exporters[0].sampleRate;
 					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 64, 80, 96, 128, 192, 256, 320)")) / 16) * 16;
 					if (kbps === 0 || isNaN(kbps) || kbps === undefined || kbps === null) return;
 
-					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") || 3));
+					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") ?? 3));
 
-					const channels = confirm("Should the same buffer be split into two channels? (If so, the audio may sound a bit choppier)") + 1;
+					const channels = (exporters.length === 2 || confirm("Should the same buffer be split into two channels? (If so, the audio may sound a bit choppier)")) + 1;
 
 					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
 
 					let blob;
 
 					for (let i = 0; i < lossTimes; i++) {
-						let buffer = i === 0 ? (timelineBeginAudio ? exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
+						let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
 						let altRate = buffer.sampleRate;
-						if (i > 0) buffer = buffer.getChannelData(0);
+						if (i > 0) {
+							if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0), buffer.getChannelData(0)];
+						}
 						const mp3Encoder = new lamejs.Mp3Encoder(channels, i === 0 ? sampleRate : altRate, kbps, qual);
 
 						let mp3Data = [];
 
-						const pcmData = floatTo16BitPCM(buffer, channels);
+						let pcmData = [floatTo16BitPCM(buffer[0], 1 - channels)];
 						const len = pcmData.length;
+						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else {
+							pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], 1 - channels)];
+						}
 						const len2 = len - 1152;
 
 						for (let i = 0; i < len2; i += 1152) {
-							const chunk = pcmData.subarray(i, i > len2 ? len : i + 1152);
+							const chunk = [pcmData[0].subarray(i, i > len2 ? len : i + 1152), pcmData[1].subarray(i, i > len2 ? len : i + 1152)];
 
 							// For mono input, pass chunk for both channels if needed
-							const mp3Chunk = mp3Encoder.encodeBuffer(chunk, chunk);
+							const mp3Chunk = mp3Encoder.encodeBuffer(chunk[0], chunk[1]);
 							mp3Data.push(mp3Chunk);
 						}
 
@@ -521,27 +532,29 @@
 				exportBtn.textContent = "Export as OGG (Vorbis format)";
 				exportBtn.onclick = async function() {
 					try {
-						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0;
+						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") ?? 4.0) ?? 4.0;
 
 						let blob;
-						const split = !!confirm("Should the audio be split into two separate channels?");
+						const split = exporters.length !== 2 && !!confirm("Should the audio be split into two separate channels?");
 
 						const times = Number(prompt("How many times would the audio be re-encoded?") || 1) || 1;
 
 						for (let i = 0; i < times; i++) {
 							const encoder = await WasmMediaEncoder.createOggEncoder();
 
-							let buffer = i === 0 ? (timelineBeginAudio ? exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
+							let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
 							let altRate = buffer.sampleRate;
-							if (i > 0) buffer = buffer.getChannelData(0);
+							if (i > 0) {
+								if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0), buffer.getChannelData(0)];
+							}
 
 							encoder.configure({
-								sampleRate: i === 0 ? exporters.sampleRate : altRate,
-								channels: 1 + split,
+								sampleRate: i === 0 ? exporters[0].sampleRate : altRate,
+								channels: buffer.length + split,
 								vbrQuality: vbr,
 							});
 							
-							const encodedData = encoder.encode(split ? [buffer, buffer] : [buffer]);
+							const encodedData = encoder.encode(split ? [buffer[0], buffer[1]] : [buffer[0]]);
 							const encodedCopy = new Uint8Array(encodedData).buffer;
 							const finalData = encoder.finalize();
 
@@ -573,10 +586,10 @@
 						}
 
 						// Create encoder
-						const CHANNELS = 1;
-						const SAMPLERATE = exporters.sampleRate;
+						const CHANNELS = exporters.length;
+						const SAMPLERATE = exporters[0].sampleRate;
 						const BPS = 24; // 24-bit encoding
-						const COMPRESSION = Number(prompt("What is the quality of the audio? (In accurate terms, how aggressive is the lossless compression? 0 = fastest compression, largest file, 8 = slower compression, smaller file, 5 = balanced compression, balanced file)") || 5);
+						const COMPRESSION = Number(prompt("What is the quality of the audio? (In accurate terms, how aggressive is the lossless compression? 0 = fastest compression, largest file, 8 = slower compression, smaller file, 5 = balanced compression, balanced file)") ?? 5);
 						const VERIFY = false;
 						const BLOCK_SIZE = 0; // 0 = let encoder decide
 
@@ -585,7 +598,7 @@
 							CHANNELS,
 							BPS,
 							COMPRESSION,
-							timelineBeginAudio ? (timelineEndAudio - timelineBeginAudio) : exporters.audioData.length, // total_samples (0 = unknown)
+							timelineBeginAudio ? (timelineEndAudio - timelineBeginAudio) : exporters[0].audioData.length, // total_samples (0 = unknown)
 							VERIFY,
 							BLOCK_SIZE
 						);
@@ -601,21 +614,29 @@
 						}
 
 						// Convert Float32 to 24-bit integers (packed as Int32Array)
-						const audioData = timelineBeginAudio ? 
-							exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) :
-							exporters.audioData;
+						const audioData = exporters.map(i => timelineBeginAudio ? 
+							i.audioData.subarray(timelineBeginAudio, timelineEndAudio) :
+							i.audioData);
 
-						const int24Buffer = new Int32Array(audioData.length);
-						for (let i = 0; i < audioData.length; i++) {
-							const sample = audioData[i];
-							// Scale to 24-bit range and store in 32-bit container
-							int24Buffer[i] = Math.round(sample * 8388607);
+						const int24Buffer = new Int32Array(audioData[0].length * audioData.length);
+						if (audioData.length === 2) {
+							const aa = audioData[0];
+							const ab = audioData[1];
+							for (let i = 0, j = 0; i < int24Buffer.length; i += 2, j++) {
+								int24Buffer[i] = Math.round(aa[j] * 8388607);
+								int24Buffer[i + 1] = Math.round(ab[j] * 8388607);
+							}
+						} else {
+							const aa = audioData[0];
+							for (let i = 0; i < aa.length; i++) {
+								int24Buffer[i] = Math.round(aa[i] * 8388607);
+							}
 						}
 
 						// Encode
 						const encodeStatus = Flac.FLAC__stream_encoder_process_interleaved(
 							flac_encoder,
-							int24Buffer,
+							int24Buffer.length === 2 ? int24Buffer : int24Buffer[0],
 							audioData.length
 						);
 
@@ -659,7 +680,7 @@
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as LSAC (LoSsy Audio Codec)";
 				exportBtn.onclick = function() {
-					const blob = encodeLSAC(exporters.audioData, exporters.sampleRate);
+					const blob = encodeLSAC(exporters[0].audioData, exporters[0].sampleRate);
 
 					const link = document.createElement("a");
 					link.download = "exportedAudio.lsac";
@@ -671,7 +692,7 @@
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as FBAC (Frame-Based Audio Codec)";
 				exportBtn.onclick = function() {
-					const blob = encodeFBAC(exporters.audioData, exporters.sampleRate);
+					const blob = encodeFBAC(exporters[0].audioData, exporters[0].sampleRate);
 
 					const link = document.createElement("a");
 					link.download = "exportedAudio.fbac";
@@ -710,7 +731,9 @@
 					}
 				}
 				effects["trim"] = function() {
-					if (timelineBeginAudio) exporters.audioData = exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
+					for (let i = 0; i < exporters.length; i++) {
+						if (timelineBeginAudio) exporters[i].audioData = exporters[i].audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
+					}
 				}
 				ed = v;
 				div = x;
@@ -762,8 +785,8 @@
 						for (let i = 0; i < len; i++) {
 							bufferData[i] = samples[i];
 						}
-						exporters = new AudioExporter(result.samples, result.sampleRate, 1, 32);
-						loadDiv(exporters);
+						exporters = [new AudioExporter(result.samples, result.sampleRate, 1, 32)];
+						loadDiv(exporters[0]);
 					} catch (err) {
 						alert("The audio could not be properly loaded! Due to unhelpful strip-aways from viewing metadata, we cannot provide much info on what exactly failed.");
 						console.log(err.message + err.stack);
@@ -830,8 +853,8 @@
 										}
 									}
 								}
-								exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
-								loadDiv(exporters);
+								exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
+								loadDiv(exporters[0]);
 								return;
 							}
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
@@ -898,6 +921,7 @@
 							}
 							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once isn't an option due to the maintainer's preferred simplicity.)") || 1, sharedBuffer.numberOfChannels)) - 1;
 							const channel = sharedBuffer.getChannelData(channelNum);
+							let isProcessed = false;
 							if (sharedBuffer.numberOfChannels === 2) {
 								if (confirm("Should the current channel be subtracted by another? (If you want to only edit the audio, just press Cancel)")) {
 									const channelOtherNum = sharedBuffer.numberOfChannels - channelNum - 1;
@@ -929,17 +953,20 @@
 											channel[i] = (channel[i] + channelOther[i]) * 0.5;
 										}
 									}
+									isProcessed = true;
 								}
 							}
-							if (sharedBuffer.numberOfChannels > 1) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
+							const stereo = sharedBuffer.numberOfChannels === 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
+							if (sharedBuffer.numberOfChannels > 1 && !stereo) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
 								for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
 									if (i === channelNum) continue;
 									const silentBuffer = sharedBuffer.getChannelData(i);
 									if (silentBuffer) silentBuffer.set(channel);
 								}
 							}
-							exporters = new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32);
-							loadDiv(exporters);
+							if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(channelNum - 1), sharedBuffer.sampleRate, 1, 32)];
+							else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
+							loadDiv(exporters[0]);
 						} catch (err) {
 							alert("The audio could not be properly loaded! We couldn't gather any info on what exactly failed, so the best we can say is: try selecting another audio file, or using another browser.");
 							console.log(err.message + err.stack);
