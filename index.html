@@ -529,7 +529,7 @@
 							vbrQuality: Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0,
 						});
 
-						const encodedData = encoder.encode([timelineBeginAudio ? exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters.audioData;]);
+						const encodedData = encoder.encode([timelineBeginAudio ? exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters.audioData]);
 						const encodedCopy = new Uint8Array(encodedData).buffer;
 						const finalData = encoder.finalize();
 
