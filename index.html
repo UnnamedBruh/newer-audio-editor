@@ -521,21 +521,34 @@
 				exportBtn.textContent = "Export as OGG (Vorbis format)";
 				exportBtn.onclick = async function() {
 					try {
-						const encoder = await WasmMediaEncoder.createOggEncoder();
+						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0;
 
-						encoder.configure({
-							sampleRate: exporters.sampleRate,
-							channels: 1,
-							vbrQuality: Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0,
-						});
+						let blob;
+						const times = Number(prompt("How many times would the audio be re-encoded?") || 1) || 1;
 
-						const encodedData = encoder.encode([timelineBeginAudio ? exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters.audioData]);
-						const encodedCopy = new Uint8Array(encodedData).buffer;
-						const finalData = encoder.finalize();
+						for (let i = 0; i < times; i++) {
+							const encoder = await WasmMediaEncoder.createOggEncoder();
+
+							let buffer = i === 0 ? (timelineBeginAudio ? exporters.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
+							let altRate = buffer.sampleRate;
+							if (i > 0) buffer = buffer.getChannelData(0);
+
+							encoder.configure({
+								sampleRate: i === 0 ? exporters.sampleRate : altRate,
+								channels: 1,
+								vbrQuality: vbr,
+							});
+							
+							const encodedData = encoder.encode([buffer]);
+							const encodedCopy = new Uint8Array(encodedData).buffer;
+							const finalData = encoder.finalize();
+
+							blob = new Blob([encodedCopy, finalData], { type: "audio/ogg" });
+						}
 
 						const link = document.createElement("a");
 						link.download = "exportedAudio.ogg";
-						link.href = URL.createObjectURL(new Blob([encodedCopy, finalData], { type: "audio/ogg" }));
+						link.href = URL.createObjectURL();
 						link.click();
 						link.remove();
 					} catch {
