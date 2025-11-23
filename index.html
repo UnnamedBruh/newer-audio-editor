@@ -555,7 +555,7 @@
 								vbrQuality: vbr,
 							});
 							
-							const encodedData = encoder.encode(split ? [buffer[0], buffer[1]] : [buffer[0]]);
+							const encodedData = encoder.encode(split || buffer.length === 2 ? [buffer[0], buffer[1]] : [buffer[0]]);
 							const encodedCopy = new Uint8Array(encodedData).buffer;
 							const finalData = encoder.finalize();
 
