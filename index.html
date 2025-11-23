@@ -638,8 +638,8 @@
 						// Encode
 						const encodeStatus = Flac.FLAC__stream_encoder_process_interleaved(
 							flac_encoder,
-							int24Buffer.length === 2 ? int24Buffer : int24Buffer[0],
-							audioData.length
+							int24Buffer,
+							audioData[0].length
 						);
 
 						if (!encodeStatus) {
