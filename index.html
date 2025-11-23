@@ -505,7 +505,7 @@
 						let pcmData = [floatTo16BitPCM(buffer[0], 1 - channels)];
 						const len = pcmData.length;
 						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else {
-							pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], 1 - channels)];
+							pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], 3 - channels)];
 						}
 						const len2 = len - 1152;
 
