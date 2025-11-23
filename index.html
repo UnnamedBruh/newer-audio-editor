@@ -502,10 +502,10 @@
 
 						let mp3Data = [];
 
-						let pcmData = [floatTo16BitPCM(buffer[0], channels === 2 ? 1 : 2)];
+						let pcmData = [floatTo16BitPCM(buffer[0], exporters.length === 2 ? 1 : 2)];
 						const len = pcmData[0].length;
 						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else {
-							pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], channels === 2 ? 1 : 2)];
+							pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], exporters.length === 2 ? 1 : 2)];
 						}
 						const len2 = len - 1152;
 
