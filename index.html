@@ -553,6 +553,7 @@
 						});
 
 						const encodedData = encoder.encode([exporters.audioData]);
+						const encodedCopy = new Uint8Array(encodedData).buffer; // Copy immediately!
 						console.log('Encoded length:', encodedData.length);
 						const finalData = encoder.finalize();
 						console.log('Final length:', finalData.length);
@@ -562,7 +563,7 @@
 
 						const link = document.createElement("a");
 						link.download = "exportedAudio.ogg";
-						link.href = URL.createObjectURL(new Blob([encodedData, finalData], { type: "audio/ogg" }));
+						link.href = URL.createObjectURL(new Blob([encodedCopy, finalData], { type: "audio/ogg" }));
 						link.click();
 						link.remove();
 					} catch {
