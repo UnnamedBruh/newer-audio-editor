@@ -524,6 +524,8 @@
 						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") || 4.0) || 4.0;
 
 						let blob;
+						const split = !!confirm("Should the audio be split into two separate channels?");
+
 						const times = Number(prompt("How many times would the audio be re-encoded?") || 1) || 1;
 
 						for (let i = 0; i < times; i++) {
@@ -535,11 +537,11 @@
 
 							encoder.configure({
 								sampleRate: i === 0 ? exporters.sampleRate : altRate,
-								channels: 1,
+								channels: 1 + split,
 								vbrQuality: vbr,
 							});
 							
-							const encodedData = encoder.encode([buffer]);
+							const encodedData = encoder.encode(split ? [buffer, buffer] : [buffer]);
 							const encodedCopy = new Uint8Array(encodedData).buffer;
 							const finalData = encoder.finalize();
 
