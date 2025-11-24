@@ -747,8 +747,8 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 	// Main render function, also written by Claude Sonnet 4.5 (slightly modified)
 	async function renderWithReverb(sourceBuffer) {
 		try {
-			const duration = sourceBuffer.duration;
-			const sampleRate = sourceBuffer.sampleRate;
+			const duration = sourceBuffer.buffer.duration;
+			const sampleRate = sourceBuffer.buffer.sampleRate;
 
 			// Create offline context
 			const offlineContext = new OfflineAudioContext(
