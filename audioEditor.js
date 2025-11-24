@@ -752,7 +752,7 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 
 			// Create offline context
 			const offlineContext = new OfflineAudioContext(
-				sourceBuffer.numberOfChannels,
+				1,
 				sampleRate * duration,
 				sampleRate
 			);
