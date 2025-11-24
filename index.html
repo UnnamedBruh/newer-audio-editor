@@ -346,7 +346,7 @@
 					apply.textContent = "Apply";
 					v.appendChild(apply);
 					let currentSelected = null, paramElements = null, effect;
-					apply.onclick = function() {
+					apply.onclick = async function() {
 						if (currentSelected) {
 							for (const expor of exp) {
 								const values = [expor, ...paramElements.map((x, i) => {
@@ -358,7 +358,7 @@
 								})];
 								if (timelineBeginAudio !== 0) values[0] = {audioData: expor.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: expor.sampleRate};
 								const le = values[0].audioData.length;
-								effects[effect[4]](...values);
+								await effects[effect[4]](...values);
 								if (timelineBeginAudio !== 0) {
 									if (values[0].audioData.buffer !== expor.audioData.buffer) {
 										if (values[0].audioData.length === timelineEndAudio - timelineBeginAudio) {
