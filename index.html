@@ -276,7 +276,7 @@
 					if (key.key === " ") {
 						const s = isPressingShift;
 						isPressingShift = false;
-						playWithTimeline({clientX: (timelineIter === -1 ? (v.getBoundingClientRect().x - window.pageXOffset) : Math.max(xOff - window.pageXOffset, (v.getBoundingClientRect().x - window.pageXOffset)))});
+						playWithTimeline({clientX: /*(timelineIter === -1 ? (*/ v.getBoundingClientRect().x - window.pageXOffset /*) : Math.max(xOff - window.pageXOffset, (v.getBoundingClientRect().x - window.pageXOffset)))*/});
 						isPressingShift = s;
 					}
 				}
