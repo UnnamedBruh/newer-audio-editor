@@ -786,7 +786,7 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 
 			exporter.audioData = renderedBuffer.getChannelData(0);
 		} catch (error) {
-			alert(`There is an error with the reverb rendering process.\n\n${error.message}`);
+			alert(`There is an error with the reverb rendering process.\n\n${error.stack}`);
 		}
 	}
 
