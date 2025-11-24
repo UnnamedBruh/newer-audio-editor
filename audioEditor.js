@@ -725,3 +725,72 @@ effects["fade"] = function(exporter, direction = "in", easing = "l") {
 		}
 	}
 }
+
+effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, wetGain2) {
+	// Create reverb impulse response, written by Claude Sonnet 4.5
+	function createReverbImpulse(context, duration, decay) {
+		const sampleRate = context.sampleRate;
+		const length = sampleRate * duration;
+		const impulse = context.createBuffer(1, length, sampleRate);
+		const data = impulse.getChannelData(0);
+		for (let i = 0; i < length; i++) {
+			// Create decaying noise
+			const n = Math.random() * 2 - 1;
+			data[i] = n * Math.pow(1 - i / length, decay);
+		}
+
+		return impulse;
+	}
+
+	// Main render function, also written by Claude Sonnet 4.5 (slightly modified)
+	async function renderWithReverb(sourceBuffer) {
+		try {
+			const duration = sourceBuffer.duration;
+			const sampleRate = sourceBuffer.sampleRate;
+
+			// Create offline context
+			const offlineContext = new OfflineAudioContext(
+				sourceBuffer.numberOfChannels,
+				sampleRate * duration,
+				sampleRate
+			);
+
+			// Create source
+			const source = offlineContext.createBufferSource();
+			source.buffer = sourceBuffer;
+
+			// Create reverb
+			const convolver = offlineContext.createConvolver();
+			convolver.buffer = createReverbImpulse(offlineContext, reverbTime, reverbDecay);
+
+			// Create dry and wet gains
+			const dryGain = offlineContext.createGain();
+			const wetGain = offlineContext.createGain();
+			dryGain.gain.value = dryGain2;
+			wetGain.gain.value = wetGain2;
+
+			// Connect the graph
+			source.connect(dryGain);
+			dryGain.connect(offlineContext.destination);
+
+			source.connect(convolver);
+			convolver.connect(wetGain);
+			wetGain.connect(offlineContext.destination);
+
+			// Start source
+			source.start(0);
+			// Render
+			renderedBuffer = await offlineContext.startRendering();
+
+			exporter.audioData = renderedBuffer.getChannelData(0);
+		} catch (error) {
+			alert(`There is an error with the reverb rendering process.\n\n${error.message}`);
+		}
+	}
+
+	const bb = audioContext.createBufferSource();
+	bb.buffer = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
+	bb.buffer.getChannelData(0).set(exporter.audioData);
+
+	renderWithReverb(bb);
+}
