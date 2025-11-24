@@ -794,5 +794,5 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 	bb.buffer = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
 	bb.buffer.getChannelData(0).set(exporter.audioData);
 
-	renderWithReverb(bb);
+	await renderWithReverb(bb);
 }
