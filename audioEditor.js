@@ -727,6 +727,8 @@ effects["fade"] = function(exporter, direction = "in", easing = "l") {
 }
 
 effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, wetGain2) {
+	dryGain2 *= 0.01;
+	wetGain2 *= 0.01;
 	// Create reverb impulse response, written by Claude Sonnet 4.5
 	function createReverbImpulse(context, duration, decay) {
 		const sampleRate = context.sampleRate;
