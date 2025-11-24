@@ -138,5 +138,13 @@ const effectsList = [
 		2,
 		"fade",
 		[identifier, identifier]
+	],
+	[
+		"Convoluted Reverb",
+		"Reverberates the audio using a famous, natural algorithm.",
+		'Reverb Time (in seconds): <input id="reverb0" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Reverb Decay: <input id="reverb1" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Dry Mix: <input id="reverb2" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Wet Mix: <input id="reverb3" type="number" min="0" step="1" value="50" style="width: 100px">%',
+		4,
+		"reverb",
+		[Number, Number, Number, Number]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
