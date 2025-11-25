@@ -348,6 +348,7 @@
 					let currentSelected = null, paramElements = null, effect;
 					apply.onclick = async function() {
 						if (currentSelected) {
+							apply.disabled = true;
 							for (const expor of exp) {
 								const values = [expor, ...paramElements.map((x, i) => {
 									if (x.type === "checkbox") {
@@ -385,6 +386,7 @@
 							x.setAttribute("width", exp[0].audioData.length / sampleSkip);
 							v.style.width = (exp[0].audioData.length / sampleSkip) + "px";
 							n.setAttribute("d", data);
+							apply.disabled = false;
 							x.onclick = playWithTimeline; // Reset playing function, just in case browsers like Chrome misbehave every time an effect is applied
 							yu = exp[0].audioData.length;
 						}
