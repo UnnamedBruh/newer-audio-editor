@@ -648,7 +648,8 @@
 						} else if (BPS === 16) {
 							const junkMode = confirm("Do you want your FLAC to not have any garbage data?");
 							let int16Buffer = new Int16Array();
-							if (!junkMode) int16Buffer = new Int16Array(audioData[0].length * audioData.length * 2); else int16Buffer = new Int32Array(audioData[0].length * audioData.length);
+							const len = audioData[0].length * audioData.length * 2;
+							if (!junkMode) int16Buffer = new Int16Array(len * 2); else int16Buffer = new Int32Array(audioData[0].length * audioData.length);
 							if (junkMode) {
 								if (audioData.length === 2) {
 									const aa = audioData[0];
@@ -667,7 +668,7 @@
 								if (audioData.length === 2) {
 									const aa = audioData[0];
 									const ab = audioData[1];
-									for (let i = 0, j = 0; i < int16Buffer.length; i += 4, j++) {
+									for (let i = 0, j = 0; i < len; i += 4, j++) {
 										int16Buffer[i] = (aa[j] * 32767) | 0;
 										int16Buffer[i + 1] = (ab[j] * 32767) | 0;
 										int16Buffer[i + 2] = int16Buffer[i];
