@@ -597,7 +597,7 @@
 						const VERIFY = false;
 						const BLOCK_SIZE = 0; // 0 = let encoder decide
 
-						const junkMode = (BPS !== 16 || confirm("Do you want your FLAC to not have any garbage data?") ? 1 : 0;
+						const junkMode = (BPS !== 16 || confirm("Do you want your FLAC to not have any garbage data?")) ? 1 : 0;
 
 						const flac_encoder = Flac.create_libflac_encoder(
 							SAMPLERATE,
