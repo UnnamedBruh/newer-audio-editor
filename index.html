@@ -646,18 +646,39 @@
 								audioData[0].length
 							);
 						} else if (BPS === 16) {
-							const int16Buffer = new Int16Array(audioData[0].length * audioData.length);
-							if (audioData.length === 2) {
-								const aa = audioData[0];
-								const ab = audioData[1];
-								for (let i = 0, j = 0; i < int16Buffer.length; i += 2, j++) {
-									int16Buffer[i] = (aa[j] * 32767) | 0;
-									int16Buffer[i + 1] = (ab[j] * 32767) | 0;
+							const junkMode = confirm("Do you want your FLAC to not have any garbage data?");
+							let int16Buffer = new Int16Array();
+							if (!junkMode) int16Buffer = new Int16Array(audioData[0].length * audioData.length * 2); else int16Buffer = new Int32Array(audioData[0].length * audioData.length);
+							if (junkMode) {
+								if (audioData.length === 2) {
+									const aa = audioData[0];
+									const ab = audioData[1];
+									for (let i = 0, j = 0; i < int16Buffer.length; i += 2, j++) {
+										int16Buffer[i] = (aa[j] * 32767) | 0;
+										int16Buffer[i + 1] = (ab[j] * 32767) | 0;
+									}
+								} else {
+									const aa = audioData[0];
+									for (let i = 0; i < aa.length; i++) {
+										int16Buffer[i] = (aa[i] * 32767) | 0;
+									}
 								}
 							} else {
-								const aa = audioData[0];
-								for (let i = 0; i < aa.length; i++) {
-									int16Buffer[i] = (aa[i] * 32767) | 0;
+								if (audioData.length === 2) {
+									const aa = audioData[0];
+									const ab = audioData[1];
+									for (let i = 0, j = 0; i < int16Buffer.length; i += 4, j++) {
+										int16Buffer[i] = (aa[j] * 32767) | 0;
+										int16Buffer[i + 1] = (ab[j] * 32767) | 0;
+										int16Buffer[i + 2] = intBuffer[i];
+										int16Buffer[i + 3] = intBuffer[i + 1];
+									}
+								} else {
+									const aa = audioData[0];
+									for (let i = 0, j = 0; i < aa.length; i++, j += 2) {
+										int16Buffer[j] = (aa[i] * 32767) | 0;
+										int16Buffer[j + 1] = int16Buffer[j];
+									}
 								}
 							}
 
