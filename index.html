@@ -602,7 +602,7 @@
 							CHANNELS,
 							BPS,
 							COMPRESSION,
-							timelineBeginAudio ? (timelineEndAudio - timelineBeginAudio) : exporters[0].audioData.length, // total_samples (0 = unknown)
+							(timelineBeginAudio ? (timelineEndAudio - timelineBeginAudio) : exporters[0].audioData.length) * (1 + (BPS !== 16 || confirm("Do you want your FLAC to not have any garbage data?"))), // total_samples (0 = unknown)
 							VERIFY,
 							BLOCK_SIZE
 						);
@@ -646,7 +646,6 @@
 								audioData[0].length
 							);
 						} else if (BPS === 16) {
-							const junkMode = confirm("Do you want your FLAC to not have any garbage data?");
 							let int16Buffer = new Int16Array();
 							const len = audioData[0].length * audioData.length * 2;
 							if (!junkMode) int16Buffer = new Int16Array(len * 2); else int16Buffer = new Int32Array(audioData[0].length * audioData.length);
