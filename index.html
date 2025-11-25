@@ -577,7 +577,7 @@
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as FLAC (libflac.js)";
-				exportBtn.onclick = async function() { // This function was written entirely by Claude Sonnet 4.5. I did not make any modifications to the original code, aside from the fact that I padded the whitespace.
+				exportBtn.onclick = async function() { // This function was written entirely by Claude Sonnet 4.5. I made some modifications to the original code.
 					try {
 						// Setup for collecting encoded data
 						const encBuffer = [];
@@ -592,7 +592,7 @@
 						// Create encoder
 						const CHANNELS = exporters.length;
 						const SAMPLERATE = exporters[0].sampleRate;
-						const BPS = 24; // 24-bit encoding
+						const BPS = confirm("Would you like the audio to be encoded in 16-bit? If not, it'll be encoded in 24-bit.") ? 16 : 24; // 24-bit encoding
 						const COMPRESSION = Number(prompt("What is the quality of the audio? (In accurate terms, how aggressive is the lossless compression? 0 = fastest compression, largest file, 8 = slower compression, smaller file, 5 = balanced compression, balanced file)") ?? 5);
 						const VERIFY = false;
 						const BLOCK_SIZE = 0; // 0 = let encoder decide
@@ -622,27 +622,51 @@
 							i.audioData.subarray(timelineBeginAudio, timelineEndAudio) :
 							i.audioData);
 
-						const int24Buffer = new Int32Array(audioData[0].length * audioData.length);
-						if (audioData.length === 2) {
-							const aa = audioData[0];
-							const ab = audioData[1];
-							for (let i = 0, j = 0; i < int24Buffer.length; i += 2, j++) {
-								int24Buffer[i] = Math.round(aa[j] * 8388607);
-								int24Buffer[i + 1] = Math.round(ab[j] * 8388607);
-							}
-						} else {
-							const aa = audioData[0];
-							for (let i = 0; i < aa.length; i++) {
-								int24Buffer[i] = Math.round(aa[i] * 8388607);
-							}
-						}
+						let encodedStatus = false;
 
-						// Encode
-						const encodeStatus = Flac.FLAC__stream_encoder_process_interleaved(
-							flac_encoder,
-							int24Buffer,
-							audioData[0].length
-						);
+						if (BPS === 24) {
+							const int24Buffer = new Int32Array(audioData[0].length * audioData.length);
+							if (audioData.length === 2) {
+								const aa = audioData[0];
+								const ab = audioData[1];
+								for (let i = 0, j = 0; i < int24Buffer.length; i += 2, j++) {
+									int24Buffer[i] = (aa[j] * 8388607) | 0;
+									int24Buffer[i + 1] = (ab[j] * 8388607) | 0;
+								}
+							} else {
+								const aa = audioData[0];
+								for (let i = 0; i < aa.length; i++) {
+									int24Buffer[i] = (aa[i] * 8388607) | 0;
+								}
+							}
+
+							encodedStatus = Flac.FLAC__stream_encoder_process_interleaved(
+								flac_encoder,
+								int24Buffer,
+								audioData[0].length
+							);
+						} else if (BPS === 16) {
+							const int16Buffer = new Int16Array(audioData[0].length * audioData.length);
+							if (audioData.length === 2) {
+								const aa = audioData[0];
+								const ab = audioData[1];
+								for (let i = 0, j = 0; i < int16Buffer.length; i += 2, j++) {
+									int16Buffer[i] = (aa[j] * 32767) | 0;
+									int16Buffer[i + 1] = (ab[j] * 32767) | 0;
+								}
+							} else {
+								const aa = audioData[0];
+								for (let i = 0; i < aa.length; i++) {
+									int16Buffer[i] = (aa[i] * 32767) | 0;
+								}
+							}
+
+							encodedStatus = Flac.FLAC__stream_encoder_process_interleaved(
+								flac_encoder,
+								int16Buffer,
+								audioData[0].length
+							);
+						}
 
 						if (!encodeStatus) {
 							throw new Error("FLAC encoding failed");
@@ -674,7 +698,6 @@
 						link.href = URL.createObjectURL(blob);
 						link.click();
 						link.remove();
-		
 					} catch (err) {
 						alert("The FLAC encoding failed: " + err.message);
 						console.error(err);
