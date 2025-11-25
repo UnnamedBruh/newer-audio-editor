@@ -597,12 +597,14 @@
 						const VERIFY = false;
 						const BLOCK_SIZE = 0; // 0 = let encoder decide
 
+						const junkMode = (BPS !== 16 || confirm("Do you want your FLAC to not have any garbage data?") ? 1 : 0;
+
 						const flac_encoder = Flac.create_libflac_encoder(
 							SAMPLERATE,
 							CHANNELS,
 							BPS,
 							COMPRESSION,
-							(timelineBeginAudio ? (timelineEndAudio - timelineBeginAudio) : exporters[0].audioData.length) * (1 + (BPS !== 16 || confirm("Do you want your FLAC to not have any garbage data?"))), // total_samples (0 = unknown)
+							(timelineBeginAudio ? (timelineEndAudio - timelineBeginAudio) : exporters[0].audioData.length) * (2 - junkMode)), // total_samples (0 = unknown)
 							VERIFY,
 							BLOCK_SIZE
 						);
