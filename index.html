@@ -670,8 +670,8 @@
 									for (let i = 0, j = 0; i < int16Buffer.length; i += 4, j++) {
 										int16Buffer[i] = (aa[j] * 32767) | 0;
 										int16Buffer[i + 1] = (ab[j] * 32767) | 0;
-										int16Buffer[i + 2] = intBuffer[i];
-										int16Buffer[i + 3] = intBuffer[i + 1];
+										int16Buffer[i + 2] = int16Buffer[i];
+										int16Buffer[i + 3] = int16Buffer[i + 1];
 									}
 								} else {
 									const aa = audioData[0];
