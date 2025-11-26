@@ -889,9 +889,11 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								ii++;
 							}
 
+							console.log(arr);
+
 							blob = muxOpusPacketsToOgg(arr, {
 								sampleRate: altRate || exporters[0].sampleRate,
-								channels: 2
+								channels: buffer.length
 							});
 
 							encoder.destroy();
