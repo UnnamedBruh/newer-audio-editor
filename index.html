@@ -194,8 +194,10 @@
 					n.setAttribute("fill", "red");
 					n2.setAttribute("fill", "blue");
 					n2.setAttribute("stroke-width", 1);
+					n.setAttribute("fill-opacity", 0.5);
 					n2.setAttribute("fill-opacity", 0.5);
 					dataSecond = generateWaveform(exp[1]);
+					n2.setAttribute("d", dataSecond);
 					alert("Red waveform = left hearing, blue waveform = right hearing");
 				}
 				let bpmMarks = [];
