@@ -636,11 +636,11 @@
 							const arr = [];
 
 							let chunks;
-							let i = 0;
+							let ii = 0;
 							while ((chunks = encoder.output()) !== null) {
-								if (i < 100) console.log(chunks);
+								if (ii < 100) console.log(chunks);
 								arr.push(chunks);
-								i++;
+								ii++;
 							}
 
 							blob = new Blob(arr, { type: "audio/ogg" });
