@@ -592,6 +592,71 @@
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
+				exportBtn.textContent = "Export as OGG (Opus format)";
+				exportBtn.onclick = async function() {
+					function floatTo16BitPCM(float32Array, channels) {
+						const len = float32Array[0].length;
+						const buffer = new Int16Array(len * channels);
+						let s = 0;
+						if (channels === 1) {
+							for (let i = 0; i < len; i++) {
+								s = float32Array[0][i];
+								buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+							}
+						} else {
+							for (let i = 0, j = 0; i < len; i++, j+=channels) {
+								s = float32Array[0][i];
+								buffer[j] = s < 0 ? s * 0x8000 : s * 0x7fff;
+								s = float32Array[1][i];
+								buffer[j + 1] = s < 0 ? s * 0x8000 : s * 0x7fff;
+							}
+						}
+						return buffer;
+					}
+					try {
+						const vbr = Number(prompt("How high can the bitrate of the audio be? (6 = worst quality, big differences, low sizes; 512.0 = best quality, nearly-neglible differences, higher sizes; 256.0 = balanced quality, minimal differences, medium sizes)") ?? 256.0) ?? 256.0;
+						const voiceOpt = confirm("Should the audio encoder optimize for voices in the audio?");
+						let blob;
+						const split = exporters.length !== 2 && !!confirm("Should the audio be split into two separate channels?");
+
+						const times = Number(prompt("How many times would the audio be re-encoded?") || 1) || 1;
+
+						for (let i = 0; i < times; i++) {
+							const encoder = Encoder(exporters.length, exporters[0].sampleRate, vbr, 20, voiceOpt);
+
+							let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
+							let altRate = buffer.sampleRate;
+							if (i > 0) {
+								if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0)];
+							}
+
+							const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
+							
+							const encodedData = encoder.input(floatTo16BitPCM(bufferF, bufferF.length));
+							const arr = [];
+
+							let chunks;
+							while ((chunks = encoder.output()) !== null) {
+								arr.push(chunks);
+							}
+
+							blob = new Blob(arr, { type: "audio/ogg" });
+
+							encoder.destroy();
+						}
+
+						const link = document.createElement("a");
+						link.download = "exportedAudio.ogg";
+						link.href = URL.createObjectURL(blob);
+						link.click();
+						link.remove();
+					} catch (err) {
+						alert("It seems like the OGG Opus codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
+						console.log(err.message, err.stack);
+					}
+				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as FLAC (libflac.js)";
 				exportBtn.onclick = async function() { // This function was written entirely by Claude Sonnet 4.5. I made some modifications to the original code.
 					try {
