@@ -191,14 +191,14 @@
 				if (exp.length > 1 && confirm("Would you like the second channel to be displayed?")) {
 					n2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
 					x.appendChild(n2);
-					n.setAttribute("fill", "red");
-					n2.setAttribute("fill", "blue");
+					n.setAttribute("fill", "white");
+					n2.setAttribute("fill", "red");
 					n2.setAttribute("stroke-width", 1);
 					n.setAttribute("fill-opacity", 0.5);
 					n2.setAttribute("fill-opacity", 0.5);
 					dataSecond = generateWaveform(exp[1]);
 					n2.setAttribute("d", dataSecond);
-					alert("Red waveform = left hearing, blue waveform = right hearing");
+					alert("White waveform = left hearing, red waveform = right hearing. Note: If parts of the waveform are a light red, this means the audio track sounds nearly identical for both hearing sides.");
 				}
 				let bpmMarks = [];
 				function restartSelect() {
