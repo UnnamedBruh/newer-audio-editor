@@ -34,7 +34,7 @@
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel");
 			let exporters = null;
-			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
+			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, dataSecond = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
 			const interpretFiles = document.getElementById("which");
 			let whichInterpret = false;
@@ -187,6 +187,17 @@
 				x.appendChild(timelineBegin);
 				x.appendChild(timelineEnd);
 				x.appendChild(highlight);
+				let n2 = null;
+				if (exp.length > 1 && confirm("Would you like the second channel to be displayed?")) {
+					n2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+					x.appendChild(n2);
+					n.setAttribute("fill", "red");
+					n2.setAttribute("fill", "blue");
+					n2.setAttribute("stroke-width", 1);
+					n2.setAttribute("fill-opacity", 0.5);
+					dataSecond = generateWaveform(exp[1]);
+					alert("Red waveform = left hearing, blue waveform = right hearing");
+				}
 				let bpmMarks = [];
 				function restartSelect() {
 					timelineIter = -1;
@@ -376,6 +387,7 @@
 								}
 							}
 							data = generateWaveform(exp[0]);
+							if (n2) dataSecond = generateWaveform(exp[1]);
 							sharedBuffer = audioContext.createBuffer(exp.length, exp[0].audioData.length, exp[0].sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
 							ref.set(exp[0].audioData);
@@ -386,6 +398,7 @@
 							x.setAttribute("width", exp[0].audioData.length / sampleSkip);
 							v.style.width = (exp[0].audioData.length / sampleSkip) + "px";
 							n.setAttribute("d", data);
+							if (n2) n2.setAttribute("d", dataSecond);
 							apply.disabled = false;
 							x.onclick = playWithTimeline; // Reset playing function, just in case browsers like Chrome misbehave every time an effect is applied
 							yu = exp[0].audioData.length;
