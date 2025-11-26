@@ -873,68 +873,40 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							if (i > 0) {
 								if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0)];
 							}
+// Rest of encoding logic is implemented by GPT-5.0 Mini.
+		// Prepare channels
+		const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
+		const channels = bufferF.length;
 
-							const encoder = new Encoder(exporters.length, altRate || exporters[0].sampleRate, vbr, 20, voiceOpt);
+		// Create encoder
+		const encoder = new Encoder(channels, sampleRate, vbr, 20, voiceOpt);
+		const arr = [];
 
-							const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
+							const sampleRate = altRate || exporters[0].sampleRate; // Except this line, I added this.
 
-/*							console.log(bufferF);
-							console.log(floatTo16BitPCM(bufferF, bufferF.length));
-							
-							encoder.input(floatTo16BitPCM(bufferF, bufferF.length));*/
-							const arr = [];
+		// Frame-slice
+		const frameSize = sampleRate * 20 / 1000; // 20ms @ 48kHz | Except this line, this altered modified by me.
+		const totalSamples = bufferF[0].length;
 
-/*							let chunks;
-							let ii = 0;
-							while (chunks = encoder.output()) {
-								arr.push(chunks);
-								ii++;
-							}*/
-if (bufferF.length > 1) {
-const samplesL = bufferF[0];
-const samplesR = bufferF[1] || bufferF[0];
-const frameSize = 960; // per channel
-const channels = 2;
+		for (let pos = 0; pos + frameSize <= totalSamples; pos += frameSize) {
+			const frame = bufferF.map(ch => ch.subarray(pos, pos + frameSize));
+			const pcm = floatTo16BitPCM(frame, channels);
+			encoder.input(pcm);
 
-for (let i = 0; i + frameSize <= samplesL.length; i += frameSize) {
-    // slice planar float32
-    const frame = [
-        samplesL.subarray(i, i + frameSize),
-        samplesR.subarray(i, i + frameSize)
-    ];
+			// Drain packets
+			let pkt;
+			while ((pkt = encoder.output()) !== null) {
+									arr.push(pkt);
+								}
+							}
 
-    // convert to interleaved Int16
-    const pcm = floatTo16BitPCM(frame, channels);
-    encoder.input(pcm);
+							console.log("Packets:", arr);
 
-    // drain packets
-    let pkt;
-    while ((pkt = encoder.output())) {
-        arr.push(pkt);
-    }
-}
-} else {
-	const frameSize = 960;
-	const mono = buffer[0];
-for (let i = 0; i + frameSize <= mono.length; i += frameSize) {
-    const frame = [mono.subarray(i, i + frameSize)]; // planar mono
-    const pcm = floatTo16BitPCM(frame, 1);
-    encoder.input(pcm);
-
-    let pkt;
-    while ((pkt = encoder.output()) !== null) {
-        arr.push(pkt);
-    }
-}
-}
-
-							console.log(arr);
-
+							// Mux into OGG
 							blob = muxOpusPacketsToOgg(arr, {
-								sampleRate: altRate || exporters[0].sampleRate,
-								channels: bufferF.length
+								sampleRate,
+								channels
 							});
-
 							encoder.destroy();
 						}
 
