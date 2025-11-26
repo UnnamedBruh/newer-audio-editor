@@ -895,7 +895,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 
 			// Drain packets
 			let pkt;
-			while ((pkt = encoder.output()) !== null) {
+			while ((pkt = encoder.output()) != null) {
 									arr.push(pkt);
 								}
 							}
