@@ -878,19 +878,55 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 
 							const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
 
-							console.log(bufferF);
+/*							console.log(bufferF);
 							console.log(floatTo16BitPCM(bufferF, bufferF.length));
 							
-							encoder.input(floatTo16BitPCM(bufferF, bufferF.length));
-							
+							encoder.input(floatTo16BitPCM(bufferF, bufferF.length));*/
 							const arr = [];
 
-							let chunks;
+/*							let chunks;
 							let ii = 0;
 							while (chunks = encoder.output()) {
 								arr.push(chunks);
 								ii++;
-							}
+							}*/
+if (bufferF.length > 1) {
+const samplesL = bufferF[0];
+const samplesR = bufferF[1] || bufferF[0];
+const frameSize = 960; // per channel
+const channels = 2;
+
+for (let i = 0; i + frameSize <= samplesL.length; i += frameSize) {
+    // slice planar float32
+    const frame = [
+        samplesL.subarray(i, i + frameSize),
+        samplesR.subarray(i, i + frameSize)
+    ];
+
+    // convert to interleaved Int16
+    const pcm = floatTo16BitPCM(frame, channels);
+    encoder.input(pcm);
+
+    // drain packets
+    let pkt;
+    while ((pkt = encoder.output())) {
+        arr.push(pkt);
+    }
+}
+} else {
+	const frameSize = 960;
+	const mono = buffer[0];
+for (let i = 0; i + frameSize <= mono.length; i += frameSize) {
+    const frame = [mono.subarray(i, i + frameSize)]; // planar mono
+    const pcm = floatTo16BitPCM(frame, 1);
+    encoder.input(pcm);
+
+    let pkt;
+    while ((pkt = encoder.output()) !== null) {
+        arr.push(pkt);
+    }
+}
+}
 
 							console.log(arr);
 
