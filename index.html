@@ -878,11 +878,11 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 		const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
 		const channels = bufferF.length;
 
+							const sampleRate = altRate || exporters[0].sampleRate; // Except this line, I added this.
+
 		// Create encoder
 		const encoder = new Encoder(channels, sampleRate, vbr, 20, voiceOpt);
 		const arr = [];
-
-							const sampleRate = altRate || exporters[0].sampleRate; // Except this line, I added this.
 
 		// Frame-slice
 		const frameSize = sampleRate * 20 / 1000; // 20ms @ 48kHz | Except this line, this altered modified by me.
