@@ -548,7 +548,7 @@
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as OGG (Vorbis format)";
+				exportBtn.textContent = "Export as OGG (Vorbis format, wasm-media-encoders)";
 				exportBtn.onclick = async function() {
 					try {
 						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") ?? 4.0) ?? 4.0;
@@ -592,7 +592,7 @@
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as OGG (Opus format)";
+				exportBtn.textContent = "Export as OGG (Opus format, libopusjs)";
 				exportBtn.onclick = async function() {
 					function floatTo16BitPCM(float32Array, channels) {
 						const len = float32Array[0].length;
@@ -614,7 +614,7 @@
 						return buffer;
 					}
 					try {
-						const vbr = Number(prompt("How high can the bitrate of the audio be? (6 = worst quality, big differences, low sizes; 512.0 = best quality, nearly-neglible differences, higher sizes; 256.0 = balanced quality, minimal differences, medium sizes)") ?? 256.0) ?? 256.0;
+						const vbr = Number(prompt("How high can the bitrate of the audio be? (6.0 = worst quality, big differences, low sizes; 512.0 = best quality, nearly-neglible differences, higher sizes; 256.0 = balanced quality, minimal differences, medium sizes)") ?? 256.0) ?? 256.0;
 						const voiceOpt = confirm("Should the audio encoder optimize for voices in the audio?");
 						let blob;
 						const split = exporters.length !== 2 && !!confirm("Should the audio be split into two separate channels?");
@@ -636,8 +636,11 @@
 							const arr = [];
 
 							let chunks;
+							let i = 0;
 							while ((chunks = encoder.output()) !== null) {
+								if (i < 100) console.log(chunks);
 								arr.push(chunks);
+								i++;
 							}
 
 							blob = new Blob(arr, { type: "audio/ogg" });
