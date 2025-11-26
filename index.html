@@ -622,7 +622,7 @@
 						const times = Number(prompt("How many times would the audio be re-encoded?") || 1) || 1;
 
 						for (let i = 0; i < times; i++) {
-							const encoder = Encoder(exporters.length, exporters[0].sampleRate, vbr, 20, voiceOpt);
+							const encoder = new Encoder(exporters.length, exporters[0].sampleRate, vbr, 20, voiceOpt);
 
 							let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
 							let altRate = buffer.sampleRate;
