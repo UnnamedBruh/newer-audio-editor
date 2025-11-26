@@ -632,18 +632,9 @@
 
 							const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
 							
-							const encodedData = encoder.input(floatTo16BitPCM(bufferF, bufferF.length));
-							const arr = [];
-
-							let chunks;
-							let ii = 0;
-							while ((chunks = encoder.output()) != null) {
-								if (ii < 100) console.log(chunks);
-								arr.push(chunks);
-								ii++;
-							}
-
-							blob = new Blob(arr, { type: "audio/ogg" });
+							encoder.input(floatTo16BitPCM(bufferF, bufferF.length));
+							
+							blob = new Blob([encoder.output()], { type: "audio/ogg" });
 
 							encoder.destroy();
 						}
