@@ -637,7 +637,7 @@
 
 							let chunks;
 							let ii = 0;
-							while ((chunks = encoder.output()) !== null) {
+							while ((chunks = encoder.output()) != null) {
 								if (ii < 100) console.log(chunks);
 								arr.push(chunks);
 								ii++;
