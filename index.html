@@ -877,6 +877,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							const encoder = new Encoder(exporters.length, altRate || exporters[0].sampleRate, vbr, 20, voiceOpt);
 
 							const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
+
+							console.log(bufferF);
+							console.log(floatTo16BitPCM(bufferF, bufferF.length));
 							
 							encoder.input(floatTo16BitPCM(bufferF, bufferF.length));
 							
@@ -893,7 +896,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 
 							blob = muxOpusPacketsToOgg(arr, {
 								sampleRate: altRate || exporters[0].sampleRate,
-								channels: buffer.length
+								channels: bufferF.length
 							});
 
 							encoder.destroy();
