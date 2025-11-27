@@ -569,7 +569,7 @@
 
 							encoder.configure({
 								sampleRate: i === 0 ? exporters[0].sampleRate : altRate,
-								channels: buffer.length + split,
+								channels: Math.min(2, buffer.length + split),
 								vbrQuality: vbr,
 							});
 							
