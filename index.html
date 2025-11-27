@@ -755,7 +755,7 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
         if (continuedPacket) flags |= 0x01;
         if (isEOS) flags |= 0x04;
         header[5] = flags;
-        write64LE(header, 6, pageGranule >= 0n ? pageGranule : 0n);
+        write64LE(header, 6, pageGranule >= 0n ? pageGranule : 0xFFFFFFFFFFFFFFFFn);
         write32LE(header, 14, serial);
         write32LE(header, 18, pageSeq++);
         write32LE(header, 22, 0);
