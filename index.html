@@ -696,111 +696,126 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 	}
 
 	// --- Make Ogg page ---
-// --- Helpers --------------------------------------------------
+// ---------- Robust helpers (replace your current write32/write64/concat/CRC helpers) ----------
 
 // write a 64-bit little-endian integer (supports BigInt or Number)
 function write64(buf, offset, value) {
-	const dv = new DataView(buf.buffer || buf, 0);
-	let v = typeof value === "bigint" ? value : BigInt(value);
-	// low 32 bits
-	dv.setUint32(offset, Number(v & 0xffffffffn), true);
-	// high 32 bits
-	dv.setUint32(offset + 4, Number((v >> 32n) & 0xffffffffn), true);
+    // respect Uint8Array.byteOffset
+    const base = buf.buffer;
+    const byteOffset = buf.byteOffset || 0;
+    const dv = new DataView(base, byteOffset, buf.byteLength);
+    const v = typeof value === "bigint" ? value : BigInt(value);
+    // low 32 bits
+    dv.setUint32(offset, Number(v & 0xffffffffn), true);
+    // high 32 bits
+    dv.setUint32(offset + 4, Number((v >> 32n) & 0xffffffffn), true);
 }
 
-// write a 32-bit little-endian unsigned integer into a Uint8Array or DataView
+// write a 32-bit little-endian unsigned integer into a Uint8Array
 function write32(buf, offset, value) {
-	const dv = new DataView(buf.buffer || buf, 0);
-	dv.setUint32(offset, Number(value >>> 0), true);
+    const base = buf.buffer;
+    const byteOffset = buf.byteOffset || 0;
+    const dv = new DataView(base, byteOffset, buf.byteLength);
+    dv.setUint32(offset, Number(value >>> 0), true);
 }
 
 // concat array of Uint8Array into one Uint8Array
 function concatUint8(chunks) {
-	let total = 0;
-	for (const c of chunks) total += c.length;
-	const out = new Uint8Array(total);
-	let off = 0;
-	for (const c of chunks) { out.set(c, off); off += c.length; }
-	return out;
+    let total = 0;
+    for (const c of chunks) total += c.length;
+    const out = new Uint8Array(total);
+    let off = 0;
+    for (const c of chunks) { out.set(c, off); off += c.length; }
+    return out;
 }
 
-// compute full-page CRC using your CRC32 function (expects crc function named CRC32)
+// compute full-page CRC using CRC32 function (expects CRC32 defined)
 function computeOggCRC(header, body) {
-	// header must have CRC bytes zeroed when passed in
-	// We'll compute CRC over header + body
-	const full = concatUint8([header, body]);
-	return CRC32(full);
+    // header must have CRC bytes zeroed when passed in
+    const full = concatUint8([header, body]);
+    return CRC32(full);
 }
 
-// --- Robust makeOggPage (guarantees segment table matches body) ----
+// ---------- Robust makeOggPage (replace your current makeOggPage) ----------
 function makeOggPage(packetsInPage, headerType, granulePos, pageSeq, streamSerial) {
-	// Build segments & body parts from packets (ensures perfect match)
-	const segmentValues = [];
-	const bodyParts = [];
-	for (const p of packetsInPage) {
-		let offset = 0;
-		const plen = p.length;
-		if (plen === 0) {
-			// zero-length packet -> segment of 0
-			segmentValues.push(0);
-			bodyParts.push(new Uint8Array(0));
-			continue;
-		}
-		while (offset < plen) {
-			const take = Math.min(255, plen - offset);
-			segmentValues.push(take);
-			bodyParts.push(p.subarray(offset, offset + take));
-			offset += take;
-		}
-	}
+    // Build segments & body parts from packets (ensures perfect match)
+    const segmentValues = [];
+    const bodyParts = [];
+    for (const p of packetsInPage) {
+        let offset = 0;
+        const plen = p.length;
+        if (plen === 0) {
+            // zero-length packet -> one zero-length segment
+            segmentValues.push(0);
+            bodyParts.push(new Uint8Array(0));
+            continue;
+        }
+        while (offset < plen) {
+            const take = Math.min(255, plen - offset);
+            segmentValues.push(take);
+            bodyParts.push(p.subarray(offset, offset + take));
+            offset += take;
+        }
+    }
 
-	const pageSegments = segmentValues.length;
-	if (pageSegments > 255) {
-		throw new Error("makeOggPage: pageSegments > 255 (should be avoided by caller)");
-	}
+    const pageSegments = segmentValues.length;
+    if (pageSegments > 255) {
+        throw new Error("makeOggPage: pageSegments > 255 (caller must split pages to avoid this)");
+    }
 
-	const segmentTable = new Uint8Array(segmentValues);
-	const body = concatUint8(bodyParts);
+    const segmentTable = new Uint8Array(segmentValues);
+    const body = concatUint8(bodyParts);
 
-	// Build header (27 + segment count)
-	const header = new Uint8Array(27 + pageSegments);
-	// "OggS"
-	header.set(new TextEncoder().encode("OggS"), 0);
-	header[4] = 0;				 // stream structure version
-	header[5] = headerType & 0xff; // header type flag
+    // --- Verification (catch the root cause of your holes) ---
+    const expectedBodyLen = segmentValues.reduce((a, b) => a + b, 0);
+    if (expectedBodyLen !== body.length) {
+        // Helpful diagnostic — this is the exact mismatch ogginfo complains about.
+        console.error("makeOggPage: segment table sum !== body.length",
+            { pageSeq, expectedBodyLen, actualBodyLen: body.length, pageSegments, segmentValues });
+        throw new Error(`makeOggPage: segment table sum (${expectedBodyLen}) !== body.length (${body.length})`);
+    }
 
-	// write granule (64-bit LE)
-	write64(header, 6, BigInt(granulePos));
+    // Build header (27 + segment count)
+    const header = new Uint8Array(27 + pageSegments);
+    // "OggS"
+    header.set(new TextEncoder().encode("OggS"), 0);
+    header[4] = 0;                 // stream structure version
+    header[5] = headerType & 0xff; // header type flag
 
-	// stream serial (32-bit LE)
-	write32(header, 14, streamSerial >>> 0);
+    // write granule (64-bit LE) — granulePos may be BigInt or Number
+    write64(header, 6, BigInt(granulePos));
 
-	// page sequence number (32-bit LE)
-	write32(header, 18, pageSeq >>> 0);
+    // stream serial (32-bit LE)
+    write32(header, 14, streamSerial >>> 0);
 
-	// CRC placeholder = 0
-	write32(header, 22, 0);
+    // page sequence number (32-bit LE)
+    write32(header, 18, pageSeq >>> 0);
 
-	// page_segments
-	header[26] = pageSegments;
-	console.log(`Page ${pageSeq}: granule=${granulePos} (0x${granulePos.toString(16)})`);
-	console.log(` Bytes 6-13 (granule): ${Array.from(header.subarray(6, 14)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-	console.log(` Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-	console.log(` Full header including segment table: ${Array.from(header).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+    // CRC placeholder = 0 (must be zero for CRC calculation)
+    write32(header, 22, 0);
 
-	// segment table bytes
-	header.set(segmentTable, 27);
+    // page_segments
+    header[26] = pageSegments;
 
-	// Compute CRC over header (with CRC=0) + body
-	const crc = computeOggCRC(header, body);
+    // segment table bytes (set BEFORE logging and CRC)
+    header.set(segmentTable, 27);
 
-	// Write CRC into header (little-endian)
-	write32(header, 22, crc >>> 0);
+    // Useful debug output (now shows the real segment table)
+    console.log(`Page ${pageSeq}: granule=${granulePos} (0x${BigInt(granulePos).toString(16)})`);
+    console.log(` Bytes 6-13 (granule): ${Array.from(header.subarray(6, 14)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+    console.log(` Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+    console.log(` Full header including segment table: ${Array.from(header).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
 
-	console.log(`After CRC write - bytes 22-25: ${Array.from(header.subarray(22, 26)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+    // Compute CRC over header (with CRC=0) + body
+    const crc = computeOggCRC(header, body);
 
-	// Return full page bytes (header + body)
-	return concatUint8([header, body]);
+    // Write CRC into header (little-endian)
+    write32(header, 22, crc >>> 0);
+
+    console.log(`After CRC write - bytes 22-25: ${Array.from(header.subarray(22, 26)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+
+    // Return full page bytes (header + body)
+    return concatUint8([header, body]);
 }
 
 	// --- Build pages ---
