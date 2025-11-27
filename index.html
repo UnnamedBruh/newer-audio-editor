@@ -749,94 +749,66 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 
 		return buf;
 	}
-
+	let continuedPacket = false;
 	// --- Create OGG Page ---
-	function makeOggPage(packetsInPage, headerType, granulePos, pageSeq, streamSerial) {
-		// Build segment table and body
-		const segmentValues = [];
-		const bodyParts = [];
+function makeOggPage(packetsInPage, headerType, granulePos, pageSeq, streamSerial) {
+    const segmentValues = [];
+    const bodyParts = [];
+    let packetContinues = false; // did a packet overflow page?
 
-		for (const pkt of packetsInPage) {
-			if (pkt.length === 0) {
-				// Zero-length packet = one zero-length segment
-				segmentValues.push(0);
-				bodyParts.push(new Uint8Array(0));
-				continue;
-			}
+    for (const pkt of packetsInPage) {
+        let offset = 0;
+        while (offset < pkt.length) {
+            const remaining = pkt.length - offset;
+            const take = Math.min(255, remaining);
+            segmentValues.push(take);
+            bodyParts.push(pkt.subarray(offset, offset + take));
+            offset += take;
 
-			let offset = 0;
-			while (offset < pkt.length) {
-				const take = Math.min(255, pkt.length - offset);
-				segmentValues.push(take);
-				bodyParts.push(pkt.subarray(offset, offset + take));
-				offset += take;
-			}
-			
-			// Critical: if packet ends on a 255-byte boundary, add terminating zero segment
-			if (pkt.length > 0 && pkt.length % 255 === 0) {
-				segmentValues.push(0);
-			}
-		}
+            if (offset < pkt.length) {
+                // Packet continues to next page
+                packetContinues = true;
+            }
+        }
 
-		const pageSegments = segmentValues.length;
-		if (pageSegments > 255) {
-			throw new Error(`Too many segments (${pageSegments}) for single page`);
-		}
+        // Only add zero-length segment if packet ends exactly at 255 boundary AND not continuing
+        if (!packetContinues && pkt.length % 255 === 0) {
+            segmentValues.push(0);
+        }
+    }
 
-		const segmentTable = new Uint8Array(segmentValues);
-		const body = concatUint8(bodyParts);
+    const pageSegments = segmentValues.length;
+    if (pageSegments > 255) throw new Error(`Too many segments (${pageSegments})`);
 
-		// Verify segment table matches body length
-		const expectedBodyLen = segmentValues.reduce((a, b) => a + b, 0);
-		if (expectedBodyLen !== body.length) {
-			console.error(`Page ${pageSeq}: Segment mismatch!`, {
-				segmentSum: expectedBodyLen,
-				actualBody: body.length,
-				segments: segmentValues,
-				packetLengths: packetsInPage.map(p => p.length)
-			});
-			throw new Error(
-				`Segment table sum (${expectedBodyLen}) != body length (${body.length})`
-			);
-		}
+    const segmentTable = new Uint8Array(segmentValues);
+    const body = concatUint8(bodyParts);
 
-		// Build header (27 bytes + segment table)
-		const header = new Uint8Array(27 + pageSegments);
+    // Build header (27 bytes + segment table)
+    const header = new Uint8Array(27 + pageSegments);
+    header.set(new TextEncoder().encode("OggS"), 0);       // "OggS"
+    header[4] = 0;                                        // version
+    header[5] = headerType & 0xff;                        // flags
+    write64LE(header, 6, granulePos);                     // granule
+    write32LE(header, 14, streamSerial);                 // serial
+    write32LE(header, 18, pageSeq);                      // page seq
+    write32LE(header, 22, 0);                             // CRC placeholder
+    header[26] = pageSegments;                            // segment count
+    header.set(segmentTable, 27);
 
-		// "OggS" magic signature
-		header.set(new TextEncoder().encode("OggS"), 0);
-		header[4] = 0;                          // stream structure version
-		header[5] = headerType & 0xff;          // header type flags
-		write64LE(header, 6, granulePos);       // granule position
-		write32LE(header, 14, streamSerial);    // stream serial number
-		write32LE(header, 18, pageSeq);         // page sequence number
-		write32LE(header, 22, 0);               // CRC (placeholder)
-		header[26] = pageSegments;              // page segments count
-		header.set(segmentTable, 27);           // segment table
+    // Compute CRC
+    const fullPage = concatUint8([header, body]);
+    const crc = CRC32(fullPage);
+    write32LE(header, 22, crc);
 
-		// Debug: verify granule was written correctly
-		if (debug && pageSeq >= 2) {
-			const granBytes = Array.from(header.subarray(6, 14))
-				.map(b => b.toString(16).padStart(2, '0')).join(' ');
-			console.log(`  Granule bytes [6-13]: ${granBytes}`);
-			console.log(`  Expected: ${granulePos} (0x${BigInt(granulePos).toString(16)})`);
-			console.log(`  Packets in page: ${packetsInPage.length}, Total body: ${body.length}B`);
-			console.log(`  First 5 packet lengths: ${packetsInPage.slice(0, 5).map(p => p.length).join(',')}`);
-			console.log(`  Segment table (${pageSegments}): ${segmentValues.slice(0, 10).join(',')}${pageSegments > 10 ? '...' : ''}`);
-			console.log(`  Segment table sum: ${segmentValues.reduce((a,b) => a+b, 0)}`);
-		}
+    if (debug) {
+        console.log(`Page ${pageSeq}: granule=${granulePos}, segments=${pageSegments}, body=${body.length}B`);
+    }
 
-		// Compute CRC with CRC field zeroed
-		const fullPage = concatUint8([header, body]);
-		const crc = CRC32(fullPage);
-		write32LE(header, 22, crc);
+    // If last packet continues to next page, set global flag
+    continuedPacket = packetContinues;
 
-		if (debug) {
-			console.log(`Page ${pageSeq}: granule=${granulePos.toString()}`);
-		}
-
-		return concatUint8([header, body]);
-	}
+    return concatUint8([header, body]);
+}
 
 // --- Build OGG Stream ---
 const pages = [];
@@ -856,23 +828,31 @@ const MAX_PACKETS_PER_PAGE = 100;
 let pendingPackets = [];
 let pendingBytes = 0;
 let pendingSegments = 0;
-
 function flushPage(isEOS = false) {
     if (pendingPackets.length === 0) return;
 
-    // Compute granule for this page
-let lastPacketSamples = getPacketSamples(pendingPackets[pendingPackets.length - 1]);
-let pageGranule = granule + BigInt(lastPacketSamples);
+    // Compute granule: last sample of last packet in this page
+    const lastPacketSamples = getPacketSamples(pendingPackets[pendingPackets.length - 1]);
+    const pageGranule = granule + BigInt(lastPacketSamples);
 
-    const flags = isEOS ? 0x04 : 0x00;
-    pages.push(makeOggPage(pendingPackets, flags, pageGranule, pageSeq++, serial));
+    // Determine header flags
+    let flags = isEOS ? 0x04 : 0x00;
+    if (continuedPacket) flags |= 0x01; // packet continued from previous page
 
-    // Update global granule to end position of this page
+    // Make the page
+    const page = makeOggPage(pendingPackets, flags, pageGranule, pageSeq++, serial);
+    pages.push(page);
+
+    // Update global granule
     granule = pageGranule;
 
+    // Reset pending trackers
     pendingPackets = [];
     pendingBytes = 0;
     pendingSegments = 0;
+
+    // If the last packet was split across pages, set continuedPacket flag
+    continuedPacket = false;
 }
 
 // Process each audio packet
