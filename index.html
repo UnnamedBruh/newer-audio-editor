@@ -867,8 +867,6 @@ for (let i = 0; i < packets.length; i++) {
     const segments = Math.ceil(pkt.length / 255) || 1;
     const neededBytes = pkt.length;
 
-	console.log("Pending packet lengths:", pendingPackets.map(p => p.length));
-
     // flush if adding this packet would exceed page limits
     if (
         pendingSegments + segments > MAX_SEGMENTS ||
@@ -883,6 +881,7 @@ for (let i = 0; i < packets.length; i++) {
     pendingBytes += neededBytes;
     pendingSegments += segments;
 }
+console.log("Pending packet lengths:", pendingPackets.map(p => p.length));
 
 // Flush last page (EOS)
 flushPage(true);
