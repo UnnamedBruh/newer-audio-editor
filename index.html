@@ -634,7 +634,6 @@
 // better packing heuristics.
 
 function muxOpusPacketsToOgg(packets, opts = {}) {
-	const debug = true;
 	const {
 		sampleRate = 48000,
 		channels = 2,
@@ -642,7 +641,7 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		pageSizeLimit = 65000,
 		getPacketSamples = defaultGetPacketSamples(20, sampleRate),
 		vendor = "libopusjs-muxer",
-		debug = false
+		debug = true
 	} = opts;
 
 	// Validate input
