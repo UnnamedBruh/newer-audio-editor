@@ -771,6 +771,11 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 				bodyParts.push(pkt.subarray(offset, offset + take));
 				offset += take;
 			}
+			
+			// Critical: if packet ends on a 255-byte boundary, add terminating zero segment
+			if (pkt.length > 0 && pkt.length % 255 === 0) {
+				segmentValues.push(0);
+			}
 		}
 
 		const pageSegments = segmentValues.length;
