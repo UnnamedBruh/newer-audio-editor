@@ -639,44 +639,37 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		channels = 2,
 		serial = (Math.random() * 0xffffffff) >>> 0,
 		pageSizeLimit = 65000,
-		getPacketSamples = defaultGetPacketSamples(20, sampleRate), // default: 20ms frames
+		getPacketSamples = defaultGetPacketSamples(20, sampleRate),
 		vendor = "libopusjs-muxer"
 	} = opts;
 
-	// helper: create OpusHead (identification header)
+	// Create OpusHead
 	function createOpusHead() {
-		// OpusHead layout (RFC 7845): 'OpusHead' + version + channel count + pre-skip (2 bytes)
-		// + input sample rate (4 bytes little-endian) + gain (2 bytes) + channel mapping (1 byte)
 		const view = new DataView(new ArrayBuffer(19));
 		const bytes = new Uint8Array(view.buffer);
-		// signature
-		const sig = new TextEncoder().encode("OpusHead");
-		bytes.set(sig, 0);
-		view.setUint8(8, 1);							 // version
-		view.setUint8(9, channels);				// channel count
-		view.setUint16(10, 312, true);		// pre-skip (default 312 samples typical) - little-endian
+		bytes.set(new TextEncoder().encode("OpusHead"), 0);
+		view.setUint8(8, 1);			  // version
+		view.setUint8(9, channels);	   // channel count
+		view.setUint16(10, 312, true);	// pre-skip
 		view.setUint32(12, sampleRate, true); // original sample rate
-		view.setInt16(16, 0, true);			 // gain (0)
-		view.setUint8(18, 0);						 // channel mapping = 0 (single stream)
+		view.setInt16(16, 0, true);	   // gain
+		view.setUint8(18, 0);			 // channel mapping
 		return bytes;
 	}
 
-	// helper: create OpusTags (comment header)
+	// Create OpusTags
 	function createOpusTags(vendorString = vendor, comments = {}) {
-		// OpusTags: "OpusTags" + vendor_string_length + vendor_string + user_comment_list_length + ... (vorbiscomment)
 		const vendorBytes = new TextEncoder().encode(vendorString);
-		const vendorLen = vendorBytes.length;
-		const userComments = Object.entries(comments).map(([k,v]) => `${k}=${v}`);
+		const userComments = Object.entries(comments).map(([k, v]) => `${k}=${v}`);
 		const ucs = userComments.map(s => new TextEncoder().encode(s));
-		// calculate total length
-		let totalLen = 8 + 4 + vendorLen + 4;
+		let totalLen = 8 + 4 + vendorBytes.length + 4;
 		for (const b of ucs) totalLen += 4 + b.length;
 		const buf = new Uint8Array(totalLen);
 		const dv = new DataView(buf.buffer);
 		let off = 0;
 		buf.set(new TextEncoder().encode("OpusTags"), off); off += 8;
-		dv.setUint32(off, vendorLen, true); off += 4;
-		buf.set(vendorBytes, off); off += vendorLen;
+		dv.setUint32(off, vendorBytes.length, true); off += 4;
+		buf.set(vendorBytes, off); off += vendorBytes.length;
 		dv.setUint32(off, ucs.length, true); off += 4;
 		for (const b of ucs) {
 			dv.setUint32(off, b.length, true); off += 4;
@@ -685,160 +678,119 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		return buf;
 	}
 
-	// CRC32 implementation
+	// CRC32 helper
 	const CRC32 = (() => {
 		const table = new Uint32Array(256);
-		for (let i=0;i<256;i++) {
+		for (let i = 0; i < 256; i++) {
 			let r = i;
-			for (let j=0;j<8;j++) r = (r & 1) ? (0xEDB88320 ^ (r >>> 1)) : (r >>> 1);
+			for (let j = 0; j < 8; j++) r = (r & 1) ? (0xEDB88320 ^ (r >>> 1)) : (r >>> 1);
 			table[i] = r >>> 0;
 		}
-		return function crc32(buf, initial = 0) {
+		return (buf, initial = 0) => {
 			let crc = initial >>> 0;
-			for (let i=0;i<buf.length;i++) {
-				crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xff];
-			}
+			for (let i = 0; i < buf.length; i++) crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xff];
 			return (crc ^ 0xffffffff) >>> 0;
 		};
 	})();
 
-	// make an Ogg page given an array of packets (Uint8Array) or partial packets
-	// packetsInPage: array of Uint8Array (the logical packets included starting at page start,
-	// but a packet may be a continuation that started on prev page; the 'continued' flag must be set by caller)
-	// headerType (bitflags): continuation|BOS|EOS
-	// granulePos: 64-bit little-endian number (samples per channel up to last completed frame on page)
-	// pageSequence: page sequence number (monotonic)
-	function makeOggPage(packetsInPage, headerType, granulePos, pageSequence, streamSerial) {
-		// build body and segment table (lacing values)
+	// Build Ogg page
+	function makeOggPage(packetsInPage, headerType, granulePos, pageSeq, streamSerial) {
 		const segmentSizes = [];
 		const bodyChunks = [];
 		let bodyLen = 0;
 		for (const p of packetsInPage) {
-			let remaining = p.length;
-			let offset = 0;
+			let remaining = p.length, offset = 0;
 			while (remaining >= 255) {
 				segmentSizes.push(255);
-				bodyChunks.push(p.subarray(offset, offset+255));
-				offset += 255;
-				remaining -= 255;
-				bodyLen += 255;
+				bodyChunks.push(p.subarray(offset, offset + 255));
+				offset += 255; remaining -= 255; bodyLen += 255;
 			}
 			segmentSizes.push(remaining);
-			bodyChunks.push(p.subarray(offset, offset+remaining));
+			bodyChunks.push(p.subarray(offset, offset + remaining));
 			bodyLen += remaining;
 		}
 
 		const pageSegments = segmentSizes.length;
 		const header = new Uint8Array(27 + pageSegments);
 		const dv = new DataView(header.buffer);
-		// capture pattern
 		header.set(new TextEncoder().encode("OggS"), 0);
-		header[4] = 0; // stream_structure_version
+		header[4] = 0;
 		header[5] = headerType & 0xff;
-		// granule position (8 bytes little-endian)
-		// we'll fill it using DataView (offset 6)
-		// stream serial number (4 bytes)
 		dv.setUint32(14, streamSerial, true);
-		dv.setUint32(18, pageSequence, true);
-		dv.setUint32(22, 0, true); // CRC placeholder (0 for now)
+		dv.setUint32(18, pageSeq, true);
+		dv.setUint32(22, 0, true); // CRC placeholder
 		header[26] = pageSegments;
-		for (let i=0;i<pageSegments;i++) header[27 + i] = segmentSizes[i];
+		for (let i = 0; i < pageSegments; i++) header[27 + i] = segmentSizes[i];
 
-		// body:
+		// Body
 		const body = new Uint8Array(bodyLen);
 		let boff = 0;
-		for (const chunk of bodyChunks) {
-			body.set(chunk, boff); boff += chunk.length;
-		}
+		for (const chunk of bodyChunks) { body.set(chunk, boff); boff += chunk.length; }
 
-		// fill granule pos
-		// little-endian 64-bit: low 32 bits at offset 6, high 32 bits at 10
-		const lo = granulePos >>> 0;
-		const hi = Math.floor(granulePos / 0x100000000) >>> 0;
-		dv.setUint32(6, lo, true);
-		dv.setUint32(10, hi, true);
+		// Granule position
+		dv.setUint32(6, granulePos >>> 0, true);
+		dv.setUint32(10, Math.floor(granulePos / 0x100000000) >>> 0, true);
 
-		// compute CRC over header+body with CRC field zeroed (we already zeroed it)
+		// CRC
 		const full = new Uint8Array(header.length + body.length);
 		full.set(header, 0);
 		full.set(body, header.length);
-		const crc = CRC32(full);
-		dv.setUint32(22, crc, true);
+		dv.setUint32(22, CRC32(full), true); // write CRC into header
 
-		// now return concatenated page with correct CRC in header (we already wrote it)
-		// re-create full buffer to include the CRC we just wrote
+		// Final buffer
 		const final = new Uint8Array(header.length + body.length);
 		final.set(header, 0);
 		final.set(body, header.length);
 		return final;
 	}
 
-	// Build pages:
+	// Build pages
 	const pages = [];
-	let pageSeq = 0;
-	let granule = 0; // running sample count (per channel) up to last finished frame
+	let pageSeq = 0, granule = 0;
+
+	// BOS page (OpusHead)
 	const head = createOpusHead();
-	pages.push(makeOggPage([head], 0x02 /* BOS */, 0, pageSeq++, serial)); // BOS, granule=0
+	pages.push(makeOggPage([head], 0x02, 0, pageSeq++, serial));
 
+	// Comment page (OpusTags)
 	const tags = createOpusTags(vendor, {});
-	pages.push(makeOggPage([tags], 0x00, 0, pageSeq++, serial)); // next page, granule=0
+	pages.push(makeOggPage([tags], 0x00, 0, pageSeq++, serial));
 
-	// Now pack actual opus packets into pages.
-	// We'll greedy-fill pages until pageSizeLimit reached.
-	let pendingPagePackets = [];
-	let pendingPageBytes = 0;
-
-	function flushPage(isLastPage=false, continued=false) {
-		// headerType flags:
-		let flags = 0;
-		if (continued) flags |= 0x01;
-		if (pendingPagePackets.length === 0 && isLastPage) flags |= 0x04; // EOS allowed even with nil page
-		if (isLastPage) flags |= 0x04;
-		const page = makeOggPage(pendingPagePackets, flags, granule, pageSeq++, serial);
-		pages.push(page);
-		pendingPagePackets = [];
-		pendingPageBytes = 0;
+	// Audio pages
+	let pendingPackets = [], pendingBytes = 0;
+	function flushPage(isLast = false) {
+		if (pendingPackets.length === 0 && !isLast) return;
+		const flags = isLast ? 0x04 : 0x00;
+		pages.push(makeOggPage(pendingPackets, flags, granule, pageSeq++, serial));
+		pendingPackets = [];
+		pendingBytes = 0;
 	}
 
-	// iterate packets and push them into pages, updating granule
-	for (let i=0;i<packets.length;i++) {
+	for (let i = 0; i < packets.length; i++) {
 		const pkt = packets[i];
-		// compute samples for this packet (caller may supply getPacketSamples)
-		const samples = getPacketSamples(pkt); // samples PER CHANNEL for this packet
-		// decide if packet fits in current page; if not, flush and start new page
-		// approximate body size after lacing overhead: worst-case + segment table bytes
-		const needed = pkt.length + Math.ceil(pkt.length / 255); // rough
-		if (pendingPageBytes + needed > pageSizeLimit && pendingPagePackets.length > 0) {
-			// flush current page (none continuation)
-			flushPage(false, false);
-		}
-		// push packet
-		pendingPagePackets.push(pkt);
-		pendingPageBytes += needed;
-		// Advance granule: granule counts samples up to the *end* of last completed frame on page.
-		// Since packets are whole, if this packet completes frames, granule increases by samples.
+		const samples = getPacketSamples(pkt);
+		const needed = pkt.length + Math.ceil(pkt.length / 255);
+
+		if (pendingBytes + needed > pageSizeLimit && pendingPackets.length > 0) flushPage(false);
+		pendingPackets.push(pkt);
+		pendingBytes += needed;
 		granule += samples;
 
-		// Heuristic: if page body is large or last packet, flush page
-		if (pendingPageBytes > pageSizeLimit * 0.6) {
-			flushPage(false, false);
-		}
+		if (pendingBytes > pageSizeLimit * 0.6) flushPage(false);
 	}
 
-	// flush final page with EOS flag
-	flushPage(true, false);
+	// Final EOS page
+	flushPage(true);
 
-	// concat pages into blob
-	const totalLen = pages.reduce((s,p)=>s+p.length,0);
+	// Concatenate
+	const totalLen = pages.reduce((s, p) => s + p.length, 0);
 	const out = new Uint8Array(totalLen);
-	let o=0;
-	for (const p of pages) { out.set(p, o); o += p.length; }
+	let offset = 0;
+	for (const p of pages) { out.set(p, offset); offset += p.length; }
 	return new Blob([out], { type: "audio/ogg" });
 }
 
-// default packet samples function
-// - assumes frameMs (e.g. 20) for each frame and parses TOC to get frame count M.
-// - TOC frame-count parsing (simple): c = toc & 0x03, if c==0 ->1 frame, c==1 ->2, c==2 ->2, c==3 -> read next byte and extract M ((byte >> 2) & 0x3F)
+// Default packet samples function (assumes 20ms frames @ 48kHz)
 function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 	const frameSamples = Math.round(sampleRate * (frameMs / 1000));
 	return function getPacketSamples(packet) {
@@ -848,13 +800,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 		let frames = 1;
 		if (c === 0) frames = 1;
 		else if (c === 1 || c === 2) frames = 2;
-		else { // c === 3 -> next byte contains M in bits 2..7
+		else {
 			if (packet.length < 2) frames = 1;
-			else {
-				const mbyte = packet[1];
-				frames = (mbyte >> 2) & 0x3f;
-				if (frames === 0) frames = 1;
-			}
+			else frames = (packet[1] >> 2) & 0x3f || 1;
 		}
 		return frames * frameSamples;
 	};
