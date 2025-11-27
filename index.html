@@ -1448,11 +1448,10 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				data = null;
 				sampleData = null;
 				sampleSkip = 480;
-				sharedBuffer = audioContext.createBufferSource();
-				sharedBuffer.buffer = audioContext.createBuffer(1 + confirm("Will the blank audio be mono (1 channel, select \"Cancel\") or stereo (2 channels, select \"OK\" or \"Yes\")?"), (Math.round(Math.abs(Number(prompt("How long is the blank audio (in seconds)?")))) || 1) * 48000, 48000);
-				const stereo = sharedBuffer.buffer.numberOfChannels === 2;
-				if (stereo) exporters = [new AudioExporter(sharedBuffer.buffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.buffer.getChannelData(1), sharedBuffer.sampleRate, 1, 32)];
-				else exporters = [new AudioExporter(sharedBuffer.buffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32)];
+				sharedBuffer = audioContext.createBuffer(1 + confirm("Will the blank audio be mono (1 channel, select \"Cancel\") or stereo (2 channels, select \"OK\" or \"Yes\")?"), (Math.round(Math.abs(Number(prompt("How long is the blank audio (in seconds)?")))) || 1) * 48000, 48000);
+				const stereo = sharedBuffer.numberOfChannels === 2;
+				if (stereo) exporters = [new AudioExporter(sharedBuffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1), sharedBuffer.sampleRate, 1, 32)];
+				else exporters = [new AudioExporter(sharedBuffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32)];
 				loadDiv(exporters, true);
 			}
 			tick();
