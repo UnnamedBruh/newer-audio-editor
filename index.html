@@ -720,10 +720,9 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		header.set(new TextEncoder().encode("OggS"), 0);
 		header[4] = 0; // stream structure version
 		header[5] = headerType & 0xff;
-const granuleLow = granulePos >>> 0; // START CLAUDE SONNET 4.5 SECTION
-const granuleHigh = Math.floor(granulePos / 0x100000000) >>> 0;
-dv.setUint32(6, granuleLow, true);
-dv.setUint32(10, granuleHigh, true); // END CLAUDE SONNET 4.5 SECTION
+// granule is BigInt
+dv.setUint32(6, Number(granulePos & 0xffffffffn), true); // low 32 bits
+dv.setUint32(10, Number(granulePos >> 32n), true);       // high 32 bits
 		dv.setUint32(14, streamSerial, true);
 		dv.setUint32(18, pageSeq, true);
 		dv.setUint32(22, 0, true); // CRC placeholder
@@ -748,7 +747,7 @@ dv.setUint32(10, granuleHigh, true); // END CLAUDE SONNET 4.5 SECTION
 
 	// --- Build pages ---
 	const pages = [];
-	let pageSeq = 0, granule = 0;
+	let pageSeq = 0, granule = 0n;
 
 	// BOS page
 	pages.push(makeOggPage([createOpusHead()], 0x02, 0, pageSeq++, serial));
@@ -766,18 +765,19 @@ dv.setUint32(10, granuleHigh, true); // END CLAUDE SONNET 4.5 SECTION
 		pendingBytes = 0;
 	}
 
-	for (let i = 0; i < packets.length; i++) {
-		const pkt = packets[i];
-		const samples = getPacketSamples(pkt);
-		const needed = pkt.length + Math.ceil(pkt.length / 255);
+for (let i = 0; i < packets.length; i++) {
+	const pkt = packets[i];
+	const samples = BigInt(getPacketSamples(pkt)); // convert to BigInt
+	granule += samples; // accumulate
 
-		if (pendingBytes + needed > pageSizeLimit && pendingPackets.length > 0) flushPage(false);
-		pendingPackets.push(pkt);
-		pendingBytes += needed;
-		granule += samples;
+	const needed = pkt.length + Math.ceil(pkt.length / 255);
 
-		if (pendingBytes > pageSizeLimit * 0.6) flushPage(false);
-	}
+	if (pendingBytes + needed > pageSizeLimit && pendingPackets.length > 0) flushPage(false);
+	pendingPackets.push(pkt);
+	pendingBytes += needed;
+
+	if (pendingBytes > pageSizeLimit * 0.6) flushPage(false);
+}
 
 	flushPage(true); // EOS
 
