@@ -720,9 +720,12 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		header.set(new TextEncoder().encode("OggS"), 0);
 		header[4] = 0; // stream structure version
 		header[5] = headerType & 0xff;
-// granule is BigInt
-dv.setUint32(6, Number(granulePos & 0xffffffffn), true); // low 32 bits
-dv.setUint32(10, Number(granulePos >> 32n), true);       // high 32 bits
+let granulePosBig = BigInt(granulePos); // coerce to BigInt if it’s a Number
+
+// write low 32 bits
+dv.setUint32(6, Number(granulePosBig & 0xffffffffn), true);
+// write high 32 bits
+dv.setUint32(10, Number(granulePosBig >> 32n), true);
 		dv.setUint32(14, streamSerial, true);
 		dv.setUint32(18, pageSeq, true);
 		dv.setUint32(22, 0, true); // CRC placeholder
