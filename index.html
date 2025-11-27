@@ -773,16 +773,22 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
     }
 
     // --- Build Ogg stream ---
-    pages.push(flushPage(false) || makeOggPages([createOpusHead()], {serial, debug}) ); // BOS page
-    pages.push(flushPage(false) || makeOggPages([createOpusTags(vendor, {})], {serial, debug}) ); // Tags page
+ // BOS page (OpusHead)
+pendingPackets = [createOpusHead()];
+flushPage(false);
 
-    for (let pkt of packets) {
-        pendingPackets.push(pkt);
-        const totalSize = pendingPackets.reduce((sum, p) => sum + p.length, 0);
-        if (totalSize >= pageSizeLimit) flushPage(false);
-    }
+// Comment page (OpusTags)
+pendingPackets = [createOpusTags(vendor, {})];
+flushPage(false);
 
-    flushPage(true);
+// Then audio packets
+for (let pkt of packets) {
+    pendingPackets.push(pkt);
+    const totalSize = pendingPackets.reduce((sum, p) => sum + p.length, 0);
+    if (totalSize >= pageSizeLimit) flushPage(false);
+}
+
+flushPage(true); // final EOS page
 
     if (debug) console.log(`Created ${pages.length} pages, final granule: ${granule}`);
     return new Blob(pages, { type: "audio/ogg" });
