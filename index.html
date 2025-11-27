@@ -30,7 +30,7 @@
 		<h1>Audio Editor</h1>
 		<p>I've been trying to think of ways to refine it, and I've also been watching YouTube videos, which is the reason why I barely worked on anything. But finally, the audio editor is here!</p>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac" multiple><br>
-		<button id="which">Decode The Audio File</button>
+		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel");
@@ -38,6 +38,7 @@
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, dataSecond = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
 			const interpretFiles = document.getElementById("which");
+			const loadBlank = document.getElementById("loadblank");
 			let whichInterpret = false;
 			selectBox.oninput = function() {
 				isPressingShift = selectBox.checked;
@@ -145,7 +146,7 @@
 				data2.push("L " + (len / sampleSkip) + ",100");
 				return data2.join(" ");
 			}
-			function loadDiv(exp) {
+			function loadDiv(exp, blank = false) {
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -158,7 +159,7 @@
 				x.appendChild(n);
 				n.setAttribute("fill", "white");
 				n.setAttribute("stroke-width", 1);
-				data = generateWaveform(exp[0]);
+				if (blank) data = ""; else data = generateWaveform(exp[0]);
 				n.setAttribute("d", data);
 				v.appendChild(document.createElement("br"));
 				const play = document.createElement("button");
@@ -197,7 +198,7 @@
 					n2.setAttribute("stroke-width", 1);
 					n.setAttribute("fill-opacity", 0.5);
 					n2.setAttribute("fill-opacity", 0.5);
-					dataSecond = generateWaveform(exp[1]);
+					if (blank) dataSecond = ""; else dataSecond = generateWaveform(exp[1]);
 					n2.setAttribute("d", dataSecond);
 					alert("White waveform = left hearing, red waveform = right hearing. Note: If parts of the waveform are a light red, this means the audio track sounds nearly identical for both hearing sides.");
 				}
@@ -1436,6 +1437,23 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					}
 					fileReader.readAsArrayBuffer(firstFile);
 				}
+			}
+			loadBlank.onclick = function() {
+				exporters = null;
+				if (ed) {
+					ed.innerHTML = "";
+					ed.remove();
+					ed = null;
+				}
+				data = null;
+				sampleData = null;
+				sampleSkip = 480;
+				sharedBuffer = audioContext.createBufferSource();
+				sharedBuffer.buffer = audioContext.createBuffer(1 + confirm("Will the blank audio be mono (1 channel, select \"Cancel\") or stereo (2 channels, select \"OK\" or \"Yes\")?"), (Math.round(Math.abs(Number(prompt("How long is the blank audio (in seconds)?")))) || 1) * 48000, 48000);
+				const stereo = sharedBuffer.buffer.numberOfChannels === 2;
+				if (stereo) exporters = [new AudioExporter(sharedBuffer.buffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.buffer.getChannelData(1), sharedBuffer.sampleRate, 1, 32)];
+				else exporters = [new AudioExporter(sharedBuffer.buffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32)];
+				loadDiv(exporters, true);
 			}
 			tick();
 		</script>
