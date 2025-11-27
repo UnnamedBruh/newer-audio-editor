@@ -765,14 +765,24 @@ console.log(`Page ${pageSeq}: wrote granule ${granulePos} (0x${granulePosBig.toS
 
 	// Audio pages
 let pendingPackets = [], pendingBytes = 0, pendingSegments = 0; // ADD pendingSegments
+// At the top, add:
+let isFirstAudioPage = true;
+const PRE_SKIP = 312;
+
+// Then in your flush function:
 function flushPage(isLast = false) {
-    if (pendingPackets.length === 0 && !isLast) return;
-    const flags = isLast ? 0x04 : 0x00;
-    pages.push(makeOggPage(pendingPackets, flags, granule, pageSeq++, serial));
-	console.log(`Writing page ${pageSeq-1}: granule=${granule}, flags=${flags.toString(16)}`);
-    pendingPackets = [];
-    pendingBytes = 0;
-    pendingSegments = 0; // RESET
+	if (pendingPackets.length === 0 && !isLast) return;
+	const flags = isLast ? 0x04 : 0x00;
+
+	// Adjust granule for first audio page
+	const adjustedGranule = isFirstAudioPage ? granule - BigInt(PRE_SKIP) : granule;
+
+	pages.push(makeOggPage(pendingPackets, flags, adjustedGranule, pageSeq++, serial));
+	isFirstAudioPage = false;
+
+	pendingPackets = [];
+	pendingBytes = 0;
+	pendingSegments = 0;
 }
 
 	const MAX_SEGMENTS = 255;
