@@ -766,6 +766,7 @@ function flushPage(isLast = false) {
     if (pendingPackets.length === 0 && !isLast) return;
     const flags = isLast ? 0x04 : 0x00;
     pages.push(makeOggPage(pendingPackets, flags, granule, pageSeq++, serial));
+	console.log(`Writing page ${pageSeq-1}: granule=${granule}, flags=${flags.toString(16)}`);
     pendingPackets = [];
     pendingBytes = 0;
     pendingSegments = 0; // RESET
