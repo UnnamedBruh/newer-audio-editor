@@ -794,6 +794,8 @@ for (let i = 0; i < packets.length; i++) { // THIS LOOP WAS REWRITTEN USING CLAU
 	pendingBytes += needed;
 	pendingSegments += segments; // ADD THIS
 	granule += samples; // Move this AFTER adding the packet
+	// After writing granule position
+console.log(`Page ${pageSeq}: wrote granule ${granulePos} (0x${granulePosBig.toString(16)})`);
 	
 	if (pendingBytes > pageSizeLimit * 0.6) {
 		flushPage(false);
