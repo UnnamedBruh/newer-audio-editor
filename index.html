@@ -720,8 +720,10 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		header.set(new TextEncoder().encode("OggS"), 0);
 		header[4] = 0; // stream structure version
 		header[5] = headerType & 0xff;
-		dv.setUint32(6, granulePos >>> 0, true);
-		dv.setUint32(10, Math.floor(granulePos / 0x100000000) >>> 0, true);
+const granuleLow = granulePos >>> 0; // START CLAUDE SONNET 4.5 SECTION
+const granuleHigh = Math.floor(granulePos / 0x100000000) >>> 0;
+dv.setUint32(6, granuleLow, true);
+dv.setUint32(10, granuleHigh, true); // END CLAUDE SONNET 4.5 SECTION
 		dv.setUint32(14, streamSerial, true);
 		dv.setUint32(18, pageSeq, true);
 		dv.setUint32(22, 0, true); // CRC placeholder
