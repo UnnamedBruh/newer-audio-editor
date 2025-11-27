@@ -676,9 +676,11 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 
 	function write64LE(buf, offset, value) {
 		const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-		const v = typeof value === "bigint" ? value : BigInt(value);
-		dv.setUint32(offset, Number(v & 0xffffffffn), true);
-		dv.setUint32(offset + 4, Number((v >> 32n) & 0xffffffffn), true);
+		const v = BigInt(value);
+		const lo = Number(v & 0xffffffffn);
+		const hi = Number((v >> 32n) & 0xffffffffn);
+		dv.setUint32(offset, lo, true);
+		dv.setUint32(offset + 4, hi, true);
 	}
 
 	function concatUint8(chunks) {
@@ -800,6 +802,14 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		write32LE(header, 22, 0);               // CRC (placeholder)
 		header[26] = pageSegments;              // page segments count
 		header.set(segmentTable, 27);           // segment table
+
+		// Debug: verify granule was written correctly
+		if (debug && pageSeq >= 2) {
+			const granBytes = Array.from(header.subarray(6, 14))
+				.map(b => b.toString(16).padStart(2, '0')).join(' ');
+			console.log(`  Granule bytes [6-13]: ${granBytes}`);
+			console.log(`  Expected: ${granulePos} (0x${BigInt(granulePos).toString(16)})`);
+		}
 
 		// Compute CRC with CRC field zeroed
 		const fullPage = concatUint8([header, body]);
