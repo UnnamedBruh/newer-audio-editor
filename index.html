@@ -795,6 +795,13 @@ for (let i = 0; i < packets.length; i++) { // THIS LOOP WAS REWRITTEN USING CLAU
 
 	    console.log(`Packet ${i}: len=${pkt.length}, needed=${needed}, pendingBytes=${pendingBytes}, segments=${segments}, pendingSegments=${pendingSegments}`);
 
+	const MAX_PACKETS_PER_PAGE = 100; // Add this constant
+
+// In your loop, add this check BEFORE the other flush checks:
+if (pendingPackets.length >= MAX_PACKETS_PER_PAGE) {
+	flushPage(false);
+}
+
 	if (pendingSegments + segments > 255 && pendingPackets.length > 0) { // ADD THIS CHECK
 		flushPage(false);
 	}
