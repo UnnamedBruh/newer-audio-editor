@@ -262,6 +262,7 @@
 					const relativeX = clickX / x.clientWidth;
 					startAt = relativeX * sharedBuffer.duration; // Time in seconds
 
+					if (timelineBeginNum) startAt = 0;
 					playSound();
 				}
 				x.onclick = playWithTimeline;
