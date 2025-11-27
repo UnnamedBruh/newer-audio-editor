@@ -765,6 +765,7 @@ dv.setUint32(10, Number(granulePosBig >> 32n), true);
 	function flushPage(isLast = false) {
 		if (pendingPackets.length === 0 && !isLast) return;
 		const flags = isLast ? 0x04 : 0x00;
+		console.log(`Page ${pageSeq}: granule = ${granule}, packets = ${pendingPackets.length}`);
 		pages.push(makeOggPage(pendingPackets, flags, granule, pageSeq++, serial));
 		pendingPackets = [];
 		pendingBytes = 0;
