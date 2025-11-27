@@ -953,9 +953,40 @@ function debugOggPages(pages) {
 // Example usage: run this right after you create `pages` and before building the blob
 const dbg = debugOggPages(pages);
 	console.log(dbg);
-	console.log(JSON.stringify(dbg));
+
+	// Run after pages array exists (before creating the Blob)
+function debugPageGranules(pages) {
+  function readLE64(buf, offset) {
+    // buf is a Uint8Array
+    const lo = buf[offset]     | (buf[offset+1]  << 8) | (buf[offset+2]  << 16) | (buf[offset+3]  << 24);
+    const hi = buf[offset+4]   | (buf[offset+5]  << 8) | (buf[offset+6]  << 16) | (buf[offset+7]  << 24);
+    // combine into BigInt
+    return BigInt(lo >>> 0) + (BigInt(hi >>> 0) << 32n);
+  }
+
+  let last = -1n;
+  for (let i = 0; i < pages.length; i++) {
+    const p = pages[i];
+    if (p.length < 27) {
+      console.warn(`Page ${i}: too short (${p.length})`);
+      continue;
+    }
+    const gran = readLE64(p, 6);
+    console.log(`Page ${i}: startGranule=${gran.toString()} (0x${gran.toString(16)})`);
+    if (i > 0 && gran < last) {
+      console.error(`GRANULE DECREASE DETECTED: page ${i-1} was ${last}, page ${i} is ${gran}`);
+    }
+    last = gran;
+  }
+  console.log("Granule check done.");
+  return true;
+}
+
+debugPageGranules(pages);
+	console.log("---------------------------------------------------");
 
 	const totalLen = pages.reduce((sum, p) => sum + p.length, 0);
+	console.log("expected total bytes:", totalLen);
 	const out = new Uint8Array(totalLen);
 	let offset = 0;
 	for (const p of pages) { out.set(p, offset); offset += p.length; }
