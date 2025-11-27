@@ -776,7 +776,7 @@ function flushPage(isLast = false) {
 
 	// Adjust granule for first audio page
 	const adjustedGranule = isFirstAudioPage ? granule - BigInt(PRE_SKIP) : granule;
-
+console.log(`About to make page: granule type = ${typeof granule}, value = ${granule}`);
 	pages.push(makeOggPage(pendingPackets, flags, adjustedGranule, pageSeq++, serial));
 	isFirstAudioPage = false;
 
