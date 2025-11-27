@@ -696,67 +696,106 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 	}
 
 	// --- Make Ogg page ---
-	function makeOggPage(packetsInPage, headerType, granulePos, pageSeq, streamSerial) {
-		const segmentSizes = [];
-		const bodyChunks = [];
-		let bodyLen = 0;
+// --- Helpers --------------------------------------------------
 
-		for (const p of packetsInPage) {
-			let rem = p.length, offset = 0;
-			while (rem >= 255) {
-				segmentSizes.push(255);
-				bodyChunks.push(p.subarray(offset, offset + 255));
-				offset += 255; rem -= 255; bodyLen += 255;
-			}
-			segmentSizes.push(rem);
-			bodyChunks.push(p.subarray(offset, offset + rem));
-			bodyLen += rem;
+// write a 64-bit little-endian integer (supports BigInt or Number)
+function write64(buf, offset, value) {
+	const dv = new DataView(buf.buffer || buf, 0);
+	let v = typeof value === "bigint" ? value : BigInt(value);
+	// low 32 bits
+	dv.setUint32(offset, Number(v & 0xffffffffn), true);
+	// high 32 bits
+	dv.setUint32(offset + 4, Number((v >> 32n) & 0xffffffffn), true);
+}
+
+// write a 32-bit little-endian unsigned integer into a Uint8Array or DataView
+function write32(buf, offset, value) {
+	const dv = new DataView(buf.buffer || buf, 0);
+	dv.setUint32(offset, Number(value >>> 0), true);
+}
+
+// concat array of Uint8Array into one Uint8Array
+function concatUint8(chunks) {
+	let total = 0;
+	for (const c of chunks) total += c.length;
+	const out = new Uint8Array(total);
+	let off = 0;
+	for (const c of chunks) { out.set(c, off); off += c.length; }
+	return out;
+}
+
+// compute full-page CRC using your CRC32 function (expects crc function named CRC32)
+function computeOggCRC(header, body) {
+	// header must have CRC bytes zeroed when passed in
+	// We'll compute CRC over header + body
+	const full = concatUint8([header, body]);
+	return CRC32(full);
+}
+
+// --- Robust makeOggPage (guarantees segment table matches body) ----
+function makeOggPage(packetsInPage, headerType, granulePos, pageSeq, streamSerial) {
+	// Build segments & body parts from packets (ensures perfect match)
+	const segmentValues = [];
+	const bodyParts = [];
+	for (const p of packetsInPage) {
+		let offset = 0;
+		const plen = p.length;
+		if (plen === 0) {
+			// zero-length packet -> segment of 0
+			segmentValues.push(0);
+			bodyParts.push(new Uint8Array(0));
+			continue;
 		}
-
-		const pageSegments = segmentSizes.length;
-		const header = new Uint8Array(27 + pageSegments);
-		const dv = new DataView(header.buffer);
-
-		header.set(new TextEncoder().encode("OggS"), 0);
-		header[4] = 0; // stream structure version
-		header[5] = headerType & 0xff;
-let granulePosBig = BigInt(granulePos); // coerce to BigInt if it’s a Number
-
-// write low 32 bits
-dv.setUint32(6, Number(granulePosBig & 0xffffffffn), true);
-// write high 32 bits
-dv.setUint32(10, Number(granulePosBig >> 32n), true);
-		// After writing granule position
-console.log(`Page ${pageSeq}: wrote granule ${granulePos} (0x${granulePosBig.toString(16)})`);
-		dv.setUint32(14, streamSerial, true);
-		dv.setUint32(18, pageSeq, true);
-		dv.setUint32(22, 0, true); // CRC placeholder
-		header[26] = pageSegments;
-		for (let i = 0; i < pageSegments; i++) header[27 + i] = segmentSizes[i];
-		console.log(`Page ${pageSeq}: granule=${granulePos} (0x${granulePosBig.toString(16)})`);
-console.log(`  Bytes 6-13 (granule): ${Array.from(header.subarray(6, 14)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-console.log(`  Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-		console.log(`  Full header including segment table: ${Array.from(header).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-
-		const body = new Uint8Array(bodyLen);
-		let off = 0;
-		for (const chunk of bodyChunks) { body.set(chunk, off); off += chunk.length; }
-
-		const full = new Uint8Array(header.length + body.length);
-		full.set(header, 0);
-		full.set(body, header.length);
-
-		// Calculate CRC with checksum field zeroed (already is)
-		const crc = CRC32(full);
-
-		// Now update the CRC in the actual page
-		const dv2 = new DataView(full.buffer);
-		dv2.setUint32(22, crc, true);
-
-		console.log(`After CRC write - bytes 22-25: ${Array.from(full.subarray(22, 26)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-
-		return full; // Return the same buffer, not a new copy
+		while (offset < plen) {
+			const take = Math.min(255, plen - offset);
+			segmentValues.push(take);
+			bodyParts.push(p.subarray(offset, offset + take));
+			offset += take;
+		}
 	}
+
+	const pageSegments = segmentValues.length;
+	if (pageSegments > 255) {
+		throw new Error("makeOggPage: pageSegments > 255 (should be avoided by caller)");
+	}
+
+	const segmentTable = new Uint8Array(segmentValues);
+	const body = concatUint8(bodyParts);
+
+	// Build header (27 + segment count)
+	const header = new Uint8Array(27 + pageSegments);
+	// "OggS"
+	header.set(new TextEncoder().encode("OggS"), 0);
+	header[4] = 0;				 // stream structure version
+	header[5] = headerType & 0xff; // header type flag
+
+	// write granule (64-bit LE)
+	write64(header, 6, BigInt(granulePos));
+
+	// stream serial (32-bit LE)
+	write32(header, 14, streamSerial >>> 0);
+
+	// page sequence number (32-bit LE)
+	write32(header, 18, pageSeq >>> 0);
+
+	// CRC placeholder = 0
+	write32(header, 22, 0);
+
+	// page_segments
+	header[26] = pageSegments;
+
+	// segment table bytes
+	header.set(segmentTable, 27);
+
+	// Compute CRC over header (with CRC=0) + body
+	const crc = computeOggCRC(header, body);
+
+	// Write CRC into header (little-endian)
+	write32(header, 22, crc >>> 0);
+
+	// Return full page bytes (header + body)
+	return concatUint8([header, body]);
+}
 
 	// --- Build pages ---
 	const pages = [];
