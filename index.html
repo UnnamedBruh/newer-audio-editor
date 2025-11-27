@@ -784,6 +784,12 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		// Verify segment table matches body length
 		const expectedBodyLen = segmentValues.reduce((a, b) => a + b, 0);
 		if (expectedBodyLen !== body.length) {
+			console.error(`Page ${pageSeq}: Segment mismatch!`, {
+				segmentSum: expectedBodyLen,
+				actualBody: body.length,
+				segments: segmentValues,
+				packetLengths: packetsInPage.map(p => p.length)
+			});
 			throw new Error(
 				`Segment table sum (${expectedBodyLen}) != body length (${body.length})`
 			);
@@ -809,6 +815,8 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 				.map(b => b.toString(16).padStart(2, '0')).join(' ');
 			console.log(`  Granule bytes [6-13]: ${granBytes}`);
 			console.log(`  Expected: ${granulePos} (0x${BigInt(granulePos).toString(16)})`);
+			console.log(`  Packets in page: ${packetsInPage.length}, Total body: ${body.length}B`);
+			console.log(`  Segment table (${pageSegments}): ${segmentValues.slice(0, 10).join(',')}${pageSegments > 10 ? '...' : ''}`);
 		}
 
 		// Compute CRC with CRC field zeroed
