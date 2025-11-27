@@ -771,7 +771,8 @@ console.log(`  Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(
 	// Audio pages
 let pendingPackets = [], pendingBytes = 0, pendingSegments = 0; // ADD pendingSegments
 
-// Then in your flush function:function flushPage(isLast = false) {
+// Then in your flush function:
+function flushPage(isLast = false) {
     if (pendingPackets.length === 0) return;
     const flags = isLast ? 0x04 : 0x00;
 	console.log(`Flushing page ${pageSeq}: ${pendingPackets.length} packets, granule=${granule}, flags=0x${flags.toString(16).padStart(2, '0')}, isLast=${isLast}`);
