@@ -783,6 +783,10 @@ function makeOggPage(packetsInPage, headerType, granulePos, pageSeq, streamSeria
 
 	// page_segments
 	header[26] = pageSegments;
+	console.log(`Page ${pageSeq}: granule=${granulePos} (0x${granulePos.toString(16)})`);
+	console.log(` Bytes 6-13 (granule): ${Array.from(header.subarray(6, 14)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+	console.log(` Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+	console.log(` Full header including segment table: ${Array.from(header).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
 
 	// segment table bytes
 	header.set(segmentTable, 27);
@@ -792,6 +796,8 @@ function makeOggPage(packetsInPage, headerType, granulePos, pageSeq, streamSeria
 
 	// Write CRC into header (little-endian)
 	write32(header, 22, crc >>> 0);
+
+	console.log(`After CRC write - bytes 22-25: ${Array.from(header.subarray(22, 26)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
 
 	// Return full page bytes (header + body)
 	return concatUint8([header, body]);
