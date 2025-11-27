@@ -768,18 +768,22 @@ dv.setUint32(10, Number(granulePosBig >> 32n), true);
 		pendingBytes = 0;
 	}
 
-for (let i = 0; i < packets.length; i++) {
+for (let i = 0; i < packets.length; i++) { // THIS LOOP WAS REWRITTEN USING CLAUDE SONNET 4.5
 	const pkt = packets[i];
-	const samples = BigInt(getPacketSamples(pkt)); // convert to BigInt
-	granule += samples; // accumulate
-
+	const samples = BigInt(getPacketSamples(pkt));
 	const needed = pkt.length + Math.ceil(pkt.length / 255);
 
-	if (pendingBytes + needed > pageSizeLimit && pendingPackets.length > 0) flushPage(false);
+	if (pendingBytes + needed > pageSizeLimit && pendingPackets.length > 0) {
+		flushPage(false);
+	}
+	
 	pendingPackets.push(pkt);
 	pendingBytes += needed;
-
-	if (pendingBytes > pageSizeLimit * 0.6) flushPage(false);
+	granule += samples; // Move this AFTER adding the packet
+	
+	if (pendingBytes > pageSizeLimit * 0.6) {
+		flushPage(false);
+	}
 }
 
 	flushPage(true); // EOS
