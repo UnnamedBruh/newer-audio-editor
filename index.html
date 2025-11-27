@@ -739,13 +739,15 @@ dv.setUint32(10, Number(granulePosBig >> 32n), true);
 		const full = new Uint8Array(header.length + body.length);
 		full.set(header, 0);
 		full.set(body, header.length);
-		const crc = CRC32(full);
-		dv.setUint32(22, crc, true);
 
-		const finalPage = new Uint8Array(header.length + body.length);
-		finalPage.set(header, 0);
-		finalPage.set(body, header.length);
-		return finalPage;
+		// Calculate CRC with checksum field zeroed (already is)
+		const crc = CRC32(full);
+
+		// Now update the CRC in the actual page
+		const dv2 = new DataView(full.buffer);
+		dv2.setUint32(22, crc, true);
+
+		return full; // Return the same buffer, not a new copy
 	}
 
 	// --- Build pages ---
