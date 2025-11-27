@@ -772,8 +772,8 @@ console.log(`  Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(
 let pendingPackets = [];
 let pendingBytes = 0;
 let pendingSegments = 0;
-let pageSeq = 2; // BOS=0, Comments=1
-let granule = 0n;
+pageSeq = 2; // BOS=0, Comments=1
+granule = 0n;
 
 const MAX_SEGMENTS = 255;
 const MAX_PACKETS_PER_PAGE = 100;
