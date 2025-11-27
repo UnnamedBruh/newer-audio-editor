@@ -832,7 +832,7 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		write32LE(header, 22, crc);
 
 		if (debug) {
-			console.log(`Page ${pageSeq}: granule=${granulePos.toString()}, segments=${pendingSegments}, body=${pendingBytes}B`);
+			console.log(`Page ${pageSeq}: granule=${granulePos.toString()}`);
 		}
 
 		return concatUint8([header, body]);
