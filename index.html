@@ -771,15 +771,12 @@ console.log(`  Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(
 	// Audio pages
 let pendingPackets = [], pendingBytes = 0, pendingSegments = 0; // ADD pendingSegments
 
-// Then in your flush function:
-function flushPage(isLast = false) {
-    if (pendingPackets.length === 0 && !isLast) return;
+// Then in your flush function:function flushPage(isLast = false) {
+    if (pendingPackets.length === 0) return;
     const flags = isLast ? 0x04 : 0x00;
-	    console.log(`Flushing page ${pageSeq}: ${pendingPackets.length} packets, granule=${granule}, flags=0x${flags.toString(16).padStart(2, '0')}, isLast=${isLast}`);
-    
-    // Don't adjust granule - just use it as-is!
-    pages.push(makeOggPage(pendingPackets, flags, granule, pageSeq++, serial));
-    
+	console.log(`Flushing page ${pageSeq}: ${pendingPackets.length} packets, granule=${granule}, flags=0x${flags.toString(16).padStart(2, '0')}, isLast=${isLast}`);
+    const packetsToFlush = pendingPackets.slice(); // copy
+    pages.push(makeOggPage(packetsToFlush, flags, granule, pageSeq++, serial));
     pendingPackets = [];
     pendingBytes = 0;
     pendingSegments = 0;
@@ -815,9 +812,9 @@ if (pendingPackets.length >= MAX_PACKETS_PER_PAGE) {
 	pendingSegments += segments; // ADD THIS
 	granule += samples; // Move this AFTER adding the packet
 	
-	if (pendingBytes > pageSizeLimit * 0.6) {
+	/*if (pendingBytes > pageSizeLimit * 0.6) {
 		flushPage(false);
-	}
+	}*/
 }
 
 	flushPage(true); // EOS
