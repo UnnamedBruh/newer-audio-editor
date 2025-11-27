@@ -761,15 +761,15 @@ dv.setUint32(10, Number(granulePosBig >> 32n), true);
 	pages.push(makeOggPage([createOpusTags(vendor, {})], 0x00, 0, pageSeq++, serial));
 
 	// Audio pages
-	let pendingPackets = [], pendingBytes = 0;
-	function flushPage(isLast = false) {
-		if (pendingPackets.length === 0 && !isLast) return;
-		const flags = isLast ? 0x04 : 0x00;
-		console.log(`Page ${pageSeq}: granule = ${granule}, packets = ${pendingPackets.length}`);
-		pages.push(makeOggPage(pendingPackets, flags, granule, pageSeq++, serial));
-		pendingPackets = [];
-		pendingBytes = 0;
-	}
+let pendingPackets = [], pendingBytes = 0, pendingSegments = 0; // ADD pendingSegments
+function flushPage(isLast = false) {
+    if (pendingPackets.length === 0 && !isLast) return;
+    const flags = isLast ? 0x04 : 0x00;
+    pages.push(makeOggPage(pendingPackets, flags, granule, pageSeq++, serial));
+    pendingPackets = [];
+    pendingBytes = 0;
+    pendingSegments = 0; // RESET
+}
 
 	const MAX_SEGMENTS = 255;
 
@@ -778,16 +778,17 @@ for (let i = 0; i < packets.length; i++) { // THIS LOOP WAS REWRITTEN USING CLAU
 	const samples = BigInt(getPacketSamples(pkt));
 	const needed = pkt.length + Math.ceil(pkt.length / 255);
 
-	if (pendingBytes + needed > pageSizeLimit && pendingPackets.length > 0) {
+	if (pendingSegments + segments > 255 && pendingPackets.length > 0) { // ADD THIS CHECK
 		flushPage(false);
 	}
 
-	if (segmentSizes.length >= MAX_SEGMENTS - Math.ceil(pkt.length / 255)) {
-    	flushPage(false);
+	if (pendingBytes + needed > pageSizeLimit && pendingPackets.length > 0) {
+		flushPage(false);
 	}
 	
 	pendingPackets.push(pkt);
 	pendingBytes += needed;
+	pendingSegments += segments; // ADD THIS
 	granule += samples; // Move this AFTER adding the packet
 	
 	if (pendingBytes > pageSizeLimit * 0.6) {
