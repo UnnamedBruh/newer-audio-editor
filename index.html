@@ -726,11 +726,6 @@ let granulePosBig = BigInt(granulePos); // coerce to BigInt if it’s a Number
 dv.setUint32(6, Number(granulePosBig & 0xffffffffn), true);
 // write high 32 bits
 dv.setUint32(10, Number(granulePosBig >> 32n), true);
-
-console.log(`Page ${pageSeq}: granule=${granulePos} (0x${granulePosBig.toString(16)})`);
-console.log(`  Bytes 6-13 (granule): ${Array.from(header.subarray(6, 14)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-console.log(`  Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-
 		// After writing granule position
 console.log(`Page ${pageSeq}: wrote granule ${granulePos} (0x${granulePosBig.toString(16)})`);
 		dv.setUint32(14, streamSerial, true);
@@ -738,6 +733,10 @@ console.log(`Page ${pageSeq}: wrote granule ${granulePos} (0x${granulePosBig.toS
 		dv.setUint32(22, 0, true); // CRC placeholder
 		header[26] = pageSegments;
 		for (let i = 0; i < pageSegments; i++) header[27 + i] = segmentSizes[i];
+		console.log(`Page ${pageSeq}: granule=${granulePos} (0x${granulePosBig.toString(16)})`);
+console.log(`  Bytes 6-13 (granule): ${Array.from(header.subarray(6, 14)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+console.log(`  Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+		console.log(`  Full header including segment table: ${Array.from(header).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
 
 		const body = new Uint8Array(bodyLen);
 		let off = 0;
