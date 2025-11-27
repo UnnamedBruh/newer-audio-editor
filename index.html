@@ -753,6 +753,8 @@ console.log(`  Full header bytes 0-26: ${Array.from(header.subarray(0, 27)).map(
 		const dv2 = new DataView(full.buffer);
 		dv2.setUint32(22, crc, true);
 
+		console.log(`After CRC write - bytes 22-25: ${Array.from(full.subarray(22, 26)).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+
 		return full; // Return the same buffer, not a new copy
 	}
 
