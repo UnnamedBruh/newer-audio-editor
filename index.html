@@ -1191,6 +1191,20 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 						data2.push("L " + (len / sampleSkip) + ",100");
 						n.setAttribute("d", data2.join(" "));
+						if (n2) {
+							data2 = ["M 0,100 L 0,100"];
+							const y = exp[1].audioData;
+							let prev = 0, val = y[0];
+							for (let i = xn, j = 0; i < len; i++, j++) {
+								if (Math.abs(prev - val) >= ep) {
+									data2.push("L " + j + "," + Math.round(100 + val * 100));
+									prev = val;
+								}
+								val = y[i];
+							}
+							data2.push("L " + (len / sampleSkip) + ",100");
+							n2.setAttribute("d", data2.join(" "));
+						}
 					}
 				}
 				effects["trim"] = function() {
