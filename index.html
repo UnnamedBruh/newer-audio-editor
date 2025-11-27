@@ -835,10 +835,17 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 	function flushPage(isEOS = false) {
 		if (pendingPackets.length === 0) return;
 
-		const flags = isEOS ? 0x04 : 0x00;
-		const pageGranule = granule;
+		// Calculate granule: sum samples from all packets in this page
+		let pageGranule = granule;
+		for (const pkt of pendingPackets) {
+			pageGranule += BigInt(getPacketSamples(pkt));
+		}
 
+		const flags = isEOS ? 0x04 : 0x00;
 		pages.push(makeOggPage(pendingPackets, flags, pageGranule, pageSeq++, serial));
+
+		// Update global granule to end position of this page
+		granule = pageGranule;
 
 		pendingPackets = [];
 		pendingBytes = 0;
@@ -854,7 +861,6 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 			throw new Error(`Packet ${i} is not a Uint8Array`);
 		}
 
-		const packetSamples = BigInt(getPacketSamples(pkt));
 		const segments = Math.ceil(pkt.length / 255) || 1;
 
 		// Check if we need to flush before adding this packet
@@ -870,9 +876,6 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		pendingPackets.push(pkt);
 		pendingBytes += pkt.length;
 		pendingSegments += segments;
-
-		// Update granule position (end position after this packet)
-		granule += packetSamples;
 	}
 
 	// Flush final page with EOS (End of Stream) flag
