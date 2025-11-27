@@ -780,6 +780,8 @@ for (let i = 0; i < packets.length; i++) { // THIS LOOP WAS REWRITTEN USING CLAU
 	const needed = pkt.length + Math.ceil(pkt.length / 255);
 	const segments = Math.ceil(pkt.length / 255) || 1; // ADD THIS
 
+	    console.log(`Packet ${i}: len=${pkt.length}, needed=${needed}, pendingBytes=${pendingBytes}, segments=${segments}, pendingSegments=${pendingSegments}`);
+
 	if (pendingSegments + segments > 255 && pendingPackets.length > 0) { // ADD THIS CHECK
 		flushPage(false);
 	}
