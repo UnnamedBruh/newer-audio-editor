@@ -839,55 +839,47 @@ const MAX_SEGMENTS = 255;
 const MAX_PACKETS_PER_PAGE = 100;
 
 function flushPage(isLast = false) {
-	if (pendingPackets.length === 0) return;
+    if (pendingPackets.length === 0) return;
 
-	const flags = isLast ? 0x04 : 0x00;
+    const flags = isLast ? 0x04 : 0x00;
 
-	// Compute granule for this page
-	let granuleForPage = granule;
-	if (!isLast) {
-		// exclude last packet if it might be continued in next page
-		// for your simple muxer with no split packets, just use current granule
-		granuleForPage = granule;
-	}
+    // Calculate granule: sum of current granule + all packets in this page
+    let pageGranule = granule;
+    for (const pkt of pendingPackets) {
+        pageGranule += BigInt(getPacketSamples(pkt));
+    }
 
-	// Make page with pending packets
-	pages.push(makeOggPage(pendingPackets, flags, granuleForPage, pageSeq++, serial));
+    // Make page with granule = total samples *at the end of last packet on this page*
+    pages.push(makeOggPage(pendingPackets, flags, pageGranule, pageSeq++, serial));
 
-	// Increment granule AFTER flushing page
-	for (const pkt of pendingPackets) {
-		granule += BigInt(getPacketSamples(pkt));
-	}
+    // Update global granule AFTER writing page
+    granule = pageGranule;
 
-	// Reset pending counters
-	pendingPackets = [];
-	pendingBytes = 0;
-	pendingSegments = 0;
+    // Reset pending
+    pendingPackets = [];
+    pendingBytes = 0;
+    pendingSegments = 0;
 }
 
 for (let i = 0; i < packets.length; i++) {
-	const pkt = packets[i];
-	const samples = BigInt(getPacketSamples(pkt));
+    const pkt = packets[i];
 
-	// Calculate segments needed for this packet
-	const segments = Math.ceil(pkt.length / 255) || 1;
-	const neededBytes = pkt.length + segments;
+    const segments = Math.ceil(pkt.length / 255) || 1;
+    const neededBytes = pkt.length + segments;
 
-	// If adding this packet would overflow page limits, flush current page
-	if (
-		pendingSegments + segments > MAX_SEGMENTS || 
-		pendingBytes + neededBytes > pageSizeLimit ||
-		pendingPackets.length >= MAX_PACKETS_PER_PAGE
-	) {
-		flushPage(false);
-	}
+    // flush if adding this packet would exceed page limits
+    if (
+        pendingSegments + segments > MAX_SEGMENTS ||
+        pendingBytes + neededBytes > pageSizeLimit ||
+        pendingPackets.length >= MAX_PACKETS_PER_PAGE
+    ) {
+        flushPage(false);
+    }
 
-	// Add packet
-	pendingPackets.push(pkt);
-	pendingBytes += neededBytes;
-	pendingSegments += segments;
-
-	// REMOVE granule += samples here!
+    // add packet
+    pendingPackets.push(pkt);
+    pendingBytes += neededBytes;
+    pendingSegments += segments;
 }
 
 // Flush last page (EOS)
