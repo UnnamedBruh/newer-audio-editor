@@ -861,10 +861,8 @@ function flushPage(isEOS = false) {
     if (pendingPackets.length === 0) return;
 
     // Compute granule for this page
-    let pageGranule = granule; // BigInt
-    for (const pkt of pendingPackets) {
-        pageGranule += BigInt(getPacketSamples(pkt)); // always wrap in BigInt
-    }
+let lastPacketSamples = getPacketSamples(pendingPackets[pendingPackets.length - 1]);
+let pageGranule = granule + BigInt(lastPacketSamples);
 
     const flags = isEOS ? 0x04 : 0x00;
     pages.push(makeOggPage(pendingPackets, flags, pageGranule, pageSeq++, serial));
