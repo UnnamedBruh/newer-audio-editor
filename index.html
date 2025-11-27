@@ -838,73 +838,71 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		return concatUint8([header, body]);
 	}
 
-	// --- Build OGG Stream ---
-	const pages = [];
-	let pageSeq = 0;
-	let granule = 0n;
+// --- Build OGG Stream ---
+const pages = [];
+let pageSeq = 0;
+let granule = 0n; // always BigInt
 
-	// BOS (Beginning of Stream) page with OpusHead
-	pages.push(makeOggPage([createOpusHead()], 0x02, 0, pageSeq++, serial));
+// BOS (Beginning of Stream) page with OpusHead
+pages.push(makeOggPage([createOpusHead()], 0x02, 0n, pageSeq++, serial));
 
-	// Comment page with OpusTags
-	pages.push(makeOggPage([createOpusTags(vendor, {})], 0x00, 0, pageSeq++, serial));
+// Comment page with OpusTags
+pages.push(makeOggPage([createOpusTags(vendor, {})], 0x00, 0n, pageSeq++, serial));
 
-	// Audio data pages
-	const MAX_SEGMENTS = 255;
-	const MAX_PACKETS_PER_PAGE = 100;
+// Audio data pages
+const MAX_SEGMENTS = 255;
+const MAX_PACKETS_PER_PAGE = 100;
 
-	let pendingPackets = [];
-	let pendingBytes = 0;
-	let pendingSegments = 0;
+let pendingPackets = [];
+let pendingBytes = 0;
+let pendingSegments = 0;
 
-	function flushPage(isEOS = false) {
-		if (pendingPackets.length === 0) return;
+function flushPage(isEOS = false) {
+    if (pendingPackets.length === 0) return;
 
-		// Calculate granule: sum samples from all packets in this page
-		let pageGranule = granule;
-		for (const pkt of pendingPackets) {
-			pageGranule += BigInt(getPacketSamples(pkt));
-		}
+    // Compute granule for this page
+    let pageGranule = granule; // BigInt
+    for (const pkt of pendingPackets) {
+        pageGranule += BigInt(getPacketSamples(pkt)); // always wrap in BigInt
+    }
 
-		const flags = isEOS ? 0x04 : 0x00;
-		pages.push(makeOggPage(pendingPackets, flags, pageGranule, pageSeq++, serial));
+    const flags = isEOS ? 0x04 : 0x00;
+    pages.push(makeOggPage(pendingPackets, flags, pageGranule, pageSeq++, serial));
 
-		// Update global granule to end position of this page
-		granule = pageGranule;
+    // Update global granule to end position of this page
+    granule = pageGranule;
 
-		pendingPackets = [];
-		pendingBytes = 0;
-		pendingSegments = 0;
-	}
+    pendingPackets = [];
+    pendingBytes = 0;
+    pendingSegments = 0;
+}
 
-	// Process each audio packet
-	for (let i = 0; i < packets.length; i++) {
-		const pkt = packets[i];
+// Process each audio packet
+for (let i = 0; i < packets.length; i++) {
+    const pkt = packets[i];
 
-		// Validate packet
-		if (!(pkt instanceof Uint8Array)) {
-			throw new Error(`Packet ${i} is not a Uint8Array`);
-		}
+    if (!(pkt instanceof Uint8Array)) {
+        throw new Error(`Packet ${i} is not a Uint8Array`);
+    }
 
-		const segments = Math.ceil(pkt.length / 255) || 1;
+    const segments = Math.ceil(pkt.length / 255) || 1;
 
-		// Check if we need to flush before adding this packet
-		if (
-			pendingSegments + segments > MAX_SEGMENTS ||
-			pendingBytes + pkt.length > pageSizeLimit ||
-			pendingPackets.length >= MAX_PACKETS_PER_PAGE
-		) {
-			flushPage(false);
-		}
+    // Flush page if limits exceeded
+    if (
+        pendingSegments + segments > MAX_SEGMENTS ||
+        pendingBytes + pkt.length > pageSizeLimit ||
+        pendingPackets.length >= MAX_PACKETS_PER_PAGE
+    ) {
+        flushPage(false);
+    }
 
-		// Add packet to pending page
-		pendingPackets.push(pkt);
-		pendingBytes += pkt.length;
-		pendingSegments += segments;
-	}
+    pendingPackets.push(pkt);
+    pendingBytes += pkt.length;
+    pendingSegments += segments;
+}
 
-	// Flush final page with EOS (End of Stream) flag
-	flushPage(true);
+// Flush last page with EOS flag
+flushPage(true);
 
 	if (debug) {
 		console.log(`Created ${pages.length} pages, final granule: ${granule}`);
