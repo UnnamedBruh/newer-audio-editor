@@ -726,6 +726,9 @@ let granulePosBig = BigInt(granulePos); // coerce to BigInt if it’s a Number
 dv.setUint32(6, Number(granulePosBig & 0xffffffffn), true);
 // write high 32 bits
 dv.setUint32(10, Number(granulePosBig >> 32n), true);
+
+		// After writing granule position
+console.log(`Page ${pageSeq}: wrote granule ${granulePos} (0x${granulePosBig.toString(16)})`);
 		dv.setUint32(14, streamSerial, true);
 		dv.setUint32(18, pageSeq, true);
 		dv.setUint32(22, 0, true); // CRC placeholder
@@ -794,8 +797,6 @@ for (let i = 0; i < packets.length; i++) { // THIS LOOP WAS REWRITTEN USING CLAU
 	pendingBytes += needed;
 	pendingSegments += segments; // ADD THIS
 	granule += samples; // Move this AFTER adding the packet
-	// After writing granule position
-console.log(`Page ${pageSeq}: wrote granule ${granulePos} (0x${granulePosBig.toString(16)})`);
 	
 	if (pendingBytes > pageSizeLimit * 0.6) {
 		flushPage(false);
