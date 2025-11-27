@@ -771,6 +771,8 @@ dv.setUint32(10, Number(granulePosBig >> 32n), true);
 		pendingBytes = 0;
 	}
 
+	const MAX_SEGMENTS = 255;
+
 for (let i = 0; i < packets.length; i++) { // THIS LOOP WAS REWRITTEN USING CLAUDE SONNET 4.5
 	const pkt = packets[i];
 	const samples = BigInt(getPacketSamples(pkt));
@@ -778,6 +780,10 @@ for (let i = 0; i < packets.length; i++) { // THIS LOOP WAS REWRITTEN USING CLAU
 
 	if (pendingBytes + needed > pageSizeLimit && pendingPackets.length > 0) {
 		flushPage(false);
+	}
+
+	if (segmentSizes.length >= MAX_SEGMENTS - Math.ceil(pkt.length / 255)) {
+    	flushPage(false);
 	}
 	
 	pendingPackets.push(pkt);
