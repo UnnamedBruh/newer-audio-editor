@@ -816,7 +816,9 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 			console.log(`  Granule bytes [6-13]: ${granBytes}`);
 			console.log(`  Expected: ${granulePos} (0x${BigInt(granulePos).toString(16)})`);
 			console.log(`  Packets in page: ${packetsInPage.length}, Total body: ${body.length}B`);
+			console.log(`  First 5 packet lengths: ${packetsInPage.slice(0, 5).map(p => p.length).join(',')}`);
 			console.log(`  Segment table (${pageSegments}): ${segmentValues.slice(0, 10).join(',')}${pageSegments > 10 ? '...' : ''}`);
+			console.log(`  Segment table sum: ${segmentValues.reduce((a,b) => a+b, 0)}`);
 		}
 
 		// Compute CRC with CRC field zeroed
