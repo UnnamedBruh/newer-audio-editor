@@ -1135,10 +1135,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 					}
 				}
-				effects["trim"] = function() {
-					for (let i = 0; i < exporters.length; i++) {
-						if (timelineBeginAudio) exporters[i].audioData = exporters[i].audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
-					}
+				effects["trim"] = function(ex) {
+					if (timelineBeginAudio) ex.audioData = ex.audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
 				}
 				ed = v;
 				div = x;
