@@ -146,5 +146,13 @@ const effectsList = [
 		4,
 		"reverb",
 		[Number, Number, Number, Number]
+	],
+	[
+		"Sine Wave",
+		"Generates a sine wave at a certain frequency and volume.",
+		'Pitch (in MIDI notes): <input id="sine0" type="number" min="0" step="1" value="60" max="127" style="width: 100px"><br>Volume: <input id="sine1" type="number" min="0" step="1" value="100" style="width: 100px">',
+		2,
+		"sine",
+		[Number, Number]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
