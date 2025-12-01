@@ -801,3 +801,17 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 
 	await renderWithReverb(bb.buffer);
 }
+
+effects["sine"] = function(exporters, midiNote, volume) {
+	const tau = Math.PI * 2;
+	const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
+	const len = exporters.audioData.length;
+	const pointer = exporters.audioData;
+	volume *= 0.01;
+	const sampleRate = 1 / exporters.sampleRate;
+	if (volume === 0 || len < 2) return;
+
+	for (let i = 0; i < len; i++) {
+		pointer[i] += sin(tau * freq * sampleRate * i);
+	}
+}
