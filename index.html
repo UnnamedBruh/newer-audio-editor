@@ -840,6 +840,20 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 	return new Blob(pages, { type: "audio/ogg" });
 }
 
+// --- Default packet sample counter ---
+function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
+	const frameSamples = Math.round(sampleRate * (frameMs / 1000));
+	return function(packet) {
+		if (!packet || packet.length === 0) return 0;
+		const toc = packet[0];
+		const code = toc & 0x03;
+		let frames = 1;
+		if (code === 1 || code === 2) frames = 2;
+		else if (code === 3 && packet.length >= 2) frames = packet[1] & 0x3f || 1;
+		return frames * frameSamples;
+	};
+}
+
 					try {
 						const vbr = Number(prompt("How high can the bitrate of the audio be? (6.0 = worst quality, big differences, low sizes; 512.0 = best quality, nearly-neglible differences, higher sizes; 256.0 = balanced quality, minimal differences, medium sizes)") ?? 256.0) ?? 256.0;
 						const voiceOpt = confirm("Should the audio encoder optimize for voices in the audio?");
