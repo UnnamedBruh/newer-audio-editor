@@ -352,7 +352,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			}
 		} else if (noiseType === "pn") {
 			// https://whoisryosuke.com/blog/2025/generating-pink-noise-for-audio-worklets (algorithm is directly copied-and-pasted, then implemented here. I do NOT write, or claim to have written the marked section.)
-			volume *= 0.5;
+			volume *= 0.055;
 			let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0, pink=0, white=0;
 			if (volume === 1) {
 				for (let i = 0; i < len; i++) {
@@ -365,7 +365,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 					b5 = -0.7616 * b5 - white * 0.016898;
 					pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
 					b6 = white * 0.115926; // End mark
-					data[i] += pink * 0.11;
+					data[i] += pink;
 				}
 			} else {
 				for (let i = 0; i < len; i++) {
@@ -378,7 +378,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 					b5 = -0.7616 * b5 - white * 0.016898;
 					pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
 					b6 = white * 0.115926;
-					data[i] += pink * volume * 0.11;
+					data[i] += pink * volume;
 				}
 			}
 		}
@@ -644,19 +644,23 @@ effects["tvnormalize"] = function(exporter) {
 	if (len === 0) return;
 	let i = 0;
 
-	const chunkSize = 256;
+	const chunkSize = 368;
 	const chunkSizeDiv = 1 / chunkSize;
 	const trackVolume = new Float32Array(ceil(len / chunkSize) * chunkSize);
-
 	const trackLen = trackVolume.length;
 
-	for (let i = 0, k = 0; i < trackVolume.length; i += chunkSize, k++) {
-		const goUntil = Math.min(i + chunkSize, trackLen);
+	const trackLen = trackVolume.length;
+	const min = Math.min;
+
+	const sumDivisor = 1 / (chunkSize * 0.25);
+
+	for (let i = 0, k = 0; i < trackLen; i += chunkSize, k++) {
+		const goUntil = min(i + chunkSize, trackLen);
 		let sum = 0;
 		for (let j = i; j < goUntil; j++) {
 			sum += abs(pointer[j]);
 		}
-		sum /= chunkSize / 4;
+		sum *= sumDivisor;
 		trackVolume[k] = sum;
 	}
 	i = 0;
