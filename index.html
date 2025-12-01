@@ -469,7 +469,7 @@
 						exporters2.encoding = "mulaw";
 					}
 					
-					const blob = exporters2.convertToWav(metadata);
+					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? exporters[1].audioData : undefined);
 
 					exporters2.bits = encodeBits;
 
@@ -822,24 +822,18 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 				// but we must break if we've filled the page (bodySize >= pageSizeLimit) — outer loop checks
 			}
 		}
-
 		// Decide EOS: only true for the final page after we've processed all packets (and no remaining partial)
 		const isEOS = (pktIndex >= packets.length && pktOffset === 0);
-
 		// Special rule: if this page contains NO completed packets, granule must be set to the previous granule value (which it already is)
 		// build segment table Uint8Array
 		const segmentTable = new Uint8Array(segs);
-
 		// push page
 		buildAndPushPage(segmentTable, bodyParts, pageStartedWithContinuation, false, isEOS);
-
 		// Continue; the loop will start next page with pktOffset possibly non-zero (continuation)
 	}
-
 	if (debug) console.log(`Created ${pages.length} pages, final granule: ${granule}`);
 	return new Blob(pages, { type: "audio/ogg" });
 }
-
 // --- Default packet sample counter ---
 function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 	const frameSamples = Math.round(sampleRate * (frameMs / 1000));
@@ -853,7 +847,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 		return frames * frameSamples;
 	};
 }
-
 					try {
 						const vbr = Number(prompt("How high can the bitrate of the audio be? (6.0 = worst quality, big differences, low sizes; 512.0 = best quality, nearly-neglible differences, higher sizes; 256.0 = balanced quality, minimal differences, medium sizes)") ?? 256.0) ?? 256.0;
 						const voiceOpt = confirm("Should the audio encoder optimize for voices in the audio?");
