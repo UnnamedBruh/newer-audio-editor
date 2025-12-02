@@ -811,7 +811,13 @@ effects["sine"] = function(exporters, midiNote, volume) {
 	const sampleRate = 1 / exporters.sampleRate;
 	if (volume === 0 || len < 2) return;
 
-	for (let i = 0; i < len; i++) {
-		pointer[i] += sin(tau * freq * sampleRate * i);
+	if (volume === 1) {
+		for (let i = 0; i < len; i++) {
+			pointer[i] += sin(tau * freq * sampleRate * i);
+		}
+	} else {
+		for (let i = 0; i < len; i++) {
+			pointer[i] += sin(tau * freq * sampleRate * i) * volume;
+		}
 	}
 }
