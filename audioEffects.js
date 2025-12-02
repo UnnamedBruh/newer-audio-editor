@@ -158,7 +158,7 @@ const effectsList = [
 	[
 		"Sawtooth Wave",
 		"Generates a sawtooth wave at a certain frequency and volume.",
-		'Pitch (in MIDI notes): <input id="sine0" type="number" min="0" step="1" value="60" max="127" style="width: 100px"><br>Volume: <input id="sine1" type="number" min="0" step="1" value="100" style="width: 100px">',
+		'Pitch (in MIDI notes): <input id="saw0" type="number" min="0" step="1" value="60" max="127" style="width: 100px"><br>Volume: <input id="saw1" type="number" min="0" step="1" value="100" style="width: 100px">',
 		2,
 		"saw",
 		[Number, Number]
