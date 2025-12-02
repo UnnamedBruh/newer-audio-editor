@@ -836,12 +836,12 @@ effects["saw"] = function(exporters, midiNote, volume) { // TODO: Optimize this 
 
 	if (volume === 0.5) {
 		for (let i = 0; i < len; i++) {
-			pointer[i] += (((dt * i) % freqInverse) * freq - 1) - 1;
+			pointer[i] += ((dt * i) % freqInverse) * freq;
 		}
 	} else {
 		volume *= 2;
 		for (let i = 0; i < len; i++) {
-			pointer[i] += volume * ((((dt * i) % freqInverse) * freq - 1) - 1);
+			pointer[i] += volume * (((dt * i) % freqInverse) * freq);
 		}
 	}
 }
