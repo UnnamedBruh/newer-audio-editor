@@ -808,16 +808,40 @@ effects["sine"] = function(exporters, midiNote, volume) {
 	const len = exporters.audioData.length;
 	const pointer = exporters.audioData;
 	volume *= 0.01;
-	const sampleRate = 1 / exporters.sampleRate;
+	const dt = 1 / exporters.sampleRate;
 	if (volume === 0 || len < 2) return;
+
+	const c = tau * freq * dt;
 
 	if (volume === 1) {
 		for (let i = 0; i < len; i++) {
-			pointer[i] += sin(tau * freq * sampleRate * i);
+			pointer[i] += sin(c * i);
 		}
 	} else {
 		for (let i = 0; i < len; i++) {
-			pointer[i] += sin(tau * freq * sampleRate * i) * volume;
+			pointer[i] += sin(c * i) * volume;
+		}
+	}
+}
+
+effects["saw"] = function(exporters, midiNote, volume) { // TODO: Optimize this using
+	const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
+	const len = exporters.audioData.length;
+	const pointer = exporters.audioData;
+	volume *= 0.01;
+	const dt = 1 / exporters.sampleRate;
+	if (volume === 0 || len < 2) return;
+
+	const freqInverse = 1 / freq;
+
+	if (volume === 0.5) {
+		for (let i = 0; i < len; i++) {
+			pointer[i] += (((dt * i) % freqInverse) * freq - 1);
+		}
+	} else {
+		volume *= 2;
+		for (let i = 0; i < len; i++) {
+			pointer[i] += volume * (((dt * i) % freqInverse) * freq - 1);
 		}
 	}
 }
