@@ -845,3 +845,10 @@ effects["saw"] = function(exporters, midiNote, volume) { // TODO: Optimize this 
 		}
 	}
 }
+
+effects["blank"] = function(exporters, secs) { // TODO: Optimize this using
+	const len = exporters.audioData.length;
+	const pointer = exporters.audioData;
+	if (secs <= 0) return;
+	const blankAudio = new Float32Array(len);
+}
