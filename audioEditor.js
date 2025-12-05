@@ -796,7 +796,7 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 	}
 
 	const bb = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
-	bb.copyToChannel(0, exporter.audioData);
+	bb.copyToChannel(exporter.audioData, 0);
 
 	await renderWithReverb(bb);
 }
@@ -908,7 +908,7 @@ effects["biquadfilter"] = async function(exporter, freq, res, type, dryGain2, we
 	}
 
 	const bb = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
-	bb.copyToChannel(0, exporter.audioData);
+	bb.copyToChannel(exporter.audioData, 0);
 
-	await renderWithReverb(bb);
+	await renderWithFilter(bb);
 }
