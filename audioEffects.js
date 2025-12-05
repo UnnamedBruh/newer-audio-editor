@@ -170,5 +170,13 @@ const effectsList = [
 		2,
 		"blank",
 		[Number, identifier]
+	],
+	[
+		"Biquad Frequency Filter",
+		"Strips away or amplifies a certain range of frequencies of the audio.",
+		'Frequency (in Hertz): <input id="biquadfilter0" type="number" min="0" step="1" value="2" max="24000" style="width: 100px"><br>Resonance (Quality): <input id="biquadfilter1" type="number" min="0" step="0.01" value="1" style="width: 100px"><br>Filter instructions? <select id="biquadfilter2"><option value="lowpass">Strip away high frequencies</option><option value="highpass">Strip away low frequencies</option></select><br>Dry Mix: <input id="biquadfilter3" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Wet Mix: <input id="biquadfilter4" type="number" min="0" step="1" value="50" style="width: 100px">%',
+		5,
+		"biquadfilter",
+		[Number, Number, identifier, Number, Number]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
