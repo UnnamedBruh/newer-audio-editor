@@ -795,11 +795,10 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 		}
 	}
 
-	const bb = audioContext.createBufferSource();
-	bb.buffer = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
-	bb.buffer.getChannelData(0).set(exporter.audioData);
+	const bb = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
+	bb.copyToChannel(0, exporter.audioData);
 
-	await renderWithReverb(bb.buffer);
+	await renderWithReverb(bb);
 }
 
 effects["sine"] = function(exporters, midiNote, volume) {
@@ -854,4 +853,62 @@ effects["blank"] = function(exporters, secs, dir) { // Direction
 	const blankAudio = new Float32Array(len + samples);
 	if (dir === "f") blankAudio.set(pointer, samples); else blankAudio.set(pointer, 0);
 	exporters.audioData = blankAudio;
+}
+
+effects["biquadfilter"] = async function(exporter, freq, res, type, dryGain2, wetGain2) {
+	dryGain2 *= 0.01;
+	wetGain2 *= 0.01;
+	// Main render function, also written by Claude Sonnet 4.5 (slightly modified)
+	async function renderWithFilter(sourceBuffer) {
+		try {
+			const duration = sourceBuffer.duration;
+			const sampleRate = sourceBuffer.sampleRate;
+
+			// Create offline context
+			const offlineContext = new OfflineAudioContext(
+				1,
+				sampleRate * duration,
+				sampleRate
+			);
+
+			// Create source
+			const source = offlineContext.createBufferSource();
+			source.buffer = sourceBuffer;
+
+			// Create reverb
+			const convolver = offlineContext.createBiquadFilter();
+			convolver.type = type;
+			convolver.Q.value = res;
+			convolver.frequency.value = freq;
+
+			// Create dry and wet gains
+			const dryGain = offlineContext.createGain();
+			const wetGain = offlineContext.createGain();
+			dryGain.gain.value = dryGain2;
+			wetGain.gain.value = wetGain2;
+
+			// Connect the graph
+			source.connect(dryGain);
+			dryGain.connect(offlineContext.destination);
+
+			source.connect(convolver);
+			convolver.connect(wetGain);
+			wetGain.connect(offlineContext.destination);
+
+			// Start source
+			source.start(0);
+			// Render
+			renderedBuffer = await offlineContext.startRendering();
+
+			exporter.audioData = renderedBuffer.getChannelData(0);
+		} catch (error) {
+			alert(`There is an error with the frequency filter rendering process.\n\n${error.stack}`);
+			console.error(error);
+		}
+	}
+
+	const bb = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
+	bb.copyToChannel(0, exporter.audioData);
+
+	await renderWithReverb(bb);
 }
