@@ -858,7 +858,7 @@ effects["blank"] = function(exporters, secs, dir) { // Direction
 effects["biquadfilter"] = async function(exporter, freq, res, type, dryGain2, wetGain2) {
 	dryGain2 *= 0.01;
 	wetGain2 *= 0.01;
-	// Main render function, also written by Claude Sonnet 4.5 (slightly modified)
+	// Main render function, originally written by Claude Sonnet 4.5, but altered to support frequency filters
 	async function renderWithFilter(sourceBuffer) {
 		try {
 			const duration = sourceBuffer.duration;
