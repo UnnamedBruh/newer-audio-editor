@@ -162,5 +162,13 @@ const effectsList = [
 		2,
 		"saw",
 		[Number, Number]
+	],
+	[
+		"Blank",
+		"Prepends (inserts at the beginning) or appends (inserts at the end) silence to the audio track.",
+		'Seconds of Silence: <input id="blank0" type="number" min="0" step="0.1" value="1" style="width: 100px"><br>Direction: <select id="blank1"><option value="f">start of audio</option><option>end of audio</option></select>',
+		2,
+		"blank",
+		[Number, identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
