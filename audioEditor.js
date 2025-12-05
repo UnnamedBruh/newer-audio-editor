@@ -846,9 +846,12 @@ effects["saw"] = function(exporters, midiNote, volume) { // TODO: Optimize this 
 	}
 }
 
-effects["blank"] = function(exporters, secs) { // TODO: Optimize this using
+effects["blank"] = function(exporters, secs, dir) { // Direction
 	const len = exporters.audioData.length;
 	const pointer = exporters.audioData;
 	if (secs <= 0) return;
-	const blankAudio = new Float32Array(len);
+	const samples = Math.ceil(exporters.sampleRate * secs);
+	const blankAudio = new Float32Array(len + samples);
+	if (dir === "f") blankAudio.set(pointer, samples); else blankAudio.set(pointer, 0);
+	exporters.audioData = blankAudio;
 }
