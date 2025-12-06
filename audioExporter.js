@@ -288,7 +288,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 	if (this.encoding.startsWith("pcmf")) audioFormat = 3;
 	else if (this.encoding === "ulaw") audioFormat = 7;
 	else if (this.encoding === "alaw") audioFormat = 6; // https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
-	else if (this.encoding === "dpcm") audioFormat = 2;
+	else if (this.encoding === "ibmcvsd") audioFormat = 5; // https://billposer.org/Linguistics/Computation/LectureNotes/WAVEFormatCodes.html
 	else audioFormat = 1;
 	view.setUint16(offset, audioFormat, true); offset += 2;
 	view.setUint16(offset, numChannels, true); offset += 2;
@@ -367,27 +367,6 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 				view.setUint8(offset, b);
 				offset++;
 			}
-		}
-	} else if (this.encoding === "dpcm") {
-		let previousSample = Math.round(samples[0] * 127);
-		for (let i = 0; i < len; i++) { // This block was written by Gemini in Google Search.
-			const currentSampleInt = Math.round(samples[i] * 127);
-
-			// Calculate the difference (error)
-			let difference = currentSampleInt - previousSample;
-
-			// Quantize the difference (for simplicity, we cast to Int8 which naturally quantizes)
-			// More advanced ADPCM involves a dedicated quantization step and codebook
-			const quantizedDifference = Math.max(-128, Math.min(127, difference));
-
-			// Store the quantized difference
-			view.setInt8(offset, quantizedDifference);
-
-			// Update the 'previous sample' for the next prediction
-			// In a simple closed-loop DPCM, the prediction for the next sample is 
-			// the reconstructed current sample (previous prediction + quantized difference)
-			previousSample = previousSample + quantizedDifference;
-			offset++;
 		}
 	} else { // PCM integer
 		if (numOfChannels === 2) {
