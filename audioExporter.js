@@ -174,7 +174,7 @@ let x;
 function floatToAlawByte(float) {
 	if ((x = table[float]) !== undefined) return x;
 	// Clamp input to [-1, 1]
-	let x = Math.max(-1, Math.min(1, float));
+	x = float;
 	let sign = 0;
 	if (x < 0) {
 		sign = 0x80; // sign bit
