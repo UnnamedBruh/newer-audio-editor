@@ -268,7 +268,7 @@ function floatToAlawByte(float) {
 	return byte;
 }
 
-AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
+AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 	const numChannels = buffer ? 2 : 1;
 	const samples = this.audioData;
 	const len = samples.length;
@@ -328,7 +328,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
 				for (let i = 0; i < len; i++) {
 					view.setFloat32(offset, samples[i], true);
 					offset += 4;
-					view.setFloat32(offset, buffer[i], true);
+					view.setFloat32(offset, buffer2[i], true);
 					offset += 4;
 				}
 			} else {
@@ -342,7 +342,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
 				for (let i = 0; i < len; i++) {
 					view.setFloat64(offset, samples[i], true);
 					offset += 8;
-					view.setFloat64(offset, buffer[i], true);
+					view.setFloat64(offset, buffer2[i], true);
 					offset += 8;
 				}
 			} else {
@@ -359,7 +359,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
 				let b = floatToMuLawByte(samples[i]);
 				view.setUint8(offset, b);
 				offset++;
-				b = floatToMuLawByte(buffer[i]);
+				b = floatToMuLawByte(buffer2[i]);
 				view.setUint8(offset, b);
 				offset++;
 			}
@@ -377,7 +377,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
 				let b = floatToAlawByte(samples[i]);
 				view.setUint8(offset, b);
 				offset++;
-				b = floatToAlawByte(buffer[i]);
+				b = floatToAlawByte(buffer2[i]);
 				view.setUint8(offset, b);
 				offset++;
 			}
@@ -395,7 +395,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
 					let b = floatToUint8(samples[i]);
 					view.setUint8(offset, b);
 					offset++;
-					b = floatToUint8(buffer[i]);
+					b = floatToUint8(buffer2[i]);
 					view.setUint8(offset, b);
 					offset++;
 				}
@@ -404,7 +404,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
 					let s = floatToInt16(samples[i]);
 					view.setInt16(offset, s, true);
 					offset += 2;
-					s = floatToInt16(buffer[i]);
+					s = floatToInt16(buffer2[i]);
 					view.setInt16(offset, s, true);
 					offset += 2;
 				}
@@ -414,7 +414,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
 					let i32 = Math.round(samples[i] * 0x7FFFFFFF);
 					view.setInt32(offset, i32, true);
 					offset += 4;
-					i32 = Math.round(buffer[i] * 0x7FFFFFFF);
+					i32 = Math.round(buffer2[i] * 0x7FFFFFFF);
 					view.setInt32(offset, i32, true);
 					offset += 4;
 				}
