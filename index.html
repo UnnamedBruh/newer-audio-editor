@@ -1270,7 +1270,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 												let inway = Number(prompt("Alright! Which way should the audio editor layer the audio files together? (0 = audioFile1 + audioFile2, 1 = audioFile1 - audioFile2, 2 = audioFile2 - audioFile1") || 0);
 												if (sharedBuffer.sampleRate === secondSharedBuffer.sampleRate && sharedBuffer.numberOfChannels === secondSharedBuffer.numberOfChannels) {
 													let len;
-													if (sharedBuffer.length > secondSharedBuffer.length) len = secondSharedBuffer.length; else len = sharedBuffer.length;
+													if (sharedBuffer.length < secondSharedBuffer.length) {
+														len = secondSharedBuffer.length;
+														const temp = secondSharedBuffer;
+														secondSharedBuffer = sharedBuffer;
+														sharedBuffer = temp;
+													} else len = sharedBuffer.length;
 													if (inway === 0) {
 														for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
 															const pointer1 = sharedBuffer.getChannelData(i);
