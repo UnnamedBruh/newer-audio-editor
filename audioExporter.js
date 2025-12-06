@@ -277,7 +277,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 	const bytesPerSample = bits / 8;
 	
 	// Data chunk size (interleaving not needed for mono assumption; adjust for multi-channel)
-	const dataChunkSize = len * bytesPerSample;
+	const dataChunkSize = len * bytesPerSample * numChannels;
 
 	// Build metadata LIST chunk (optional)
 	const listChunk = buildInfoListChunk(metadata);
