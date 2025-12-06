@@ -369,6 +369,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 			}
 		}
 	} else if (this.encoding === "dpcm") {
+		let previousSample = Math.round(samples[0] * 127);
 		for (let i = 0; i < len; i++) { // This block was written by Gemini in Google Search.
 			const currentSampleInt = Math.round(samples[i] * 127);
 
