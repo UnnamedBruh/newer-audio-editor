@@ -270,6 +270,7 @@ function floatToAlawByte(float) {
 
 AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 	const numChannels = buffer2 ? 2 : 1;
+	const numOfChannels = numChannels;
 	const samples = this.audioData;
 	const len = samples.length;
 	const bits = this.bits || 32;
