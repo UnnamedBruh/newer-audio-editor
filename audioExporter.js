@@ -203,9 +203,9 @@ function floatToAlawByte(float) {
 	// Step 6: Bit inversion (A-law standard)
 	byte ^= 0x55;
 
-	if (keys === 32768) {
+	if (keys >= 65536) {
 		table = Object.create(null);
-		keys++;
+		keys = 0;
 	} else {
 		table[float] = byte;
 		keys++;
