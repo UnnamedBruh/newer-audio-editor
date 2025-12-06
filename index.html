@@ -446,7 +446,7 @@
 					if (notes) metadata["ICMT"] = notes;
 					if (software) metadata["ISFT"] = software === "UAE" ? "UnnamedBruh's Audio Editor" : software;
 
-					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit integer. 1 = 16-bit integer. 2 = 32-bit integer. 3 = 32-bit float. 4 = 64-bit float. 5 = mu-law. 6 = a-law. 7 = dpcm.)");
+					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit integer. 1 = 16-bit integer. 2 = 32-bit integer. 3 = 32-bit float. 4 = 64-bit float. 5 = mu-law. 6 = a-law.)");
 
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
 					const oldBits = exporters2.bits;
@@ -471,9 +471,6 @@
 					} else if (encodeBits == 6) {
 						exporters2.bits = 8;
 						exporters2.encoding = "alaw";
-					} else if (encodeBits == 7) {
-						exporters2.bits = 8;
-						exporters2.encoding = "dpcm";
 					}
 					
 					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? exporters[1].audioData : undefined);
