@@ -141,12 +141,12 @@ class AudioExporter { // This class is meant for the original programmer's devel
 
 // Helper: convert float [-1,1] to 16-bit signed integer
 function floatToInt16(sample) {
-	return /*Math.max(-1, Math.min(1, */sample/*))*/ * 0x7FFF | 0;
+	return sample * 0x7FFF | 0;
 }
 
 // Helper: convert float [-1,1] to unsigned 8-bit PCM (0..255)
 function floatToUint8(sample) {
-	return Math.round((/*Math.max(-1, Math.min(1, */sample/*))*/ + 1) * 127.5) & 0xFF;
+	return (((sample + 1) * 127.5) | 0) & 0xFF;
 }
 
 // μ-law expects 16-bit signed ints. Reuse your linearToMuLaw but ensure you pass int16.
@@ -213,8 +213,63 @@ function buildInfoListChunk(metadataObj = {}) {
 	return list;
 }
 
-AudioExporter.prototype.convertToWav = function(metadata = {}) {
-	const numChannels = this.channels || 1;
+const A = 87.6;
+const INVA = 1 / A;
+const ALOG = 1+Math.log(A);
+
+function floatToAlaw(float) {
+	const sign = (float<0?-1:float>0?1:0);
+	const abs = (float<0?-float:float);
+	if (0 <= abs && abs <= INVA) {
+		return sign * A * abs / ALOG
+	} else if (INVA <= abs && abs <= 1) {
+		return sign * (1 + Math.log(A * abs)) / ALOG;
+	}
+	return NaN;
+}
+
+const table = Object.create(null);
+let x;
+// This function was written by GPT-5.0 Mini, and altered by me (to optimize the function).
+function floatToAlawByte(float) {
+	if ((x = table[float]) !== undefined) return x;
+	const abs = Math.min(Math.max(Math.abs(float), 1e-8), 1); // clamp to avoid 0
+	let sign = float < 0 ? 0x80 : 0x00; // 1 = negative, 0 = positive
+
+	// Step 1: Convert float magnitude to A-law linear value
+	let aVal;
+	if (abs < INVA) {
+		aVal = A * abs / ALOG;
+	} else {
+		aVal = (1 + Math.log(A * abs)) / ALOG;
+	}
+
+	// Step 2: Scale to 12-bit range (0..4095) for segment calculation
+	let scaled = Math.floor(aVal * 4095);
+
+	// Step 3: Find segment number (log base 2)
+	let segment = 0;
+	for (let i = 0x100; i > 0x10; i >>= 1) {
+		if (scaled & i) break;
+		segment++;
+	}
+
+	// Step 4: Extract 4-bit step within segment
+	let step = (scaled >> (7 - segment)) & 0x0F;
+
+	// Step 5: Combine sign, segment, step into 8-bit A-law
+	let byte = sign | (segment << 4) | step;
+
+	// Step 6: Bit inversion (A-law standard)
+	byte ^= 0x55;
+
+	table[float] = byte;
+
+	return byte;
+}
+
+AudioExporter.prototype.convertToWav = function(metadata = {}, buffer) {
+	const numChannels = buffer ? 2 : 1;
 	const samples = this.audioData;
 	const len = samples.length;
 	const bits = this.bits || 32;
@@ -253,6 +308,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}) {
 	let audioFormat = 1;
 	if (this.encoding.startsWith("pcmf")) audioFormat = 3;
 	else if (this.encoding === "ulaw") audioFormat = 7;
+	else if (this.encoding === "alaw") audioFormat = 6; // https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 	else audioFormat = 1;
 	view.setUint16(offset, audioFormat, true); offset += 2;
 	view.setUint16(offset, numChannels, true); offset += 2;
@@ -268,43 +324,121 @@ AudioExporter.prototype.convertToWav = function(metadata = {}) {
 	// write sample data
 	if (audioFormat === 3) { // float
 		if (bits === 32) {
-			for (let i = 0; i < len; i++) {
-				view.setFloat32(offset, samples[i], true);
-				offset += 4;
+			if (numOfChannels === 2) {
+				for (let i = 0; i < len; i++) {
+					view.setFloat32(offset, samples[i], true);
+					offset += 4;
+					view.setFloat32(offset, buffer[i], true);
+					offset += 4;
+				}
+			} else {
+				for (let i = 0; i < len; i++) {
+					view.setFloat32(offset, samples[i], true);
+					offset += 4;
+				}
 			}
 		} else { // 64-bit float
-			for (let i = 0; i < len; i++) {
-				view.setFloat64(offset, samples[i], true);
-				offset += 8;
+			if (numOfChannels === 2) {
+				for (let i = 0; i < len; i++) {
+					view.setFloat64(offset, samples[i], true);
+					offset += 8;
+					view.setFloat64(offset, buffer[i], true);
+					offset += 8;
+				}
+			} else {
+				for (let i = 0; i < len; i++) {
+					view.setFloat64(offset, samples[i], true);
+					offset += 8;
+				}
 			}
 		}
 	} else if (this.encoding === "ulaw") {
 		// convert to mu-law bytes
-		for (let i = 0; i < len; i++) {
-			const b = floatToMuLawByte(samples[i]);
-			view.setUint8(offset, b);
-			offset += 1;
+		if (numOfChannels === 2) {
+			for (let i = 0; i < len; i++) {
+				let b = floatToMuLawByte(samples[i]);
+				view.setUint8(offset, b);
+				offset++;
+				b = floatToMuLawByte(buffer[i]);
+				view.setUint8(offset, b);
+				offset++;
+			}
+		} else {
+			for (let i = 0; i < len; i++) {
+				const b = floatToMuLawByte(samples[i]);
+				view.setUint8(offset, b);
+				offset++;
+			}
+		}
+	} else if (this.encoding === "alaw") {
+		// convert to mu-law bytes
+		if (numOfChannels === 2) {
+			for (let i = 0; i < len; i++) {
+				let b = floatToAlawByte(samples[i]);
+				view.setUint8(offset, b);
+				offset++;
+				b = floatToAlawByte(buffer[i]);
+				view.setUint8(offset, b);
+				offset++;
+			}
+		} else {
+			for (let i = 0; i < len; i++) {
+				const b = floatToAlawByte(samples[i]);
+				view.setUint8(offset, b);
+				offset++;
+			}
 		}
 	} else { // PCM integer
-		if (bits === 8) {
-			for (let i = 0; i < len; i++) {
-				const b = floatToUint8(samples[i]);
-				view.setUint8(offset, b);
-				offset += 1;
+		if (numOfChannels === 2) {
+			if (bits === 8) {
+				for (let i = 0; i < len; i++) {
+					let b = floatToUint8(samples[i]);
+					view.setUint8(offset, b);
+					offset++;
+					b = floatToUint8(buffer[i]);
+					view.setUint8(offset, b);
+					offset++;
+				}
+			} else if (bits === 16) {
+				for (let i = 0; i < len; i++) {
+					let s = floatToInt16(samples[i]);
+					view.setInt16(offset, s, true);
+					offset += 2;
+					s = floatToInt16(buffer[i]);
+					view.setInt16(offset, s, true);
+					offset += 2;
+				}
+			} else if (bits === 32) {
+				// PCM 32-bit integer (rare); convert floats to 32-bit signed ints
+				for (let i = 0; i < len; i++) {
+					let i32 = Math.round(samples[i] * 0x7FFFFFFF);
+					view.setInt32(offset, i32, true);
+					offset += 4;
+					i32 = Math.round(buffer[i] * 0x7FFFFFFF);
+					view.setInt32(offset, i32, true);
+					offset += 4;
+				}
 			}
-		} else if (bits === 16) {
-			for (let i = 0; i < len; i++) {
-				const s = floatToInt16(samples[i]);
-				view.setInt16(offset, s, true);
-				offset += 2;
-			}
-		} else if (bits === 32) {
-			// PCM 32-bit integer (rare); convert floats to 32-bit signed ints
-			for (let i = 0; i < len; i++) {
-				const v = Math.max(-1, Math.min(1, samples[i]));
-				const i32 = Math.round(v * 0x7FFFFFFF);
-				view.setInt32(offset, i32, true);
-				offset += 4;
+		} else {
+			if (bits === 8) {
+				for (let i = 0; i < len; i++) {
+					const b = floatToUint8(samples[i]);
+					view.setUint8(offset, b);
+					offset++;
+				}
+			} else if (bits === 16) {
+				for (let i = 0; i < len; i++) {
+					const s = floatToInt16(samples[i]);
+					view.setInt16(offset, s, true);
+					offset += 2;
+				}
+			} else if (bits === 32) {
+				// PCM 32-bit integer (rare); convert floats to 32-bit signed ints
+				for (let i = 0; i < len; i++) {
+					const i32 = Math.round(samples[i] * 0x7FFFFFFF);
+					view.setInt32(offset, i32, true);
+					offset += 4;
+				}
 			}
 		}
 	}
