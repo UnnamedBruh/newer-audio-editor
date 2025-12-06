@@ -321,16 +321,16 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 		// convert to mu-law bytes
 		if (numOfChannels === 2) {
 			for (let i = 0; i < len; i++) {
-				let b = floatToAlawByte(samples[i]);
+				let b = floatToAlawByte(Math.round(samples[i] * 65536) / 65536);
 				view.setUint8(offset, b);
 				offset++;
-				b = floatToAlawByte(buffer2[i]);
+				b = floatToAlawByte(Math.round(buffer2[i] * 65536) / 65536);
 				view.setUint8(offset, b);
 				offset++;
 			}
 		} else {
 			for (let i = 0; i < len; i++) {
-				const b = floatToAlawByte(samples[i]);
+				const b = floatToAlawByte(Math.round(samples[i] * 65536) / 65536);
 				view.setUint8(offset, b);
 				offset++;
 			}
