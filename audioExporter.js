@@ -173,34 +173,37 @@ let x;
 // This function was written by GPT-5.0 Mini, and altered by me (to optimize the function).
 function floatToAlawByte(float) {
 	if ((x = table[float]) !== undefined) return x;
-	const abs = Math.min(Math.max(Math.abs(float), 1e-8), 1); // clamp to avoid 0
-	let sign = float < 0 ? 0x80 : 0x00; // 1 = negative, 0 = positive
-
-	// Step 1: Convert float magnitude to A-law linear value
-	let aVal;
-	if (abs < INVA) {
-		aVal = A * abs / ALOG;
-	} else {
-		aVal = (1 + Math.log(A * abs)) / ALOG;
+	// Clamp input to [-1, 1]
+	let x = Math.max(-1, Math.min(1, float));
+	let sign = 0;
+	if (x < 0) {
+		sign = 0x80; // sign bit
+		x = -x;
 	}
 
-	// Step 2: Scale to 12-bit range (0..4095) for segment calculation
-	let scaled = Math.floor(aVal * 4095);
+	// Scale float [-1,1] to 12-bit PCM (0..4095)
+	const PCM_MAX = 4095;
+	let pcmVal = Math.floor(x * PCM_MAX + 0.5);
 
-	// Step 3: Find segment number (log base 2)
+	// Determine segment
 	let segment = 0;
-	for (let i = 0x100; i > 0x10; i >>= 1) {
-		if (scaled & i) break;
-		segment++;
+	if (pcmVal >= 256) segment = 1;
+	if (pcmVal >= 512) segment = 2;
+	if (pcmVal >= 1024) segment = 3;
+	if (pcmVal >= 2048) segment = 4;
+	if (pcmVal >= 4096) segment = 5; // won't happen for x <= 1
+
+	// Determine step within segment
+	let step;
+	if (segment === 0) {
+		step = (pcmVal >> 4) & 0x0F;
+	} else {
+		step = (pcmVal >> (segment + 3)) & 0x0F;
 	}
 
-	// Step 4: Extract 4-bit step within segment
-	let step = (scaled >> (7 - segment)) & 0x0F;
-
-	// Step 5: Combine sign, segment, step into 8-bit A-law
+	// Compose byte: sign | segment | step
 	let byte = sign | (segment << 4) | step;
-
-	// Step 6: Bit inversion (A-law standard)
+	// Apply bit inversion (A-law standard)
 	byte ^= 0x55;
 
 	if (keys >= 65536) {
