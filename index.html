@@ -559,7 +559,7 @@
 				exportBtn.textContent = "Export as OGG (Vorbis format, wasm-media-encoders)";
 				exportBtn.onclick = async function() {
 					try {
-						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, big differences, low sizes; 10.0 = best quality, nearly-neglible differences, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes)") ?? 4.0) ?? 4.0;
+						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, low sizes; 10.0 = best quality, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes; -2.0 = absolute worst, lowest sizes)") ?? 4.0) ?? 4.0;
 
 						let blob;
 						const split = exporters.length !== 2 && !!confirm("Should the audio be split into two separate channels?");
