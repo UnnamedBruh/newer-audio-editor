@@ -644,7 +644,7 @@ effects["tvnormalize"] = function(exporter) {
 	if (len === 0) return;
 	let i = 0;
 
-	const chunkSize = 4096;
+	const chunkSize = 512;
 	const chunkSizeDiv = 1 / chunkSize;
 	const trackVolume = new Float32Array(ceil(len / chunkSize) * chunkSize);
 	const trackLen = trackVolume.length;
