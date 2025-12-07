@@ -245,6 +245,7 @@
 									const temp = timelineEndNum;
 									timelineEndNum = timelineBeginNum;
 									timelineBeginNum = temp;
+									timelineBeginAudio = timelineBeginNum * sampleSkip;
 								}
 								timelineEndNumCache = timelineEndNum / div.clientWidth * sharedBuffer.duration;
 								timelineEndAudio = timelineEndNum * sampleSkip;
