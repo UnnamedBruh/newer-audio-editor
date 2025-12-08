@@ -1382,10 +1382,10 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									const lenBuffer = sharedBuffer.length;
 									const channel1 = newBuffer.getChannelData(0);
 									const channel2 = newBuffer.getChannelData(1);
-									const channel1S = newBuffer.getChannelData(0);
-									const channel2S = newBuffer.getChannelData(1);
-									const channel3S = newBuffer.getChannelData(2);
-									const channel4S = newBuffer.getChannelData(3);
+									const channel1S = sharedBuffer.getChannelData(0);
+									const channel2S = sharedBuffer.getChannelData(1);
+									const channel3S = sharedBuffer.getChannelData(2);
+									const channel4S = sharedBuffer.getChannelData(3);
 									const leftorright = confirm("Okay! Do you want to store the left and right sides (Cancel/No), or all sides including the left, right, front and back sides (OK/Yes)?");
 									if (leftorright) {
 										for (let i = 0; i < lenBuffer; i++) {
@@ -1403,10 +1403,10 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
 									const lenBuffer = sharedBuffer.length;
 									const channel1 = newBuffer.getChannelData(0);
-									const channel1S = newBuffer.getChannelData(0);
-									const channel2S = newBuffer.getChannelData(1);
-									const channel3S = newBuffer.getChannelData(2);
-									const channel4S = newBuffer.getChannelData(3);
+									const channel1S = sharedBuffer.getChannelData(0);
+									const channel2S = sharedBuffer.getChannelData(1);
+									const channel3S = sharedBuffer.getChannelData(2);
+									const channel4S = sharedBuffer.getChannelData(3);
 									const leftorright = confirm("Okay! Do you want to store the left and right sides (Cancel/No), or all sides including the left, right, front and back sides (OK/Yes)?");
 									if (leftorright) {
 										for (let i = 0; i < lenBuffer; i++) {
