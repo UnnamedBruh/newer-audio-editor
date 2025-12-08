@@ -371,7 +371,7 @@
 						if (currentSelected) {
 							apply.disabled = true;
 							for (let i = exporterIndex || 0; i <= exporterIndex || (exp.length - 1); i++) {
-								const expor = exp[i];
+								const expor = exporters[i];
 								const values = [expor, ...paramElements.map((x, i) => {
 									if (x.type === "checkbox") {
 										return effect[5][i](x.checked);
