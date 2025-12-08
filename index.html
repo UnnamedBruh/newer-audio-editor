@@ -370,7 +370,7 @@
 					async function applyEffect(exporterIndex) {
 						if (currentSelected) {
 							apply.disabled = true;
-							for (let i = exporterIndex || 0; i <= exporterIndex || (exporters.length - 1); i++) {
+							for (let i = exporterIndex || 0; i <= exporterIndex || (exporters.length); i++) {
 								console.log(i);
 								const expor = exporters[i];
 								const values = [expor, ...paramElements.map((x, i) => {
