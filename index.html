@@ -1340,7 +1340,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								});
 							}
 							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
-							const channel = sharedBuffer.getChannelData(channelNum);
+							let channel = sharedBuffer.getChannelData(channelNum);
 							let isProcessed = false;
 							if (sharedBuffer.numberOfChannels === 2) {
 								if (confirm("Should the current channel be subtracted by another? (If you want to only edit the audio, just press Cancel)")) {
@@ -1399,6 +1399,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 										}
 									}
 									sharedBuffer = newBuffer;
+									channel = sharedBuffer.getChannelData(channelNum & 1);
 								} else {
 									const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
 									const lenBuffer = sharedBuffer.length;
@@ -1418,6 +1419,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 										}
 									}
 									sharedBuffer = newBuffer;
+									channel = sharedBuffer.getChannelData(0);
 								}
 							}
 							const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
