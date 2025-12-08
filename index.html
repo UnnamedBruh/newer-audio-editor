@@ -371,6 +371,7 @@
 						if (currentSelected) {
 							apply.disabled = true;
 							for (let i = exporterIndex || 0; i <= exporterIndex || (exporters.length - 1); i++) {
+								console.log(i);
 								const expor = exporters[i];
 								const values = [expor, ...paramElements.map((x, i) => {
 									if (x.type === "checkbox") {
@@ -379,6 +380,7 @@
 										return effect[5][i](x.value);
 									}
 								})];
+								console.log(values);
 								if (timelineBeginAudio !== 0) values[0] = {audioData: expor.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: expor.sampleRate};
 								const le = values[0].audioData.length;
 								await effects[effect[4]](...values);
