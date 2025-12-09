@@ -508,7 +508,7 @@
 						exporters2.encoding = "alaw";
 					}
 					
-					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? exporters[1].audioData : undefined);
+					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? exporters[1].audioData : undefined, isCompatible);
 
 					exporters2.bits = encodeBits;
 
