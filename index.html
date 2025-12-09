@@ -454,7 +454,7 @@
 				v.appendChild(document.createElement("br"));
 				let exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as WAV";
+				exportBtn.textContent = "Export as WAV (Original Library)";
 				exportBtn.onclick = function() {
 					const metadata = {};
 					const author = prompt("Who is the author of this audio? (e.g. \"John Smith\") Leave the input blank if you don't want the author to be specified.");
@@ -514,7 +514,7 @@
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as MP3";
+				exportBtn.textContent = "Export as MP3 (liblamejs)";
 				exportBtn.onclick = async function() {
 					function floatTo16BitPCM(float32Array, channels) {
 						const len = float32Array.length / channels;
