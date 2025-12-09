@@ -246,7 +246,7 @@ function floatToAlawByte(float) {
 	return byte;
 }
 
-AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
+AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBetter) {
 	function writeString(view, offset, string) {
 		for (let i = 0; i < string.length; i++) {
 			view.setUint8(offset + i, string.charCodeAt(i));
@@ -257,7 +257,8 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 	const samples = this.audioData;
 	const len = samples.length;
 	const bits = this.bits || 32;
-	const bytesPerSample = bits / 8;
+	let bytesPerSample = bits / 8;
+	if (encodeBetter && bits === 12) bytesPerSample = 2;
 	
 	// Data chunk size (interleaving not needed for mono assumption; adjust for multi-channel)
 	const dataChunkSize = len * bytesPerSample * numChannels;
@@ -385,17 +386,28 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 					offset++;
 				}
 			} else if (bits === 12) {
-				for (let i = 0; i < len; i++) {
-					let b = Math.round((samples[i]+1) * 2047);
-					view.setUint8(offset, b & 0xFF);
-					let x = (b & 0xFFF) >> 8;
-					offset++;
-					b = Math.round((buffer2[i]+1) * 2047);
-					x = x | ((b & 0xF) << 4);
-					view.setUint8(offset, x);
-					offset++;
-					view.setUint8(offset, (b >> 4) & 0xFF);
-					offset++;
+				if (encodeBetter) {
+					for (let i = 0; i < len; i++) {
+						let b = Math.round((samples[i]+1) * 2047.5);
+						let x = Math.round((buffer2[i]+1) * 2047.5);
+						view.setUint16(offset, b & 0xFFF, true);
+						offset += 2;
+						view.setUint16(offset, x & 0xFFF, true);
+						offset += 2;
+					}
+				} else {
+					for (let i = 0; i < len; i++) {
+						let b = Math.round((samples[i]+1) * 2047.5);
+						view.setUint8(offset, b & 0xFF);
+						let x = (b & 0xFFF) >> 8;
+						offset++;
+						b = Math.round((buffer2[i]+1) * 2047.5);
+						x = x | ((b & 0xF) << 4);
+						view.setUint8(offset, x);
+						offset++;
+						view.setUint8(offset, (b >> 4) & 0xFF);
+						offset++;
+					}
 				}
 			} else if (bits === 16) {
 				for (let i = 0; i < len; i++) {
@@ -442,20 +454,28 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 					offset++;
 				}
 			} else if (bits === 12) {
-				i = 0;
-				for (let i = 0; i < len;) {
-					let b = Math.round((samples[i]+1) * 2047);
-					view.setUint8(offset, b & 0xFF);
-					let x = (b & 0xFFF) >> 8;
-					offset++;
-					i++;
-					b = Math.round((samples[i]+1) * 2047);
-					x = x | ((b & 0xF) << 4);
-					view.setUint8(offset, x);
-					offset++;
-					view.setUint8(offset, (b >> 4) & 0xFF);
-					offset++;
-					i++;
+				if (encodeBetter) {
+					for (let i = 0; i < len; i++) {
+						let b = Math.round((samples[i]+1) * 2047.5);
+						view.setUint16(offset, b & 0xFFF, true);
+						offset += 2;
+					}
+				} else {
+					i = 0;
+					for (let i = 0; i < len;) {
+						let b = Math.round((samples[i]+1) * 2047.5);
+						view.setUint8(offset, b & 0xFF);
+						let x = (b & 0xFFF) >> 8;
+						offset++;
+						i++;
+						b = Math.round((samples[i]+1) * 2047.5);
+						x = x | ((b & 0xF) << 4);
+						view.setUint8(offset, x);
+						offset++;
+						view.setUint8(offset, (b >> 4) & 0xFF);
+						offset++;
+						i++;
+					}
 				}
 			} else if (bits === 16) {
 				for (let i = 0; i < len; i++) {
