@@ -386,15 +386,15 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 				}
 			} else if (bits === 12) {
 				for (let i = 0; i < len; i++) {
-					let b = samples[i] * 4095;
-					view.setInt8(offset, b & 0xFF);
+					let b = Math.round((samples[i]+1) * 2047);
+					view.setUint8(offset, b & 0xFF);
 					let x = (b & 0xFFF) >> 8;
 					offset++;
-					b = buffer2[i] * 4095;
+					b = Math.round((buffer2[i]+1) * 2047);
 					x = x | ((b & 0xF) << 4);
-					view.setInt8(offset, x);
+					view.setUint8(offset, x);
 					offset++;
-					view.setInt8(offset, (b >> 4) & 0xFF);
+					view.setUint8(offset, (b >> 4) & 0xFF);
 					offset++;
 				}
 			} else if (bits === 16) {
@@ -444,16 +444,16 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 			} else if (bits === 12) {
 				i = 0;
 				for (let i = 0; i < len;) {
-					let b = samples[i] * 4095;
-					view.setInt8(offset, b & 0xFF);
+					let b = Math.round((samples[i]+1) * 2047);
+					view.setUint8(offset, b & 0xFF);
 					let x = (b & 0xFFF) >> 8;
 					offset++;
 					i++;
-					b = samples[i] * 4095;
+					b = Math.round((samples[i]+1) * 2047);
 					x = x | ((b & 0xF) << 4);
-					view.setInt8(offset, x);
+					view.setUint8(offset, x);
 					offset++;
-					view.setInt8(offset, (b >> 4) & 0xFF);
+					view.setUint8(offset, (b >> 4) & 0xFF);
 					offset++;
 					i++;
 				}
