@@ -289,12 +289,12 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 	// fmt chunk
 	writeString(view, offset, 'fmt '); offset += 4;
 	view.setUint32(offset, fmtChunkSize, true); offset += 4;
-	// audioFormat: 1 = PCM integer, 3 = IEEE float, 7 = μ-law
+	// audioFormat: 1 = PCM integer, 2 = ADPCM or DPCM, 3 = IEEE float, 7 = μ-law
 	let audioFormat = 1;
 	if (this.encoding.startsWith("pcmf")) audioFormat = 3;
 	else if (this.encoding === "ulaw") audioFormat = 7;
 	else if (this.encoding === "alaw") audioFormat = 6; // https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
-	else if (this.encoding === "ibmcvsd") audioFormat = 5; // https://billposer.org/Linguistics/Computation/LectureNotes/WAVEFormatCodes.html
+	else if (this.encoding === "nesdpcm") audioFormat = 2; // https://billposer.org/Linguistics/Computation/LectureNotes/WAVEFormatCodes.html
 	else audioFormat = 1;
 	view.setUint16(offset, audioFormat, true); offset += 2;
 	view.setUint16(offset, numChannels, true); offset += 2;
@@ -371,6 +371,56 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 			for (let i = 0; i < len; i++) {
 				const b = floatToAlawByte(Math.round(samples[i] * 65536) / 65536);
 				view.setUint8(offset, b);
+				offset++;
+			}
+		}
+	} else if (this.encoding === "nesdpcm") {
+		// convert to NES DPCM
+		// According to source: https://www.reddit.com/r/retrogamedev/comments/yb6s8o/could_an_nes_programmer_explain_why_the/, and Google Search
+		function warn(){alert("Your audio contains silent or quiet sections, which may result in very high-pitched \"buzzing\" artifacts. This is due to how delta encoding is decided.");return false}
+		if (numOfChannels === 2) {
+			alert("The NES hardware doesn't traditionally support stereo audio. This is just an important point to consider, not an error.");
+			let silent = true;
+			let difference = 0;
+			let i = 0;
+			let byteSequence = new Uint8Array([1,2,4,8,16,32,64,128]);
+			for (let i = 0; i < len;) {
+				let nd = 0;
+				let currentSample = 0;
+				let b = 0;
+				for (let x = 0; x < 4; x++) {
+					b = Math.round((samples[i] + 1) * 8);
+					if (silent&&b===8) silent = warn();
+					if (difference > b) {difference++;currentSample|=byteSequence[nd]} else {difference--;}
+					nd++;
+
+					b = Math.round((buffer2[i] + 1) * 8);
+					if (difference > b) {difference++;currentSample|=byteSequence[nd]} else {difference--;}
+					i++;
+					nd++;
+				}
+				view.setUint8(currentSample, b);
+				offset++;
+			}
+		} else {
+			let silent = true;
+			let difference = 0;
+			let i = 0;
+			let byteSequence = new Uint8Array([0,2,4,8,16,32,64,128]);
+			for (let i = 0; i < len;) {
+				let b = Math.round((samples[i] + 1) * 8);
+				if (silent&&b===8) silent = warn();
+				let currentSample = 0;
+				if (difference > b) {difference++;currentSample=1} else {difference--;}
+				i++;
+				
+				for (let j = 1; j < 8; j++) {
+					b = Math.round((samples[i] + 1) * 8);
+					if (difference > b) {difference++;currentSample|=byteSequence[j]} else {difference--;}
+					i++;
+				}
+				
+				view.setUint8(currentSample, b);
 				offset++;
 			}
 		}
