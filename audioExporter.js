@@ -247,6 +247,11 @@ function floatToAlawByte(float) {
 }
 
 AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
+	function writeString(view, offset, string) {
+		for (let i = 0; i < string.length; i++) {
+			view.setUint8(offset + i, string.charCodeAt(i));
+		}
+	}
 	const numChannels = buffer2 ? 2 : 1;
 	const numOfChannels = numChannels;
 	const samples = this.audioData;
@@ -276,12 +281,12 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 	let offset = 0;
 
 	// RIFF header
-	this.writeString(view, offset, 'RIFF'); offset += 4;
+	writeString(view, offset, 'RIFF'); offset += 4;
 	view.setUint32(offset, riffChunkSize, true); offset += 4;
-	this.writeString(view, offset, 'WAVE'); offset += 4;
+	writeString(view, offset, 'WAVE'); offset += 4;
 
 	// fmt chunk
-	this.writeString(view, offset, 'fmt '); offset += 4;
+	writeString(view, offset, 'fmt '); offset += 4;
 	view.setUint32(offset, fmtChunkSize, true); offset += 4;
 	// audioFormat: 1 = PCM integer, 3 = IEEE float, 7 = μ-law
 	let audioFormat = 1;
@@ -298,7 +303,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 	view.setUint16(offset, bits, true); offset += 2;
 
 	// data chunk header
-	this.writeString(view, offset, 'data'); offset += 4;
+	writeString(view, offset, 'data'); offset += 4;
 	view.setUint32(offset, dataChunkSize, true); offset += 4;
 
 	// write sample data
@@ -388,6 +393,23 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 					view.setInt16(offset, s, true);
 					offset += 2;
 				}
+			} else if (bits === 24) {
+				for (let i = 0; i < len; i++) {
+					let value = samples[i] * 8388607;
+					view.setInt8(offset, value & 0xFF);
+					offset++;
+					view.setInt8(offset, (value >> 8) & 0xFF);
+					offset++;
+					view.setInt8(offset, (value >> 16) & 0xFF);
+					offset++;
+					value = buffer2[i] * 8388607;
+					view.setInt8(offset, value & 0xFF);
+					offset++;
+					view.setInt8(offset, (value >> 8) & 0xFF);
+					offset++;
+					view.setInt8(offset, (value >> 16) & 0xFF);
+					offset++;
+				}
 			} else if (bits === 32) {
 				// PCM 32-bit integer (rare); convert floats to 32-bit signed ints
 				for (let i = 0; i < len; i++) {
@@ -411,6 +433,16 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 					const s = floatToInt16(samples[i]);
 					view.setInt16(offset, s, true);
 					offset += 2;
+				}
+			} else if (bits === 24) {
+				for (let i = 0; i < len; i++) {
+					let value = samples[i] * 8388607;
+					view.setInt8(offset, value & 0xFF);
+					offset++;
+					view.setInt8(offset, (value >> 8) & 0xFF);
+					offset++;
+					view.setInt8(offset, (value >> 16) & 0xFF);
+					offset++;
 				}
 			} else if (bits === 32) {
 				// PCM 32-bit integer (rare); convert floats to 32-bit signed ints
