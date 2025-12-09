@@ -303,6 +303,7 @@
 				let yu = exp[0].audioData.length;
 				window.onkeydown = function(key) {
 					if (key.key === " ") {
+						key.preventDefault()
 						const s = isPressingShift;
 						isPressingShift = false;
 						playWithTimeline({clientX: v.getBoundingClientRect().x - window.pageXOffset});
