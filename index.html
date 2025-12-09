@@ -473,7 +473,7 @@
 					if (notes) metadata["ICMT"] = notes;
 					if (software) metadata["ISFT"] = software === "UAE" ? "UnnamedBruh's Audio Editor" : software;
 
-					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 12-bit. 2 = 16-bit. 3 = 24-bit. 4 = 32-bit. 5 = 32-bit float. 6 = 64-bit float. 7 = mu-law. 8 = a-law.)");
+					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 12-bit. 2 = 16-bit. 3 = 24-bit. 4 = 32-bit. 5 = 32-bit float. 6 = 64-bit float. 7 = mu-law. 8 = a-law. 9 = dpcm.)");
 
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
 					const oldBits = exporters2.bits;
@@ -484,7 +484,7 @@
 					} else if (encodeBits == 1) {
 						exporters2.bits = 12;
 						exporters2.encoding = "pcm";
-						isCompatible = confirm("Older software used to export 12-bit WAV audio using this ratio: 3:2 (3 bytes per 2 samples). However, modern audio decoders expect byte-aligned 12-bit WAV audio that use 4:2 (4 bytes per 2 samples).\n\nDo you want byte-aligned audio?");
+						isCompatible = confirm("Older commercial software used to export 12-bit WAV audio using this ratio: 3:2 (3 bytes per 2 samples). However, modern audio decoders expect byte-aligned 12-bit WAV audio that use 4:2 (4 bytes per 2 samples).\n\nDo you want byte-aligned audio?");
 					} else if (!encodeBits || encodeBits == 2) {
 						exporters2.bits = 16;
 						exporters2.encoding = "pcm";
@@ -506,6 +506,12 @@
 					} else if (encodeBits == 8) {
 						exporters2.bits = 8;
 						exporters2.encoding = "alaw";
+					} else if (encodeBits == 9) {
+						const whichFormat = prompt("What type of DPCM audio encoding do you need for proper playback? Note: Real DPCM encoding is ambiguous. This means it isn't fully standardized across all systems. For example, one system (think NES) may expect a certain format, while another (think Windows) may expect another.\n\n0 = NES hardware, 1-bit differences, 4-bit samples");
+						if (whichFormat == 0) {
+							exporters2.bits = 1;
+							exporters2.encoding = "nesdpcm";
+						}
 					}
 					
 					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? exporters[1].audioData : undefined, isCompatible);
