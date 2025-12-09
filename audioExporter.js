@@ -399,6 +399,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 					if (difference > b) {difference++;currentSample|=byteSequence[nd]} else {difference--;}
 					i++;
 					nd++;
+					if (i >= len) break;
 				}
 				view.setUint8(offset, currentSample);
 				offset++;
@@ -419,6 +420,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 					b = Math.round((samples[i] + 1) * 8);
 					if (difference > b) {difference++;currentSample|=byteSequence[j]} else {difference--;}
 					i++;
+					if (i >= len) break;
 				}
 
 				view.setUint8(offset, currentSample);
