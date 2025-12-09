@@ -472,7 +472,7 @@
 					if (notes) metadata["ICMT"] = notes;
 					if (software) metadata["ISFT"] = software === "UAE" ? "UnnamedBruh's Audio Editor" : software;
 
-					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit integer. 1 = 16-bit integer. 2 = 32-bit integer. 3 = 32-bit float. 4 = 64-bit float. 5 = mu-law. 6 = a-law.)");
+					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 16-bit. 2 = 24-bit. 3 = 32-bit. 4 = 32-bit float. 5 = 64-bit float. 6 = mu-law. 7 = a-law.)");
 
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
 					const oldBits = exporters2.bits;
@@ -483,18 +483,21 @@
 						exporters2.bits = 16;
 						exporters2.encoding = "pcm";
 					} else if (encodeBits == 2) {
-						exporters2.bits = 32;
+						exporters2.bits = 24;
 						exporters2.encoding = "pcm";
 					} else if (encodeBits == 3) {
 						exporters2.bits = 32;
-						exporters2.encoding = "pcmf32";
+						exporters2.encoding = "pcm";
 					} else if (encodeBits == 4) {
+						exporters2.bits = 32;
+						exporters2.encoding = "pcmf32";
+					} else if (encodeBits == 5) {
 						exporters2.bits = 64;
 						exporters2.encoding = "pcmf64";
-					} else if (encodeBits == 5) {
+					} else if (encodeBits == 6) {
 						exporters2.bits = 8;
 						exporters2.encoding = "mulaw";
-					} else if (encodeBits == 6) {
+					} else if (encodeBits == 7) {
 						exporters2.bits = 8;
 						exporters2.encoding = "alaw";
 					}
