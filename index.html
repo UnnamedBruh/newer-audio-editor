@@ -28,9 +28,19 @@
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select">
 		<h1>Audio Editor</h1>
-		<a>This audio editor is licensed under the MIT License. You can see the license</a> <a href="https://github.com/UnnamedBruh/newer-audio-editor/blob/main/LICENSE">here</a><a>.</a>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac" multiple><br>
 		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button>
+		<hr>
+		<h1>Legal Information</h1>
+		<h2>License Information</h2>
+		<a>This audio editor is licensed under the MIT License. You can see the license</a> <a href="https://github.com/UnnamedBruh/newer-audio-editor/blob/main/LICENSE">here</a><a>. The MIT License disclaims <i>no warranty</i>, which means that you do not have to replace a copy of this software. The license also disclaims <i>no liability</i>, which means that the copyright holders of this software ("we" or "us") are not responsible for any claims or damages, in spite of any contract or agreement <i>regarding this software</i> stating otherwise.</a><br><br>
+		<a>We do not guarantee that this software will remain stable or function as intended without Wi-Fi, or another networking service or technology.</a><br><br>
+		<h2>Important / Humorous Information</h2>
+		<a>If this software does not function as intended, you can alert</a> <a href="https://www.youtube.com/@UnnamedBruhGD">the original YouTuber</a> <a>, who is the author and copyright holder of this software. The author may or may not respond to your written complaint, with or without notice, at a time that does or does not match your expectations.</a><br>
+		<a>If the complaint is networking-related, and <b>does not mention any privacy concerns</b>, the author will either A) simply dismiss it, or B) eventually respond to the complaint(s) whenever they experience emotional displeasure.</a><br><br>
+		<a>Thank you for understanding the unintentionally-wordy section above, and your patience.</a>
+		<h2>Privacy Policy</h2>
+		<a>We value your privacy and are committed to transparency regarding how we handle your information. When you upload files to this project, we do not collect, store, sell, track, monitor, accumulate, hoard, gather or lend any data associated with these files or your personal information. This includes both the uploaded files, any audio or outputs generated from those files, and additional fetching information your browser sends to query the original newer-audio-editor website.</a>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel");
