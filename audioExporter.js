@@ -259,6 +259,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 	const bits = this.bits || 32;
 	let bytesPerSample = bits / 8;
 	if (encodeBetter && bits === 12) bytesPerSample = 2;
+	if (this.encoding === "nesdpcm") bytesPerSample = 0.125;
 	
 	// Data chunk size (interleaving not needed for mono assumption; adjust for multi-channel)
 	const dataChunkSize = len * bytesPerSample * numChannels;
