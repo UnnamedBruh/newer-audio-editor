@@ -1164,6 +1164,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				effects["trim"] = function(ex) {
 					if (timelineBeginAudio) ex.audioData = ex.audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
 				}
+				effects["trimout"] = function(ex) {
+					if (timelineBeginAudio) ex.audioData = new Float32Array([]); else alert("You have not selected any portion of the audio yet.");
+				}
 				ed = v;
 				div = x;
 			}
@@ -1174,6 +1177,14 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				'',
 				0,
 				"trim",
+				[]
+			]);
+			effectsList.push([
+				"Trim Out",
+				"Removes the contents that are selected by the blue selection box.",
+				'',
+				0,
+				"trimout",
 				[]
 			]);
 
