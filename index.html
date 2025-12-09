@@ -31,7 +31,7 @@
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff .lsac, .fbac" multiple><br>
 		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button>
 		<br>
-		<div id="frame"></div>
+		<div id="frame" style="display: inline-block; width: max-content;"></div>
 		<hr>
 		<h1>Legal Information</h1>
 		<h2>License Information</h2>
@@ -42,7 +42,7 @@
 		<a>If the complaint is networking-related, and <b>does not mention any privacy concerns</b>, the author will either A) simply dismiss it, or B) eventually respond to the complaint(s) whenever they experience emotional displeasure.</a><br><br>
 		<a>Thank you for understanding the unintentionally-wordy section above, and your patience.</a>
 		<h2>Privacy Policy</h2>
-		<a>We value your privacy and are committed to transparency regarding how we handle your information. When you upload files to this project, we do not collect, store, sell, track, monitor, accumulate, hoard, gather or lend any data associated with these files or your personal information. This includes both the uploaded files, any audio or outputs generated from those files, and additional fetching information your browser sends to query the original newer-audio-editor website.</a>
+		<a>We value your privacy and are committed to transparency regarding how we handle your information. When you upload files to this project, we do not collect, store, sell, track, monitor, accumulate, hoard, gather, lend, send, transfer or transmit any data associated with these files or your personal information. This includes uploaded files, any data generated from this software, and additional fetching information your browser sends to the original newer-audio-editor website.</a>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame");
