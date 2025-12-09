@@ -384,6 +384,19 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 					view.setUint8(offset, b);
 					offset++;
 				}
+			} else if (bits === 12) {
+				for (let i = 0; i < len; i++) {
+					let b = samples[i] * 4095;
+					view.setInt8(offset, b & 0xFF);
+					let x = (b & 0xFFF) >> 8;
+					offset++;
+					b = buffer2[i] * 4095;
+					x = x | ((b & 0xF) << 4);
+					view.setInt8(offset, x);
+					offset++;
+					view.setInt8(offset, (b >> 4) & 0xFF);
+					offset++;
+				}
 			} else if (bits === 16) {
 				for (let i = 0; i < len; i++) {
 					let s = floatToInt16(samples[i]);
@@ -427,6 +440,22 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2) {
 					const b = floatToUint8(samples[i]);
 					view.setUint8(offset, b);
 					offset++;
+				}
+			} else if (bits === 12) {
+				i = 0;
+				for (let i = 0; i < len;) {
+					let b = samples[i] * 4095;
+					view.setInt8(offset, b & 0xFF);
+					let x = (b & 0xFFF) >> 8;
+					offset++;
+					i++;
+					b = samples[i] * 4095;
+					x = x | ((b & 0xF) << 4);
+					view.setInt8(offset, x);
+					offset++;
+					view.setInt8(offset, (b >> 4) & 0xFF);
+					offset++;
+					i++;
 				}
 			} else if (bits === 16) {
 				for (let i = 0; i < len; i++) {
