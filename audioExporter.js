@@ -399,7 +399,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 					i++;
 					nd++;
 				}
-				view.setUint8(currentSample, b);
+				view.setUint8(offset, currentSample);
 				offset++;
 			}
 		} else {
@@ -413,14 +413,14 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 				let currentSample = 0;
 				if (difference > b) {difference++;currentSample=1} else {difference--;}
 				i++;
-				
+
 				for (let j = 1; j < 8; j++) {
 					b = Math.round((samples[i] + 1) * 8);
 					if (difference > b) {difference++;currentSample|=byteSequence[j]} else {difference--;}
 					i++;
 				}
-				
-				view.setUint8(currentSample, b);
+
+				view.setUint8(offset, currentSample);
 				offset++;
 			}
 		}
