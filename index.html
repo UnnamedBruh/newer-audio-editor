@@ -477,12 +477,14 @@
 
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
 					const oldBits = exporters2.bits;
+					let isCompatible = false;
 					if (encodeBits == 0) {
 						exporters2.bits = 8;
 						exporters2.encoding = "pcm";
 					} else if (encodeBits == 1) {
 						exporters2.bits = 12;
 						exporters2.encoding = "pcm";
+						isCompatible = confirm("Older software used to export 12-bit WAV audio using this ratio: 3:2 (3 bytes per 2 samples). However, modern audio decoders expect byte-aligned 12-bit WAV audio that use 4:2 (4 bytes per 2 samples).\n\nDo you want byte-aligned audio?");
 					} else if (!encodeBits || encodeBits == 2) {
 						exporters2.bits = 16;
 						exporters2.encoding = "pcm";
