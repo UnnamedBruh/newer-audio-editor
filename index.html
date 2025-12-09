@@ -28,7 +28,7 @@
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select">
 		<h1>Audio Editor</h1>
-		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac" multiple><br>
+		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff .lsac, .fbac" multiple><br>
 		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button>
 		<br>
 		<div id="frame"></div>
@@ -58,7 +58,7 @@
 			interpretFiles.onclick = function() {
 				whichInterpret = !whichInterpret;
 				interpretFiles.textContent = whichInterpret ? "Treat File Data As Audio" : "Decode The Audio File";
-				audioInput.accept = whichInterpret ? "*" : ".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .lsac, .fbac";
+				audioInput.accept = whichInterpret ? "*" : ".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac";
 			}
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
@@ -393,7 +393,7 @@
 									}
 								})];
 								console.log(values);
-								if (timelineBeginAudio !== 0) values[0] = {audioData: expor.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: expor.sampleRate};
+								if (timelineBeginAudio !== 0 && effect[4] !== "trim") values[0] = {audioData: expor.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: expor.sampleRate};
 								const le = values[0].audioData.length;
 								await effects[effect[4]](...values);
 								if (timelineBeginAudio !== 0) {
