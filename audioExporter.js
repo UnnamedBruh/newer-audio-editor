@@ -640,7 +640,7 @@ AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki
 	if (this.encoding === "dpcmold") this.SOLversion = 0x8D; else this.SOLversion = 0x0D;
 	const version = this.SOLversion; // 0x0D (newer) or 0x8D (older) | https://samples.mplayerhq.hu/game-formats/sol/
 	let bytesPerSample = bits / 8;
-	if (this.encoding === "dpcm") bytesPerSample = bits / 16;
+	if (this.encoding === "dpcm") bytesPerSample = bits / 16; // Because Sierra DPCM uses half the bits as decoded samples
 
 	const dataChunkSize = len * bytesPerSample * numChannels;
 	// header chunk size for SOL can be either 12 (padded) or 11 (nonpadded). However, personally, I like to pad SOL files.
@@ -669,10 +669,10 @@ AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki
 
 	view.setUint8(offset++, flags);
 	view.setUint16(offset, (totalSize - 14) & 0xFFFF, true); offset += 2;
-	if (headerChunkSize === 12) view.setUint8(offset++, 0x00, true); // Audio starts immediately after legacy two-byte padding
+	if (headerChunkSize === 12) view.setUint8(offset++, 0x00, true); // Audio starts immediately after legacy two-byte padding. If this is 0x00, assume that audio begins after skipping 2 bytes. Otherwise, assume audio begins after skipping PADDED BYTE bytes
 	offset += 2;
 	const temp = this.encoding;
-	this.encoding = flags & DPCM ? "pcm" : "";
+	this.encoding = flags & DPCM ? "" : "pcm";
 	if (this.encoding === "pcm") {
 		let buff = await this.convertToWav({}, samples, buffer2).arrayBuffer();
 		buff = new Uint8Array(buff);
