@@ -691,33 +691,38 @@ AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki
 			return array[array.length - 1];
 		}
 		if (bits === 4) {
+			let PrevSample = 0, PrevSample2 = 0;
 			if (this.encoding === "dpcmold") {
 				if (numOfChannels === 1) {
 					for (let i = 0; i < len; i += 2) {
 						let currentSample = 0;
 						CurSample = (samples[i] + 1) * 0x7F;
-						Difference = CurSample - Difference;
+						Difference = CurSample - PrevSample;
+						PrevSample = CurSample;
 						currentSample = chooseIndexClosest(SOLTable3bit, Math.abs(Difference));
 						if (Difference < 0) currentSample = (~currentSample) & 0xF;
-						if (i + 1 > len) break;
 						CurSample = (samples[i+1] + 1) * 0x7F;
-						Difference = CurSample - Difference;
+						Difference = CurSample - PrevSample;
+						PrevSample = CurSample;
 						let or = (chooseIndexClosest(SOLTable3bit, Math.abs(Difference))) << 4;
 						if (Difference < 0) or = (~or) & 0xF0;
 						currentSample |= or;
 						view.setUint8(offset++, currentSample);
 					}
 				} else {
+					let PrevSample2 = 0;
 					let Difference2 = 0x00;
 					for (let i = 0; i < len; i++) {
 						let currentSample = 0;
 						CurSample = (samples[i] + 1) * 0x7F;
-						Difference = CurSample - Difference;
+						Difference = CurSample - PrevSample;
+						PrevSample = CurSample;
 						currentSample = chooseIndexClosest(SOLTable3bit, Math.abs(Difference)) << 4;
 						if (Difference < 0) currentSample = (~currentSample) & 0xF0;
 						if (i + 1 > len) break;
 						CurSample = (buffer2[i] + 1) * 0x7F;
-						Difference2 = CurSample - Difference2;
+						Difference2 = CurSample - PrevSample2;
+						PrevSample2 = CurSample;
 						let or = chooseIndexClosest(SOLTable3bit, Math.abs(Difference2));
 						if (Difference2 < 0) or = (~or) & 0xF;
 						currentSample |= or;
@@ -729,24 +734,29 @@ AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki
 					for (let i = 0; i < len; i += 2) {
 						let currentSample = 0;
 						CurSample = (samples[i] + 1) * 0x7F;
-						Difference = CurSample - Difference;
+						Difference = CurSample - PrevSample;
+						PrevSample = CurSample;
 						currentSample = (chooseIndexClosest(SOLTable3bit, Math.abs(Difference)) | (Difference<0?8:0));
 						if (i + 1 > len) break;
 						CurSample = (samples[i+1] + 1) * 0x7F;
-						Difference = CurSample - Difference;
+						Difference = CurSample - PrevSample;
+						PrevSample = CurSample;
 						currentSample |= (chooseIndexClosest(SOLTable3bit, Math.abs(Difference)) | (Difference<0?8:0)) << 4;
 						view.setUint8(offset++, currentSample);
 					}
 				} else {
+					let PrevSample2 = 0;
 					let Difference2 = 0x00;
 					for (let i = 0; i < len; i++) {
 						let currentSample = 0;
 						CurSample = (samples[i] + 1) * 0x7F;
-						Difference = CurSample - Difference;
+						Difference = CurSample - PrevSample;
+						PrevSample = CurSample;
 						currentSample = (chooseIndexClosest(SOLTable3bit, Math.abs(Difference)) | (Difference<0?8:0)) << 4;
 						if (i + 1 > len) break;
 						CurSample = (buffer2[i] + 1) * 0x7F;
 						Difference2 = CurSample - Difference2;
+						PrevSample2 = CurSample;
 						currentSample |= chooseIndexClosest(SOLTable3bit, Math.abs(Difference2)) | (Difference2<0?8:0);
 						view.setUint8(offset++, currentSample);
 					}
@@ -756,21 +766,25 @@ AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki
 			if (numOfChannels === 1) {
 				for (let i = 0; i < len; i++) {
 					CurSample = (samples[i] + 1) * 0x7FFF;
-					Difference = CurSample - Difference;
+					Difference = CurSample - PrevSample;
+					PrevSample = CurSample;
 					currentSample = chooseIndexClosest(SOLTable7bit, Math.abs(Difference)) | (Difference<0?128:0);
 					view.setUint8(offset++, currentSample);
 				}
 			} else {
 				let Difference2 = 0x00;
+				let PrevSample2 = 0;
 				for (let i = 0; i < len; i++) {
 					let currentSample = 0;
 					CurSample = (samples[i] + 1) * 0x777F;
 					Difference = CurSample - Difference;
+					PrevSample = CurSample;
 					currentSample = chooseIndexClosest(SOLTable7bit, Math.abs(Difference)) | (Difference<0?128:0);
 					view.setUint8(offset++, currentSample);
 					if (i + 1 > len) break;
 					CurSample = (buffer2[i] + 1) * 0x777F;
-					Difference2 = CurSample - Difference2;
+					Difference2 = CurSample - PrevSample2;
+					PrevSample2 = CurSample;
 					currentSample = chooseIndexClosest(SOLTable7bit, Math.abs(Difference2)) | (Difference2<0?128:0);
 					view.setUint8(offset++, currentSample);
 				}
@@ -778,7 +792,7 @@ AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki
 		}
 	}
 
-	// More formats besides 8-bit and 16-bit PCM will be handled later.
+	// More formats besides 8-bit and 16-bit PCM are already handled!
 
 	return new Blob([view.buffer], { type: "audio/x-sierra-audio" });
 }
