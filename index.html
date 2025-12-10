@@ -529,6 +529,32 @@
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
+				exportBtn.textContent = "Sierra Audio (.SOL or .AUD)";
+				exportBtn.onclick = function() {
+					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 16-bit. 2 = 8-bit old ADPCM. 3 = 8-bit new ADPCM. 4 = 16-bit new ADPCM.)");
+
+					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
+					const oldBits = exporters2.bits;
+					if (encodeBits == 0) {
+						exporters2.bits = 8;
+						exporters2.encoding = "pcm";
+					} else if (!encodeBits || encodeBits == 1) {
+						exporters2.bits = 16;
+						exporters2.encoding = "pcm";
+					}
+					
+					const blob = exporters2.convertToSol(exporters.length > 1 ? exporters[1].audioData : undefined);
+
+					exporters2.bits = encodeBits;
+
+					const link = document.createElement("a");
+					link.download = "exportedAudio.sol";
+					link.href = URL.createObjectURL(blob);
+					link.click();
+					link.remove();
+				}
+				exportBtn = document.createElement("button");
+				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as MP3 (liblamejs)";
 				exportBtn.onclick = async function() {
 					function floatTo16BitPCM(float32Array, channels) {
