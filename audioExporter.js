@@ -625,3 +625,61 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 	return new Blob([buffer], { type: 'audio/wav' });
 };
 
+AudioExporter.prototype.convertToSol = await function(buffer2) { // https://wiki.multimedia.cx/index.php/Sierra_Audio
+	alert("SOL (Sierra Audio) FILES CAN OFFICIALLY BE ENCODED WITHOUT ANY ISSUES! VIDEO GAME FILES ARE BACK FROM THE LOST AND FOUND! EVERYONE CAN CELEBRATE SIERRA ENTERTAINMENT AGAIN!\n\nThe format was carefully reverse-engineered through online sources and real samples of audio in the .sol format!\n\nA documented format that was originally ambiguous can now be accessed... correctly! However, only PCM encoding is supported as of now. BUT, there will be more later!");
+	function writeString(view, offset, string) {
+		for (let i = 0; i < string.length; i++) {
+			view.setUint8(offset + i, string.charCodeAt(i));
+		}
+	}
+	const numChannels = buffer2 ? 2 : 1;
+	const numOfChannels = numChannels;
+	const samples = this.audioData;
+	const len = samples.length;
+	const bits = this.bits || 8;
+	if (this.encoding === "dpcmold") this.SOLversion = 0x8D; else this.SOLversion = 0x0D;
+	const version = this.SOLversion; // 0x0D (newer) or 0x8D (older) | https://samples.mplayerhq.hu/game-formats/sol/
+	let bytesPerSample = bits / 8;
+
+	const dataChunkSize = len * bytesPerSample * numChannels;
+	// header chunk size for SOL can be either 12 (padded) or 11 (nonpadded). However, personally, I like to pad SOL files.
+	const headerChunkSize = 12;
+	const totalSize = 2 + 2 + headerChunkSize + dataChunkSize;
+
+	const buffer = new ArrayBuffer(totalSize);
+	const view = new DataView(buffer);
+
+	view.setUint8(0, version);
+	view.setUint8(1, headerChunkSize);
+
+	let offset = 2;
+
+	writeString(view, offset, "SOL"); offset += 4;
+	view.setUint16(offset, this.sampleRate, true); offset += 2;
+
+	let flags = 0;
+	const DPCM = 1;
+	const STEREO = 4;
+	const SIXTEENBIT = 16;
+
+	if (this.bits >= 16) flags |= SIXTEENBIT;
+	if (numChannels === 2) flags |= STEREO;
+	if (this.encoding.startsWith("dpcm")) flags |= DPCM;
+
+	view.setUint8(offset++, flags);
+	view.setUint16(offset, (totalSize - 14) & 0xFFFF, true); offset += 2;
+	if (headerChunkSize === 12) view.setUint8(offset++, 0x00, true); // Audio starts immediately after legacy two-byte padding
+	offset += 2;
+	const temp = this.encoding;
+	this.encoding = flags & DPCM ? "pcm" : "";
+	if (this.encoding === "pcm") {
+		let buff = await this.convertToWav({}, samples, buffer2).arrayBuffer();
+		buff = new Uint8Array(buff);
+		new Uint8Array(view.buffer).set(buff.subarray(44, buff.length), offset);
+	}
+	this.encoding = temp;
+
+	// More formats besides 8-bit and 16-bit PCM will be handled later.
+
+	return new Blob(view.buffer, { type: "audio/x-sierra-audio" });
+}
