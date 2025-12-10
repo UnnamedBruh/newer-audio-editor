@@ -530,7 +530,7 @@
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Sierra Audio (.SOL or .AUD)";
-				exportBtn.onclick = function() {
+				exportBtn.onclick = async function() {
 					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 16-bit. 2 = 8-bit old ADPCM. 3 = 8-bit new ADPCM. 4 = 16-bit new ADPCM.)");
 
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
@@ -543,7 +543,7 @@
 						exporters2.encoding = "pcm";
 					}
 					
-					const blob = exporters2.convertToSol(exporters.length > 1 ? exporters[1].audioData : undefined);
+					const blob = await exporters2.convertToSol(exporters.length > 1 ? exporters[1].audioData : undefined);
 
 					exporters2.bits = encodeBits;
 
@@ -587,6 +587,7 @@
 					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
 
 					let blob;
+					exportBtn.disabled = true;
 
 					for (let i = 0; i < lossTimes; i++) {
 						let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
@@ -616,6 +617,7 @@
 						mp3Data.push(mp3Encoder.flush());
 						blob = new Blob(mp3Data, { type: "audio/mp3" });
 					}
+					exportBtn.disabled = false;
 
 					const link = document.createElement("a");
 					link.download = "exportedAudio.mp3";
@@ -627,13 +629,14 @@
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as OGG (Vorbis format, wasm-media-encoders)";
 				exportBtn.onclick = async function() {
+					exportBtn.disabled = true;
 					try {
 						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, low sizes; 10.0 = best quality, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes; -2.0 = absolute worst, lowest sizes)") ?? 4.0) ?? 4.0;
 
 						let blob;
 						const split = exporters.length !== 2 && !!confirm("Should the audio be split into two separate channels?");
 
-						const times = Number(prompt("How many times would the audio be re-encoded?") || 1) || 1;
+						const times = Math.ceil(Math.abs(Number(prompt("How many times would the audio be re-encoded?") || 1) || 1));
 
 						for (let i = 0; i < times; i++) {
 							const encoder = await WasmMediaEncoder.createOggEncoder();
@@ -666,11 +669,13 @@
 						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
 						console.log(err.message, err.stack);
 					}
+					exportBtn.disabled = false;
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as OGG (Opus format, libopusjs)";
 				exportBtn.onclick = async function() {
+					exportBtn.disabled = true;
 					function floatTo16BitPCM(float32Array, channels) {
 						const len = float32Array[0].length;
 						const buffer = new Int16Array(len * channels);
@@ -981,11 +986,13 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						alert("It seems like the OGG Opus codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
 						console.log(err.message, err.stack);
 					}
+					exportBtn.disabled = false;
 				}
 				exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as FLAC (libflac.js)";
 				exportBtn.onclick = async function() { // This function was written entirely by Claude Sonnet 4.5. I made some modifications to the original code.
+					exportBtn.disabled = true;
 					try {
 						// Setup for collecting encoded data
 						const encBuffer = [];
@@ -1133,8 +1140,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						alert("The FLAC encoding failed: " + err.message);
 						console.error(err);
 					}
+					exportBtn.disabled = false;
 				}
-				exportBtn = document.createElement("button");
+				/*exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
 				exportBtn.textContent = "Export as LSAC (LoSsy Audio Codec)";
 				exportBtn.onclick = function() {
@@ -1157,7 +1165,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					link.href = URL.createObjectURL(blob);
 					link.click();
 					link.remove();
-				}
+				}*/
 				window.onscroll = function() {
 					apply.style.marginLeft = window.scrollX + "px";
 					opt.style.marginLeft = apply.style.marginLeft;
