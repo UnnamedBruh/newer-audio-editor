@@ -541,6 +541,15 @@
 					} else if (!encodeBits || encodeBits == 1) {
 						exporters2.bits = 16;
 						exporters2.encoding = "pcm";
+					} else if (encodeBits == 2) {
+						exporters2.bits = 8;
+						exporters2.encoding = "dpcmold";
+					} else if (encodeBits == 3) {
+						exporters2.bits = 8;
+						exporters2.encoding = "dpcm";
+					} else if (encodeBits == 4) {
+						exporters2.bits = 16;
+						exporters2.encoding = "dpcm";
 					}
 					
 					const blob = await exporters2.convertToSol(exporters.length > 1 ? exporters[1].audioData : undefined);
