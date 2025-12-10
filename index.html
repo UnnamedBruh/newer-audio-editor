@@ -507,10 +507,13 @@
 						exporters2.bits = 8;
 						exporters2.encoding = "alaw";
 					} else if (encodeBits == 9) {
-						const whichFormat = prompt("What type of DPCM audio encoding do you need for proper playback? Note: Real DPCM encoding is ambiguous. This means it isn't fully standardized across all systems. For example, one system (think NES) may expect a certain format, while another (think Windows) may expect another.\n\n0 = NES hardware, 1-bit differences, 4-bit samples");
+						const whichFormat = prompt("Which DPCM audio format do you need for playback? Note: DPCM encoding isn't fully standardized. For example, one system (think NES) assumes a certain format, but another (think Windows) may assume a different one.\n\n0 = NES hardware, 1-bit differences, 4-bit samples\n1 = Xan DPCM, for DOS games by Origin Systems");
 						if (whichFormat == 0) {
 							exporters2.bits = 1;
 							exporters2.encoding = "nesdpcm";
+						} else if (whichFormat == 1) {
+							exporters2.bits = 8;
+							exporters2.encoding = "xandpcm";
 						}
 					}
 					
