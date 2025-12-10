@@ -415,7 +415,7 @@
 							if (exporterIndex !== undefined && exporters[1] && exporters[1].audioData.length !== exporters[0].audioData.length) {
 								const index = (!exporters[1] || exporters[0].audioData.length > exporters[1].audioData.length) ? 0 : 1;
 								const indexInverse = 1 - index;
-								effects["blank"](exporters[indexInverse], (exporters[index].audioData.length - exporters[indexInverse].audioData.length) / exporters[index].sampleRate, confirm("It looks like the channels have unique lengths, which would cause unexpected bugs during exporting. Do you want to pad silence at the beginning or end?") ? "f" : "");
+								effects["blank"](exporters[indexInverse], (exporters[index].audioData.length - exporters[indexInverse].audioData.length) / exporters[index].sampleRate, confirm("It looks like the channels have unique lengths, which would cause unexpected bugs during exporting. Do you want to pad silence at the beginning (Yes/OK) or end (Cancel/No)?") ? "f" : "");
 							}
 							data = generateWaveform(exp[0]);
 							if (n2) dataSecond = generateWaveform(exp[1]);
