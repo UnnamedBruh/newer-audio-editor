@@ -625,7 +625,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 	return new Blob([buffer], { type: 'audio/wav' });
 };
 
-AudioExporter.prototype.convertToSol = await function(buffer2) { // https://wiki.multimedia.cx/index.php/Sierra_Audio
+AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki.multimedia.cx/index.php/Sierra_Audio
 	alert("SOL (Sierra Audio) FILES CAN OFFICIALLY BE ENCODED WITHOUT ANY ISSUES! VIDEO GAME FILES ARE BACK FROM THE LOST AND FOUND! EVERYONE CAN CELEBRATE SIERRA ENTERTAINMENT AGAIN!\n\nThe format was carefully reverse-engineered through online sources and real samples of audio in the .sol format!\n\nA documented format that was originally ambiguous can now be accessed... correctly! However, only PCM encoding is supported as of now. BUT, there will be more later!");
 	function writeString(view, offset, string) {
 		for (let i = 0; i < string.length; i++) {
