@@ -296,6 +296,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 	else if (this.encoding === "ulaw") audioFormat = 7;
 	else if (this.encoding === "alaw") audioFormat = 6; // https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 	else if (this.encoding === "nesdpcm") audioFormat = 2; // https://billposer.org/Linguistics/Computation/LectureNotes/WAVEFormatCodes.html
+	else if (this.encoding === "xandpcm") audioFormat = 22858; // https://wiki.multimedia.cx/index.php/Xan_DPCM
 	else audioFormat = 1;
 	view.setUint16(offset, audioFormat, true); offset += 2;
 	view.setUint16(offset, numChannels, true); offset += 2;
@@ -424,6 +425,63 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 				}
 
 				view.setUint8(offset, currentSample);
+				offset++;
+			}
+		}
+	} else if (this.encoding === "xandpcm") {
+		// I used GPT-5.0 Mini to help me with clarifying the encoding process. The original psuedo code I got only showed me decoding.
+		// However, the encoding snippets are not written by GPT-5.0 Mini or one of other language models.
+		if (numOfChannels === 2) {
+			let diff = 0, predictorL = 0, prevDiffL = 0, predictorR = 0, prevDiffR = 0;
+			for (let i = 0; i < len; i++) {
+				diff = samples[i] - predictorL;
+				let currentSample = 0;
+				let shift = 3 - Math.round(abs(diff - prevDiffL) * 3);
+				if (shift>3)shift=3;else if(shift<0)shift=0;
+				
+				predictorL = predictorL + 0.5 * ((samples[i+2] || 0) - predictorL);
+				prevDiffL = diff;
+
+				view.setUint8(offset, shift | (((predictorL + 1) * 0x1F) << 2));
+				offset++;
+
+				diff = buffer2[i] - predictorR;
+				currentSample = 0;
+				shift = 3 - Math.round(abs(diff - prevDiffR) * 3);
+				if (shift>3)shift=3;else if(shift<0)shift=0;
+				
+				predictorR = predictorR + 0.5 * ((buffer2[i+2] || 0) - predictorR);
+				prevDiffR = diff;
+
+				view.setUint8(offset, shift | (((predictorR + 1) * 0x1F) << 2));
+				offset++;
+			}
+		} else {
+			// https://wiki.multimedia.cx/index.php/Xan_DPCM
+			// Implemented exactly as directed
+			/*    byte = next byte in stream 
+   diff = (byte & 0xFC) << 8
+   if bottom 2 bits of byte are both 1 (byte & 0x03)
+       shifter++
+   else
+       shifter -= (2 * (byte & 3))
+   note that the shift value may not go below 0 and must be saturated here
+   shift diff right by shifter value
+   apply diff to the current predictor
+   saturate predictor to signed, 16-bit range */
+
+			// But we're going to do the opposite of that.
+			let diff = 0, predictor = 0, prevDiff = 0;
+			for (let i = 0; i < len; i++) {
+				diff = samples[i] - predictor;
+				let currentSample = 0;
+				let shift = 3 - Math.round(abs(diff - prevDiff) * 3);
+				if (shift>3)shift=3;else if(shift<0)shift=0;
+				
+				predictor = predictor + 0.5 * ((samples[i+2] || 0) - predictor);
+				prevDiff = diff;
+
+				view.setUint8(offset, shift | (((predictor + 1) * 0x1F) << 2));
 				offset++;
 			}
 		}
