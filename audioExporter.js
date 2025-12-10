@@ -681,5 +681,5 @@ AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki
 
 	// More formats besides 8-bit and 16-bit PCM will be handled later.
 
-	return new Blob(view.buffer, { type: "audio/x-sierra-audio" });
+	return new Blob([view.buffer], { type: "audio/x-sierra-audio" });
 }
