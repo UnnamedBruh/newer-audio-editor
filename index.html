@@ -384,7 +384,7 @@
 							apply.disabled = true;
 							for (let i = exporterIndex!==undefined?exporterIndex:0; i <= exporterIndex!==undefined?exporterIndex:exporters.length; i++) {
 								console.log(i);
-								if (i >= exporters.length) break; // activates if V8 acts weird in certain scenarios
+								if (i > exporters.length) break; // activates if V8 acts weird in certain scenarios
 								const expor = exporters[i];
 								const values = [expor, ...paramElements.map((x, i) => {
 									if (x.type === "checkbox") {
