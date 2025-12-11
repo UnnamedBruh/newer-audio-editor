@@ -24,16 +24,16 @@
 	async function alertBox(textD) {
 		if (alertFor.polishedAlert) {
 			const box = document.createElement("div");
-			box.style = "position: absolute; left: calc(50vw - 200px); top: calc(50vh - 100px); width: 400px; height: 200px; border: 2px black solid; box-sizing: border-box;";
+			box.style = "position: absolute; left: calc(50vw - 200px); top: calc(50vh - 100px); width: 400px; height: 200px; border: 2px black solid; box-sizing: border-box; background-color: white;";
 			const text = document.createElement("a");
 			text.style = "white-space: pre-wrap; word-wrap: break-word;";
 			text.textContent = textD;
+			document.body.appendChild(box);
 			box.appendChild(text);
 			box.appendChild(document.createElement("br"));
 			const OK = document.createElement("button");
 			OK.textContent = "OK";
 			box.appendChild(OK);
-			document.body.appendChild(box);
 			return new Promise(function(resolve, reject) {
 				function e() {document.body.removeEventListener("click", e);box.remove();resolve();}
 				OK.onclick = function(event) {event.stopPropagation();e();}
