@@ -616,9 +616,9 @@
 
 						let mp3Data = [];
 
-						let pcmData = [floatTo16BitPCM(buffer[0], channels === 2 && !shouldSplit ? ((2 / (kbps/64)) / tttt) : 1)];
+						let pcmData = [floatTo16BitPCM(buffer[0], channels === 2 && !shouldSplit ? ((2 / (kbps/64)) * tttt) : 1)];
 						const len = pcmData[0].length;
-						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], ((2 / (kbps/64)) / tttt))];
+						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], ((2 / (kbps/64)) * tttt))];
 						const len2 = len - 1152;
 						let xx;
 
