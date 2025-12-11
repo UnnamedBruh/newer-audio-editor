@@ -12,11 +12,11 @@
 		<div id="upgrades"></div>
 		<script>
 //(async function() {
-	const AOCText = document.getElementById("amount"), AOCS = document.getElementById("sornos"), button = document.getElementById("button"), currency = document.getElementById("currency"), numOfClicks = document.getElementById("clicks"), upgrades = document.getElementById("upgrades"), note = document.getElementById("note"), note2 = document.getElementById("note2");
+	const AOCText = document.getElementById("amount"), AOCS = document.getElementById("sornos"), button = document.getElementById("button"), currency = document.getElementById("currency"), numOfClicks = document.getElementById("clicks"), upgrades = document.getElementById("upgrades"), note = document.getElementById("note"), note2 = document.getElementById("note2"), style = document.getElementById("style");
 	let clicks = 0, cl = 1;
 	const thingsToTrigger = [function() {}];
 	let state = 0;
-	let bitwiseIntegers = [0b00000011, 0, 0, 0];
+	let bitwiseIntegers = [0b00001011, 0, 0, 0];
 	const numberWords = ["zero", "a", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
 	const upgradesElements = [];
 	let alertFor = {notEnoughPresses: true};
@@ -27,12 +27,14 @@
 			box.style = "position: absolute; left: calc(50vw - 200px); top: calc(50vh - 100px); width: 400px; height: 200px; border: 2px black solid; box-sizing: border-box; background-color: white;";
 			const text = document.createElement("a");
 			text.style = "white-space: pre-wrap; word-wrap: break-word;";
+			
 			text.textContent = textD;
 			document.body.appendChild(box);
 			box.appendChild(text);
 			box.appendChild(document.createElement("br"));
 			const OK = document.createElement("button");
 			OK.textContent = "OK";
+			OK.style = "position: absolute; bottom: 0; left: 0; right: 0; padding: 2px"; // Position OK button to the bottom-left area
 			box.appendChild(OK);
 			return new Promise(function(resolve, reject) {
 				setTimeout(function() {
@@ -45,7 +47,7 @@
 	}
 	function setupUpgrade(obj) {
 		obj.element.onclick = async function() {
-			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj);} else {
+			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj); updateClicksText();} else {
 				if (alertFor.notEnoughPresses) await alertBox("You do not have enough presses to afford this upgrade. You need " + Math.abs(obj.cost - Math.round(clicks)).toFixed(0) + " more to do that.");
 				if ((bitwiseIntegers[0] & 0b00000010) && !(bitwiseIntegers[0] & 0b00000100)) {
 					bitwiseIntegers[0] |= 0b00000100;
@@ -91,20 +93,45 @@
 	function updateState() {
 		switch (state) {
 			case 0: {
-				if (clicks > 10 && bitwiseIntegers[0] & 1) {
+				if (clicks > 10 && bitwiseIntegers[0] & 0b00000001) {
 					bitwiseIntegers[0] ^= 0b00000001;
 					state = 1;
-					addUpgradeButton({cost: 10, buy: function(obj) {
+					addUpgradeButton({cost: 20, buy: function(obj) {
 						obj.cost = Math.round(obj.cost * 1.2);
 						obj.element.textContent = "+1 press per click (costs " + obj.cost + " presses)";
 						cl++;
 						AOCText.textContent = numberWords[cl] || cl;
 						AOCS.textContent = "es";
-						updateClicksText();
-					}}, "+1 press per click (costs 10 presses)");
+					}}, "+1 press per click (costs 20 presses)");
 					currency.textContent = "press";
 					note2.textContent = "That's less awkward than before.";
 					note.textContent = "But... upgrades? Wait, I don't recall adding that as an in-game feature. My game better not be sentient or... self-modifying.";
+				}
+				if (clicks > 60 && bitwiseIntegers[0] & 0b00001000) {
+					bitwiseIntegers[0] ^= 0b00001000;
+					addUpgradeButton({cost: 100, buy: function(obj) {
+						style.textContent = `p, a, span, h1 {padding-left: 50px;text-indent: -50px;}`;
+						note.textContent = "Hey, this isn't so bad! Now my page looks a little professional, but it still needs more tweaks.";
+						obj.unregister();
+					}}, "Indent text (costs 100 presses)");
+				}
+				if (clicks > 100 && bitwiseIntegers[0] & 0b00010000) {
+					bitwiseIntegers[0] ^= 0b00010000;
+					addUpgradeButton({cost: 500, buy: function(obj) {
+						note.textContent = "Dark mode?! This will definitely be important for a clicker game \"night owls\" might access.";
+						n();
+						const text = document.createElement("a");
+						text.textContent = "Dark mode: ";
+						document.body.appendChild(text);
+						const check = document.createElement("input");
+						check.type = "checkbox";
+						check.oninput = function() {
+							if (check.checked) document.body.style = "color: #999999; background-color: black; color-scheme: dark;"; else document.body.style = "";
+						}
+						document.body.appendChild(check);
+						obj.unregister();
+						state = 1;
+					}}, "Add dark mode (costs 500 presses)");
 				}
 			}
 		}
