@@ -379,12 +379,12 @@
 					applyToSpecific.textContent = "Apply To Specific Channel";
 					v.appendChild(applyToSpecific);
 					let currentSelected = null, paramElements = null, effect;
-					async function applyEffect(exporterIndex) {
+					async function applyEffect(exporterIndex, b) {
 						if (currentSelected) {
 							apply.disabled = true;
-							for (let i = exporterIndex!==undefined?exporterIndex:0; i <= exporterIndex!==undefined?exporterIndex:exporters.length; i++) {
+							for (let i = b?exporterIndex:0; i < b?exporterIndex:exporters.length; i++) {
 								console.log(i);
-								if (i > exporters.length) break; // activates if V8 acts weird in certain scenarios
+								if (i >= exporters.length) break; // activates if V8 acts weird in certain scenarios
 								const expor = exporters[i];
 								const values = [expor, ...paramElements.map((x, i) => {
 									if (x.type === "checkbox") {
@@ -440,7 +440,7 @@
 					}
 					applyToSpecific.onclick = async function() {
 						const numberIndexes = ["first", "second", "third", "fourth"];
-						await applyEffect((prompt("Which channel do you want to apply the effect to? (" + (exporters.map((x, i) => {return (i+1) + " = " + numberIndexes[i] + " channel";}).join(", ")) + ")") ?? 1) - 1);
+						await applyEffect((prompt("Which channel do you want to apply the effect to? (" + (exporters.map((x, i) => {return (i+1) + " = " + numberIndexes[i] + " channel";}).join(", ")) + ")") ?? 1) - 1, true);
 					}
 					opt.oninput = function() {
 						effect = effectsList.find(x => x[4] === opt.value);
