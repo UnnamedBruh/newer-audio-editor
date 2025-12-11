@@ -95,7 +95,6 @@
 			case 0: {
 				if (clicks > 10 && bitwiseIntegers[0] & 0b00000001) {
 					bitwiseIntegers[0] ^= 0b00000001;
-					state = 1;
 					addUpgradeButton({cost: 20, buy: function(obj) {
 						obj.cost = obj.cost + 5 + Math.floor(obj.cost / 10);
 						obj.element.textContent = "+1 press per click (costs " + obj.cost + " presses)";
