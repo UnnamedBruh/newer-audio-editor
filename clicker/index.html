@@ -111,9 +111,9 @@
 					addUpgradeButton({cost: 100, buy: function(obj) {
 						style.textContent = `p, a, span, h1 {padding-left: 50px;text-indent: -50px;}`;
 						AOCText.style = "padding-left: 0px; text-indent: 0px;";
-						AOCS.style = AOCText.style;
-						currency.style = AOCText.style;
-						note2.style = AOCText.style;
+						AOCS.style = "padding-left: 0px; text-indent: 0px;";
+						currency.style = "padding-left: 0px; text-indent: 0px;";
+						note2.style = "padding-left: 0px; text-indent: 0px;";
 						note.textContent = "Hey, this isn't so bad! Now my page looks a little professional, but it still needs more tweaks.";
 						obj.unregister();
 					}}, "Indent text (costs 100 presses)");
