@@ -16,7 +16,7 @@
 	let clicks = 0, cl = 1;
 	const thingsToTrigger = [function() {}];
 	let state = 0;
-	let bitwiseIntegers = [0b00001011, 0, 0, 0];
+	let bitwiseIntegers = [0b00011011, 0, 0, 0];
 	const numberWords = ["zero", "a", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
 	const upgradesElements = [];
 	let alertFor = {notEnoughPresses: true};
@@ -97,7 +97,7 @@
 					bitwiseIntegers[0] ^= 0b00000001;
 					state = 1;
 					addUpgradeButton({cost: 20, buy: function(obj) {
-						obj.cost = Math.round(obj.cost * 1.2);
+						obj.cost = obj.cost + 5 + Math.floor(obj.cost / 10);
 						obj.element.textContent = "+1 press per click (costs " + obj.cost + " presses)";
 						cl++;
 						AOCText.textContent = numberWords[cl] || cl;
