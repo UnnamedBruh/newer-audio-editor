@@ -16,31 +16,65 @@
 	let clicks = 0, cl = 1;
 	const thingsToTrigger = [function() {}];
 	let state = 0;
-	let bitwiseIntegers = [1, 0, 0, 0];
-	const numberWords = ["zero", "a", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+	let bitwiseIntegers = [0b00000011, 0, 0, 0];
+	const numberWords = ["zero", "a", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
 	const upgradesElements = [];
+	let alertFor = {notEnoughPresses: true};
+	function n() {return document.body.appendChild(document.createElement("br"))}
 	function setupUpgrade(obj) {
 		obj.element.onclick = function() {
-			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj);}
+			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj);} else {
+				if (alertFor.notEnoughPresses) alert("You do not have enough presses to afford this upgrade. You need " + Math.abs(obj.cost - Math.round(clicks)).toFixed(0) + " more to do that.");
+				if ((bitwiseIntegers[0] & 0b00000010) && !(bitwiseIntegers[0] & 0b00000100)) {
+					bitwiseIntegers[0] |= 0b00000100;
+					addUpgradeButton({cost: 6, buy: function(obj) {
+						bitwiseIntegers[0] ^= 0b00000010;
+						alertFor.notEnoughPresses = false;
+						n();
+						const text = document.createElement("a");
+						text.textContent = "Alert when presses are not enough: ";
+						document.body.appendChild(text);
+						const check = document.createElement("input");
+						check.type = "checkbox";
+						check.oninput = function() {alertFor.notEnoughPresses = check.checked}
+						document.body.appendChild(check);
+						obj.unregister();
+					}}, "Add not-enough alert setting (costs 6 presses)");
+				}
+			}
 		}
 		return obj;
+	}
+	function updateClicksText() {
+		numOfClicks.textContent = (bitwiseIntegers[0] & 0b00000001 ? "Number of clicks: " : "Number of presses: ") + Math.round(clicks).toFixed(0);
+	}
+	function addUpgradeButton(obj, text) {
+		let line = null;
+		if (upgradesElements.length) line = upgrades.appendChild(document.createElement("br"));
+		const upgradeButton = document.createElement("button");
+		upgrades.appendChild(upgradeButton);
+		upgradeButton.textContent = text;
+		obj.element = upgradeButton;
+		obj.unregister = function() {
+			upgradeButton.remove();
+			if (line) line.remove();
+		}
+		upgradesElements.push(setupUpgrade(obj));
 	}
 	function updateState() {
 		switch (state) {
 			case 0: {
 				if (clicks > 10 && bitwiseIntegers[0] & 1) {
-					bitwiseIntegers[0] ^= 1;
+					bitwiseIntegers[0] ^= 0b00000001;
 					state = 1;
-					const upgradeButton = document.createElement("button");
-					upgrades.appendChild(upgradeButton);
-					upgradeButton.textContent = "+1 press per click (costs 10 presses)";
-					upgradesElements.push(setupUpgrade({element: upgradeButton, cost: 10, buy: function(obj) {
-						obj.cost = Math.round(obj.cost * 1.5);
+					addUpgradeButton({cost: 10, buy: function(obj) {
+						obj.cost = Math.round(obj.cost * 1.2);
 						obj.element.textContent = "+1 press per click (costs " + obj.cost + " presses)";
 						cl++;
 						AOCText.textContent = numberWords[cl] || cl;
-						AOCS.textContent = "s";
-					}}));
+						AOCS.textContent = "es";
+						updateClicksText();
+					}}, "+1 press per click (costs 10 presses)");
 					currency.textContent = "press";
 					note2.textContent = "That's less awkward than before.";
 					note.textContent = "But... upgrades? Wait, I don't recall adding that as an in-game feature. My game better not be sentient or... self-modifying.";
@@ -50,7 +84,7 @@
 	}
 	button.onclick = function() {
 		clicks += cl;
-		numOfClicks.textContent = (bitwiseIntegers[0] & 1 ? "Number of clicks: " : "Number of presses: ") + Math.round(clicks).toFixed(0);
+		updateClicksText();
 		updateState();
 	}
 })();
