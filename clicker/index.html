@@ -1,0 +1,59 @@
+<html lang="en">
+	<head>
+		<style id="style"></style>
+	</head>
+	<body>
+		<h1>Clicker Game</h1>
+		<p>Welcome to this simple clicker game! This is where you click the button to... uhh... earn <a id="amount">a</a> <a id="currency">click</a><a id="sornos"></a>. <a id="note2">(Yeah... it's very awkward to read it out loud, so I'm planning to change that later.)</a></p>
+		<button id="button">Click me</button>
+		<br>
+		<a id="clicks"></a>
+		<p id="note">As you can see, there's not a whole lot going on. I'll keep working on this as you and other users make progress! Take care.</p>
+		<div id="upgrades"></div>
+		<script>
+(async function() {
+	const AOCText = document.getElementById("amount"), AOCS = document.getElementById("sornos"), button = document.getElementById("button"), currency = document.getElementById("currency"), numOfClicks = document.getElementById("clicks"), upgrades = document.getElementById("upgrades"), note = document.getElementById("note"), note2 = document.getElementById("note2");
+	let clicks = 0, cl = 1;
+	const thingsToTrigger = [function() {}];
+	let state = 0;
+	let bitwiseIntegers = [1, 0, 0, 0];
+	const numberWords = ["zero", "a", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+	const upgradesElements = [];
+	function setupUpgrade(obj) {
+		obj.element.onclick = function() {
+			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj);}
+		}
+		return obj;
+	}
+	function updateState() {
+		switch (state) {
+			case 0: {
+				if (clicks > 10 && bitwiseIntegers[0] & 1) {
+					bitwiseIntegers[0] ^= 1;
+					state = 1;
+					const upgradeButton = document.createElement("button");
+					upgrades.appendChild(upgradeButton);
+					upgradeButton.textContent = "+1 press per click (costs 10 presses)";
+					upgradesElements.push(setupUpgrade({element: upgradeButton, cost: 10, buy: function(obj) {
+						obj.cost = Math.round(obj.cost * 1.5);
+						obj.element.textContent = "+1 press per click (costs " + obj.cost + " presses)";
+						cl++;
+						AOCText.textContent = numberWords[cl] || cl;
+						AOCS.textContent = "s";
+					}}));
+					currency.textContent = "press";
+					note2.textContent = "That's less awkward than before.";
+					note.textContent = "But... upgrades? Wait, I don't recall adding that as an in-game feature. My game better not be sentient or... self-modifying.";
+				}
+			}
+		}
+	}
+	button.onclick = function() {
+		clicks += cl;
+		numOfClicks.textContent = (bitwiseIntegers[0] & 1 ? "Number of clicks: " : "Number of presses: ") + Math.round(clicks).toFixed(0);
+		updateState();
+	}
+})();
+		</script>
+	</body>
+</html>
