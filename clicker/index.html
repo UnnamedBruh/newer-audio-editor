@@ -241,8 +241,13 @@
 					bitwiseIntegers[0] ^= 0b01000000;
 					addUpgradeButton({cost: 300, buy: function(obj) {
 						note.textContent = "Okay, this game is going to look super polished in no-time!";
-						style2.textContent = "button {background-image: linear-gradient(#CCCCCC, #AAAAAA); border-radius: 8px; font-family: Arial Light, sans-serif; cursor: pointer;}\nbutton:hover {background-image: linear-gradient(#DDDDDD, #BBBBBB);}\nbutton:active {background-image: linear-gradient(#AAAAAA, #888888);}";
-						obj.unregister();
+						style2.textContent = "button {background-image: linear-gradient(#CCCCCC, #AAAAAA); border-radius: 8px; cursor: pointer;}\nbutton:hover {background-image: linear-gradient(#DDDDDD, #BBBBBB);}\nbutton:active {background-image: linear-gradient(#AAAAAA, #888888);}";
+						obj.element.textContent = "Switch font to Arial (costs 250 presses)";
+						obj.cost = 250;
+						obj.buy = function(obj) {
+							document.body.style = "font-family: Arial Light, sans-serif;";
+							obj.unregister();
+						}
 					}}, "Polish buttons (costs 300 presses)");
 				}
 			}
