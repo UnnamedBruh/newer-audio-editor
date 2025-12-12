@@ -1,6 +1,8 @@
 <html lang="en">
 	<head>
 		<style id="style"></style>
+		<style id="style2"></style>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 	<body>
 		<h1>Clicker Game</h1>
@@ -12,7 +14,7 @@
 		<div id="upgrades"></div>
 		<script>
 //(async function() {
-	const AOCText = document.getElementById("amount"), AOCS = document.getElementById("sornos"), button = document.getElementById("button"), currency = document.getElementById("currency"), numOfClicks = document.getElementById("clicks"), upgrades = document.getElementById("upgrades"), note = document.getElementById("note"), note2 = document.getElementById("note2"), style = document.getElementById("style");
+	const AOCText = document.getElementById("amount"), AOCS = document.getElementById("sornos"), button = document.getElementById("button"), currency = document.getElementById("currency"), numOfClicks = document.getElementById("clicks"), upgrades = document.getElementById("upgrades"), note = document.getElementById("note"), note2 = document.getElementById("note2"), style = document.getElementById("style"), style2 = document.getElementById("style2");
 	let clicks = 0, cl = 1;
 	const thingsToTrigger = [function() {}];
 	let state = 0;
@@ -191,6 +193,20 @@
 					note2.textContent = "That's less awkward than before.";
 					note.textContent = "But... upgrades? Wait, I don't recall adding that as an in-game feature. My game better not be sentient or... self-modifying.";
 				}
+				if (clicks > 20 && bitwiseIntegers[0] & 0b00100000) {
+					bitwiseIntegers[0] ^= 0b00100000;
+					addUpgradeButton({cost: 40, buy: function(obj) {
+						note.textContent = "Now my clicker game has an icon, and a title! Goodbye, ugly old \"unnamedbruh\" title! Hello, \"Clicker Game\"!";
+						const icon = document.createElement("link");
+						const title = document.createElement("title");
+						title.textContent = "Clicker Game";
+						document.head.appendChild(title);
+						icon.rel = "icon";
+						icon.type = "image/x-icon";
+						icon.href = "./favico.ico";
+						obj.unregister();
+					}}, "Add design for this open tab (costs 40 presses)");
+				}
 				if (clicks > 60 && bitwiseIntegers[0] & 0b00001000) {
 					bitwiseIntegers[0] ^= 0b00001000;
 					addUpgradeButton({cost: 100, buy: function(obj) {
@@ -218,8 +234,15 @@
 						}
 						document.body.appendChild(check);
 						obj.unregister();
-						state = 1;
-					}}, "Add dark mode (costs 500 presses)");
+					}}, "Add dark mode (costs 150 presses)");
+				}
+				if (clicks > 150 && bitwiseIntegers[0] & 0b01000000) {
+					bitwiseIntegers[0] ^= 0b01000000;
+					addUpgradeButton({cost: 300, buy: function(obj) {
+						note.textContent = "Okay, this game is going to look super polished in no-time!";
+						style2.textContent = "button {background-image: linear-gradient(#CCCCCC, #888888); border-radius: 8px; font-family: Arial, sans-serif; cursor: pointer;}\nbutton:hover {linear-gradient(#DDDDDD, #999999);}\nbutton:active {linear-gradient(#AAAAAA, #777777);}";
+						obj.unregister();
+					}}, "Polish buttons (costs 300 presses)");
 				}
 			}
 		}
