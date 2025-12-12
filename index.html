@@ -382,7 +382,7 @@
 					async function applyEffect(exporterIndex, b) {
 						if (currentSelected) {
 							apply.disabled = true;
-							for (let i = b?exporterIndex:0; i < b?exporterIndex:exporters.length; i++) {
+							for (let i = b?exporterIndex:0; (exporterIndex === 0 && b && i === 0) || i < b?exporterIndex:exporters.length; i++) {
 								console.log(i);
 								if (i >= exporters.length) break; // activates if V8 acts weird in certain scenarios
 								const expor = exporters[i];
