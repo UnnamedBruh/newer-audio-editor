@@ -180,7 +180,7 @@
 	let autoclickers = [];
 	let narrowDown = 0;
 	function spawnAutoclicker(ms) {
-		if (!narrowDown) narrowDown = ms; else narrowDown = narrowDown * (ms/1750);
+		if (!narrowDown) narrowDown = ms; else narrowDown += ms;
 		const image1 = document.createElement("img");
 		const image2 = document.createElement("img");
 		image1.src = "./mouse1.png";
@@ -244,7 +244,7 @@
 									au[3].src="";
 									au[3].remove();
 								}
-								setInterval(() => button.click(), narrowDown);
+								setInterval(() => button.click(), 1000 / narrowDown);
 								narrowDown = 0;
 								autoclickers = [];
 							}
@@ -328,6 +328,7 @@
 		updateClicksText();
 		updateState();
 	}
+	button2.onclick = ()=>button.click();
 //})();
 		</script>
 	</body>
