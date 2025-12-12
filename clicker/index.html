@@ -123,11 +123,11 @@
 								image.src = "./" + (muted ? "muted.png" : "unmuted.png");
 								muteSFX.onclick = function() {
 									muted = !muted;
-									muteSFX.textContent = muted ? "Unmute" : "Mute";
 									image.src = "./" + (muted ? "muted.png" : "unmuted.png");
 								}
 								muteSFX.appendChild(image);
 								muteSFX.style = "position: absolute; left: calc(100vw - 32px); top: 0px; width: 32px; height: 32px;";
+								muteSFX.textContent = "";
 								image.style = "width: 32px; height: 32px; margin-left: -8px; margin-top: -3px";
 								obj.unregister();
 							}
