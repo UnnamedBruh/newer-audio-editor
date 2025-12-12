@@ -244,11 +244,12 @@
 									au[3].src="";
 									au[3].remove();
 								}
-								setInterval(() => button.click(), 1000 / narrowDown);
+								setInterval(() => button.click(), 1000 / (narrowDown*0.001));
 								narrowDown = 0;
 								autoclickers = [];
 							}
 							setInterval(function() {
+								const bounds = button2.getBoundingClientRect();
 								for (const au of autoclickers) {
 									const same = "position: absolute; left: " + Math.floor(bounds.x + Math.random() * bounds.width - 3) + "px; top: " + Math.floor(bounds.y + Math.random() * bounds.height - 3) + "px; width: 20px; height: 20px;";
 									au[2].style = same;
