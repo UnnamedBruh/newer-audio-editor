@@ -20,6 +20,7 @@
 	const numberWords = ["zero", "a", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
 	const upgradesElements = [];
 	let alertFor = {notEnoughPresses: true};
+	let upgradeSFX;
 	function n() {return document.body.appendChild(document.createElement("br"))}
 	async function alertBox(textD) {
 		if (alertFor.polishedAlert) {
@@ -27,7 +28,6 @@
 			box.style = "position: absolute; left: calc(50vw - 200px); top: calc(50vh - 100px); width: 400px; height: 200px; border: 2px black solid; box-sizing: border-box; background-color: white;";
 			const text = document.createElement("a");
 			text.style = "white-space: pre-wrap; word-wrap: break-word;";
-			
 			text.textContent = textD;
 			document.body.appendChild(box);
 			box.appendChild(text);
@@ -47,7 +47,11 @@
 	}
 	function setupUpgrade(obj) {
 		obj.element.onclick = async function() {
-			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj); updateClicksText();} else {
+			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj); updateClicksText(); if(upgradeSFX) {
+				upgradeSFX.pause();
+				upgradeSFX.timePosition = 0;
+				upgradeSFX.play();
+			}} else {
 				if (alertFor.notEnoughPresses) await alertBox("You do not have enough presses to afford this upgrade. You need " + Math.abs(obj.cost - Math.round(clicks)).toFixed(0) + " more to do that.");
 				if ((bitwiseIntegers[0] & 0b00000010) && !(bitwiseIntegers[0] & 0b00000100)) {
 					bitwiseIntegers[0] |= 0b00000100;
@@ -69,6 +73,20 @@
 						alertFor.polishedAlert = true;
 						obj.unregister();
 					}}, "Polish alert message box (costs 30 presses)");
+					addUpgradeButton({cost: 250, buy: function(obj) {
+						if (bitwiseIntegers[0] & 0b00000010) bitwiseIntegers[0] ^= 0b00000010;
+						purchaseSFX = document.createElement("audio");
+						const source1 = document.createElement("source");
+						const source2 = document.createElement("source");
+						source1.type = "audio/ogg";
+						source1.src = "./chaching.ogg";
+						source2.type = "audio/mp3";
+						source2.src = "./chaching.mp3";
+						document.body.appendChild(purchaseSFX);
+						purchaseSFX.appendChild(source1);
+						purchaseSFX.appendChild(source2);
+						obj.unregister();
+					}}, "Chaching SFX per purchase (costs 250 presses)");
 				}
 			}
 		}
@@ -120,7 +138,7 @@
 				}
 				if (clicks > 100 && bitwiseIntegers[0] & 0b00010000) {
 					bitwiseIntegers[0] ^= 0b00010000;
-					addUpgradeButton({cost: 500, buy: function(obj) {
+					addUpgradeButton({cost: 150, buy: function(obj) {
 						note.textContent = "Dark mode?! This will definitely be important for a clicker game \"night owls\" might access.";
 						n();
 						const text = document.createElement("a");
