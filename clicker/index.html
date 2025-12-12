@@ -183,7 +183,7 @@
 		image1.src = "./mouse1.png";
 		image2.src = "./mouse2.png";
 		const bounds = button.getBoundingClientRect();
-		const same = "position: absolute; left: " + Math.floor(bounds.x + Math.random() * (bounds.width - bounds.x)) + "px; top: " + Math.floor(bounds.y + Math.random() * (bounds.height - bounds.y)) + "px;";
+		const same = "position: absolute; left: " + Math.floor(bounds.x + Math.random() * bounds.width + 4) + "px; top: " + Math.floor(bounds.y + Math.random() * bounds.height + 4) + "px; width: 16px; height: 16px;";
 		image1.style = same;
 		image2.style = same;
 		document.body.appendChild(image1);
@@ -203,6 +203,8 @@
 				}, dd);
 			}
 		}, ms);
+		image1.onclick = () => button.click();
+		image2.onclick = () => button.click();
 	}
 	function updateState() {
 		switch (state) {
