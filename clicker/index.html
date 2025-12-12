@@ -20,7 +20,7 @@
 	const numberWords = ["zero", "a", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
 	const upgradesElements = [];
 	let alertFor = {notEnoughPresses: true};
-	let purchaseSFX, mouseSFX = [];
+	let purchaseSFX, notEnoughSFX, mouseSFX = [];
 	function n() {return document.body.appendChild(document.createElement("br"))}
 	let muteSFX = null, muted = false;
 	async function alertBox(textD) {
@@ -59,10 +59,17 @@
 		obj.element.onclick = async function() {
 			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj); updateClicksText(); if(purchaseSFX) {
 				purchaseSFX.pause();
-				purchaseSFX.timePosition = 0;
+				purchaseSFX.currentTime = 0;
 				purchaseSFX.play();
 			}} else {
-				if (alertFor.notEnoughPresses) await alertBox("You do not have enough presses to afford this upgrade. You need " + Math.abs(obj.cost - Math.round(clicks)).toFixed(0) + " more to do that.");
+				if (alertFor.notEnoughPresses) {
+					if (notEnoughSFX) {
+						notEnoughSFX.pause();
+						notEnoughSFX.currentTime = 0;
+						notEnoughSFX.play();
+					}
+					await alertBox("You do not have enough presses to afford this upgrade. You need " + Math.abs(obj.cost - Math.round(clicks)).toFixed(0) + " more to do that.");
+				}
 				if ((bitwiseIntegers[0] & 0b00000010) && !(bitwiseIntegers[0] & 0b00000100)) {
 					bitwiseIntegers[0] |= 0b00000100;
 					addUpgradeButton({cost: 6, buy: function(obj) {
@@ -132,8 +139,21 @@
 								obj.unregister();
 							}
 						}}, "Mute SFX button (costs 150 presses)");
+						addUpgradeButton({cost: 200, buy: function(obj) {
+							notEnoughSFX = document.createElement("audio");
+							const source1 = document.createElement("source");
+							const source2 = document.createElement("source");
+							source1.type = "audio/ogg";
+							source1.src = "./notEnough.ogg";
+							source2.type = "audio/mp3";
+							source2.src = "./notEnough.mp3";
+							document.body.appendChild(notEnoughSFX);
+							notEnoughSFX.appendChild(source1);
+							notEnoughSFX.appendChild(source2);
+							obj.unregister();
+						}}, "Not enough SFX (costs 200 presses)");
 						obj.unregister();
-					}}, "Chaching SFX per purchase (costs 250 presses)");
+					}}, "Cha-ching SFX per purchase (costs 250 presses)");
 				}
 			}
 		}
