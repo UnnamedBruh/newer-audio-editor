@@ -177,10 +177,10 @@
 		}
 		upgradesElements.push(setupUpgrade(obj));
 	}
-	const autoclickers = [];
-			let narrowDown = 0;
+	let autoclickers = [];
+	let narrowDown = 0;
 	function spawnAutoclicker(ms) {
-		if (!narrowDown) narrowDown = ms; else narrowDown = narrowDown * (ms/2000);
+		if (!narrowDown) narrowDown = ms; else narrowDown = narrowDown * (ms/1750);
 		const image1 = document.createElement("img");
 		const image2 = document.createElement("img");
 		image1.src = "./mouse1.png";
@@ -228,8 +228,8 @@
 					addUpgradeButton({cost: 20, buy: function(obj) {
 						obj.cost = obj.cost + 5 + Math.floor(obj.cost / 10);
 						obj.element.textContent = "+1 autoclicker (costs " + obj.cost + " presses)";
-						spawnAutoclicker(1000);
 						button2.style="";
+						spawnAutoclicker(1000);
 						if (notBoughtAuto) {
 							n();
 							const antilag = document.createElement("button");
