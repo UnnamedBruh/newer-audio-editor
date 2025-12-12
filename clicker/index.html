@@ -177,17 +177,50 @@
 		}
 		upgradesElements.push(setupUpgrade(obj));
 	}
+	function spawnAutoclicker(ms) {
+		const image1 = document.createElement("img");
+		const image2 = document.createElement("img");
+		image1.src = "./mouse1.png";
+		image2.src = "./mouse2.png";
+		const bounds = button.getBoundingClientRect();
+		const same = "position: absolute; left: " + Math.floor(bounds.x + Math.random() * (bounds.width - bounds.x)) + "px; top: " + Math.floor(bounds.y + Math.random() * (bounds.height - bounds.y)) + "px;";
+		image1.style = same;
+		image2.style = same;
+		document.body.appendChild(image1);
+		document.body.appendChild(image2);
+		image2.style.display = "none";
+		const dd = Math.min(100, ms - 100);
+		setInterval(function() {
+			button.click();
+			if (mouseSFX.length) {
+				image1.style.display = "none";
+				image2.style.display = "";
+				if (!muted) mouseSFX[Math.floor(Math.random() * mouseSFX.length)][0].play();
+				setTimeout(function() {
+					if (!muted) mouseSFX[Math.floor(Math.random() * mouseSFX.length)][1].play();
+					image2.style.display = "none";
+					image1.style.display = "";
+				}, dd);
+			}
+		}, ms);
+	}
 	function updateState() {
 		switch (state) {
 			case 0: {
-				if (clicks > 10 && bitwiseIntegers[0] & 0b00000001) {
+				if (clicks > 5 && bitwiseIntegers[0] & 0b00000001) {
 					bitwiseIntegers[0] ^= 0b00000001;
-					addUpgradeButton({cost: 20, buy: function(obj) {
-						obj.cost = obj.cost + 5 + Math.floor(obj.cost / 10);
+					addUpgradeButton({cost: 10, buy: function(obj) {
+						if (cl === 1) obj.cost = 2;
+						obj.cost = obj.cost + 3 + Math.floor(obj.cost / 10);
 						obj.element.textContent = "+1 press per click (costs " + obj.cost + " presses)";
 						cl++;
 						AOCText.textContent = numberWords[cl] || cl;
 						AOCS.textContent = "es";
+					}}, "+1 press per click (costs 10 presses)");
+					addUpgradeButton({cost: 20, buy: function(obj) {
+						obj.cost = obj.cost + 5 + Math.floor(obj.cost / 10);
+						obj.element.textContent = "+1 autoclicker (costs " + obj.cost + " presses)";
+						spawnAutoclicker(1000);
 					}}, "+1 press per click (costs 20 presses)");
 					currency.textContent = "press";
 					note2.textContent = "That's less awkward than before.";
@@ -231,7 +264,15 @@
 						const check = document.createElement("input");
 						check.type = "checkbox";
 						check.oninput = function() {
-							if (check.checked) document.body.style = "color: #999999; background-color: black; color-scheme: dark;"; else document.body.style = "";
+							if (check.checked) {
+								document.body.style.color = "#999999";
+								document.body.style.backgroundColor = "black";
+								document.body.style.colorScheme = "dark";
+							} else {
+								document.body.style.color = "";
+								document.body.style.backgroundColor = "";
+								document.body.style.colorScheme = "";
+							}
 						}
 						document.body.appendChild(check);
 						obj.unregister();
@@ -245,7 +286,7 @@
 						obj.element.textContent = "Switch font to Arial (costs 250 presses)";
 						obj.cost = 250;
 						obj.buy = function(obj) {
-							document.body.style = "font-family: Arial Light, sans-serif;";
+							document.body.style.fontFamily = "Arial Light, sans-serif";
 							obj.unregister();
 						}
 					}}, "Polish buttons (costs 300 presses)");
