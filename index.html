@@ -1382,9 +1382,16 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 													let len;
 													if (sharedBuffer.length < secondSharedBuffer.length) {
 														len = secondSharedBuffer.length;
-														const temp = secondSharedBuffer;
-														secondSharedBuffer = sharedBuffer;
-														sharedBuffer = temp;
+														const oldShared = sharedBuffer;
+														sharedBuffer = audioContext.createBuffer(oldShared.numberOfChannels, len, oldShared.sampleRate);
+														sharedBuffer.copyToChannel(oldShared.getChannelData(0), 0);
+														if (sharedBuffer.numberOfChannels >= 2) sharedBuffer.copyToChannel(oldShared.getChannelData(1), 1);
+													} else if (secondSharedBuffer.length < sharedBuffer.length) {
+														len = sharedBuffer.length;
+														const oldShared = secondSharedBuffer;
+														secondSharedBuffer = audioContext.createBuffer(oldShared.numberOfChannels, len, oldShared.sampleRate);
+														secondSharedBuffer.copyToChannel(oldShared.getChannelData(0), 0);
+														if (sharedBuffer.numberOfChannels >= 2) secondSharedBuffer.copyToChannel(oldShared.getChannelData(1), 1);
 													} else len = sharedBuffer.length;
 													if (inway === 0) {
 														for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
