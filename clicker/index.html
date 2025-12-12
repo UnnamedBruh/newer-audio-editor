@@ -7,14 +7,14 @@
 	<body>
 		<h1>Clicker Game</h1>
 		<p>Welcome to this simple clicker game! This is where you click the button to... uhh... earn <a id="amount">a</a> <a id="currency">click</a><a id="sornos"></a>. <a id="note2">(Yeah... it's very awkward to read it out loud, so I'm planning to change that later.)</a></p>
-		<button id="button">Click me</button>
+		<button id="button">Click me</button> <button id="button2" style="display: none">Click me</button>
 		<br>
 		<a id="clicks"></a>
 		<p id="note">As you can see, there's not a whole lot going on. I'll keep working on this as you and other users make progress! Take care.</p>
 		<div id="upgrades"></div>
 		<script>
 //(async function() {
-	const AOCText = document.getElementById("amount"), AOCS = document.getElementById("sornos"), button = document.getElementById("button"), currency = document.getElementById("currency"), numOfClicks = document.getElementById("clicks"), upgrades = document.getElementById("upgrades"), note = document.getElementById("note"), note2 = document.getElementById("note2"), style = document.getElementById("style"), style2 = document.getElementById("style2");
+	const AOCText = document.getElementById("amount"), AOCS = document.getElementById("sornos"), button = document.getElementById("button"), button2 = document.getElementById("button2"), currency = document.getElementById("currency"), numOfClicks = document.getElementById("clicks"), upgrades = document.getElementById("upgrades"), note = document.getElementById("note"), note2 = document.getElementById("note2"), style = document.getElementById("style"), style2 = document.getElementById("style2");
 	let clicks = 0, cl = 1;
 	const thingsToTrigger = [function() {}];
 	let state = 0;
@@ -177,35 +177,41 @@
 		}
 		upgradesElements.push(setupUpgrade(obj));
 	}
+	const autoclickers = [];
+			let narrowDown = 0;
 	function spawnAutoclicker(ms) {
+		if (!narrowDown) narrowDown = ms; else narrowDown = narrowDown * (ms/2000);
 		const image1 = document.createElement("img");
 		const image2 = document.createElement("img");
 		image1.src = "./mouse1.png";
 		image2.src = "./mouse2.png";
-		const bounds = button.getBoundingClientRect();
+		const bounds = button2.getBoundingClientRect();
 		const same = "position: absolute; left: " + Math.floor(bounds.x + Math.random() * bounds.width - 3) + "px; top: " + Math.floor(bounds.y + Math.random() * bounds.height - 3) + "px; width: 20px; height: 20px;";
 		image1.style = same;
 		image2.style = same;
 		document.body.appendChild(image1);
 		document.body.appendChild(image2);
 		image2.style.display = "none";
-		const dd = Math.min(100, ms - 100);
-		setInterval(function() {
+		const dd = Math.min(50, ms - 100);
+		const id1 = setInterval(function() {
 			button.click();
 			if (mouseSFX.length) {
 				image1.style.display = "none";
 				image2.style.display = "";
-				if (!muted) mouseSFX[Math.floor(Math.random() * mouseSFX.length)][0].play();
-				setTimeout(function() {
-					if (!muted) mouseSFX[Math.floor(Math.random() * mouseSFX.length)][1].play();
-					image2.style.display = "none";
-					image1.style.display = "";
-				}, dd);
 			}
 		}, ms);
+		let id2 = [];
+		setTimeout(function() {
+			id2.push(setInterval(function() {
+				image2.style.display = "none";
+				image1.style.display = "";
+			}, ms));
+		}, dd);
 		image1.onclick = () => button.click();
 		image2.onclick = () => button.click();
+		autoclickers.push([id1, id2, image1, image2]);
 	}
+	let notBoughtAuto = true;
 	function updateState() {
 		switch (state) {
 			case 0: {
@@ -223,6 +229,27 @@
 						obj.cost = obj.cost + 5 + Math.floor(obj.cost / 10);
 						obj.element.textContent = "+1 autoclicker (costs " + obj.cost + " presses)";
 						spawnAutoclicker(1000);
+						button2.style="";
+						if (notBoughtAuto) {
+							n();
+							const antilag = document.createButton("button");
+							antilag.textContent = "If this game lags, press this";
+							document.body.appendChild(antilag);
+							antilag.onclick = function() {
+								for (const au of autoclickers) {
+									clearInterval(au[0]);
+									clearInterval(au[1][0]);
+									au[2].src="";
+									au[2].remove();
+									au[3].src="";
+									au[3].remove();
+								}
+								setInterval(() => button.click(), narrowDown);
+								narrowDown = 0;
+								autoclickers = [];
+							}
+						}
+						notBoughtAuto = false;
 					}}, "+1 autoclicker (costs 20 presses)");
 					currency.textContent = "press";
 					note2.textContent = "That's less awkward than before.";
