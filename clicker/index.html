@@ -20,8 +20,9 @@
 	const numberWords = ["zero", "a", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
 	const upgradesElements = [];
 	let alertFor = {notEnoughPresses: true};
-	let upgradeSFX;
+	let purchaseSFX, mouseSFX = [];
 	function n() {return document.body.appendChild(document.createElement("br"))}
+	let muteSFX = null, muted = false;
 	async function alertBox(textD) {
 		if (alertFor.polishedAlert) {
 			const box = document.createElement("div");
@@ -45,12 +46,21 @@
 			});
 		} else alert(textD);
 	}
+	function au(file) {
+		const audio = document.createElement("audio");
+		const source1 = document.createElement("source");
+		source1.type = "audio/" + file.split(".")[1];
+		source1.src = "./" + file;
+		document.body.appendChild(audio);
+		audio.appendChild(source1);
+		return audio;
+	}
 	function setupUpgrade(obj) {
 		obj.element.onclick = async function() {
-			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj); updateClicksText(); if(upgradeSFX) {
-				upgradeSFX.pause();
-				upgradeSFX.timePosition = 0;
-				upgradeSFX.play();
+			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj); updateClicksText(); if(purchaseSFX) {
+				purchaseSFX.pause();
+				purchaseSFX.timePosition = 0;
+				purchaseSFX.play();
 			}} else {
 				if (alertFor.notEnoughPresses) await alertBox("You do not have enough presses to afford this upgrade. You need " + Math.abs(obj.cost - Math.round(clicks)).toFixed(0) + " more to do that.");
 				if ((bitwiseIntegers[0] & 0b00000010) && !(bitwiseIntegers[0] & 0b00000100)) {
@@ -85,6 +95,43 @@
 						document.body.appendChild(purchaseSFX);
 						purchaseSFX.appendChild(source1);
 						purchaseSFX.appendChild(source2);
+						addUpgradeButton({cost: 300, buy: function(obj) {
+							mouseSFX.push([au("mousedown0.wav"), au("mouseup0.wav")]);
+							mouseSFX.push([au("mousedown1.wav"), au("mouseup1.wav")]);
+							mouseSFX.push([au("mousedown2.wav"), au("mouseup2.wav")]);
+							document.body.addEventListener("mousedown", function() {
+								if (!muted) mouseSFX[Math.floor(Math.random() * mouseSFX.length)][0].play();
+							});
+							document.body.addEventListener("mouseup", function() {
+								if (!muted) mouseSFX[Math.floor(Math.random() * mouseSFX.length)][1].play();
+							});
+							obj.unregister();
+						}, "Mouse click SFX (costs 300 presses)");
+						addUpgradeButton({cost: 150, buy: function(obj) {
+							muteSFX = document.createElement("button");
+							muteSFX.style = "position: absolute; left: 60vw;";
+							muteSFX.textContent = "Mute";
+							muteSFX.onclick = function() {
+								muted = !muted;
+								muteSFX.textContent = muted ? "Unmute" : "Mute";
+							}
+							document.body.appendChild(muteSFX);
+							obj.element.textContent = "Polish mute button (costs 100 presses)";
+							obj.cost = 100;
+							obj.buy = function(obj) {
+								const image = document.createElement("img");
+								image.src = "./" + (muted ? "muted.png" : "unmuted.png");
+								muteSFX.onclick = function() {
+									muted = !muted;
+									muteSFX.textContent = muted ? "Unmute" : "Mute";
+									image.src = "./" + (muted ? "muted.png" : "unmuted.png");
+								}
+								muteSFX.appendChild(image);
+								muteSFX.style = "position: absolute; left: calc(100vw - 32px); top: 0px; width: 32px; height: 32px;";
+								image.style = "width: 32px; height: 32px; margin-left: -8px; margin-top: -3px";
+								obj.unregister();
+							}
+						}, "Mute SFX button (costs 150 presses)");
 						obj.unregister();
 					}}, "Chaching SFX per purchase (costs 250 presses)");
 				}
