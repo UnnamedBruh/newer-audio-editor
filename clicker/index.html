@@ -106,7 +106,7 @@
 								if (!muted) mouseSFX[Math.floor(Math.random() * mouseSFX.length)][1].play();
 							});
 							obj.unregister();
-						}, "Mouse click SFX (costs 300 presses)");
+						}}, "Mouse click SFX (costs 300 presses)");
 						addUpgradeButton({cost: 150, buy: function(obj) {
 							muteSFX = document.createElement("button");
 							muteSFX.style = "position: absolute; left: 60vw;";
@@ -131,7 +131,7 @@
 								image.style = "width: 32px; height: 32px; margin-left: -8px; margin-top: -3px";
 								obj.unregister();
 							}
-						}, "Mute SFX button (costs 150 presses)");
+						}}, "Mute SFX button (costs 150 presses)");
 						obj.unregister();
 					}}, "Chaching SFX per purchase (costs 250 presses)");
 				}
