@@ -23,9 +23,12 @@
 	const upgradesElements = [];
 	let alertFor = {notEnoughPresses: true};
 	let purchaseSFX, notEnoughSFX, mouseSFX = [];
-	function n() {return document.body.appendChild(document.createElement("br"))}
-	let muteSFX = null, muted = false;
 	let expectedChildrenCount = 13;
+	function n() {expectedChildrenCount++;return document.body.appendChild(document.createElement("br"))}
+	let muteSFX = null, muted = false;
+	let music = [], musicMuted = false;
+	let whichMusic = 0;
+	let muteButtonsCount = 0;
 	async function alertBox(textD) {
 		if (alertFor.polishedAlert) {
 			const box = document.createElement("div");
@@ -90,6 +93,7 @@
 						check.type = "checkbox";
 						check.oninput = function() {alertFor.notEnoughPresses = check.checked}
 						document.body.appendChild(check);
+						expectedChildrenCount += 2;
 						obj.unregister();
 					}}, "Add not-enough alert setting (costs 6 presses)");
 					addUpgradeButton({cost: 30, buy: function(obj) {
@@ -129,6 +133,7 @@
 								muted = !muted;
 								muteSFX.textContent = muted ? "Unmute" : "Mute";
 							}
+							n();
 							document.body.appendChild(muteSFX);
 							obj.element.textContent = "Polish mute button (costs 100 presses)";
 							obj.cost = 100;
@@ -141,7 +146,7 @@
 									image.src = "./" + (muted ? "muted.png" : "unmuted.png");
 								}
 								muteSFX.appendChild(image);
-								muteSFX.style = "position: absolute; left: calc(100vw - 32px); top: 0px; width: 32px; height: 32px;";
+								muteSFX.style = "position: absolute; left: calc(100vw - 32px); top: " + ((muteButtonsCount++) *32) + "px; width: 32px; height: 32px;";
 								image.style = "width: 32px; height: 32px; margin-left: -8px; margin-top: -3px";
 								obj.unregister();
 							}
@@ -159,6 +164,41 @@
 							notEnoughSFX.appendChild(source2);
 							obj.unregister();
 						}}, "Not enough SFX (costs 200 presses)");
+						addUpgradeButton({cost: 1000, buy: function(obj) {
+							music.push(au("./music/Relax1.ogg"));
+							for (const song of music) song.loop = true;
+							music[0].play();
+							obj.element.textContent = "Mute music button (costs 300 presses)";
+							obj.cost = 300;
+							obj.buy = function(obj) {
+								const muteSFX = document.createElement("button");
+								muteSFX.style = "position: absolute; left: calc(60vw);";
+								muteSFX.textContent = "Mute Music";
+								muteSFX.onclick = function() {
+									musicMuted = !musicMuted;
+									music[whichMusic].volume = musicMuted ? 0 : 1;
+									muteSFX.textContent = musicMuted ? "Unmute Music" : "Mute Music";
+								}
+								n();
+								document.body.appendChild(muteSFX);
+								obj.element.textContent = "Polish mute music button (costs 150 presses)";
+								obj.cost = 150;
+								obj.buy = function(obj) {
+									muteSFX.textContent = "";
+									const image = document.createElement("img");
+									image.src = "./" + (muted ? "nomusic.png" : "music.png");
+									muteSFX.onclick = function() {
+										musicMuted = !musicMuted;
+										music[whichMusic].volume = musicMuted ? 0 : 1;
+										image.src = "./" + (muted ? "nomusic.png" : "music.png");
+									}
+									muteSFX.appendChild(image);
+									muteSFX.style = "position: absolute; left: calc(100vw - 32px); top: " + ((muteButtonsCount++) *32) + "px; width: 32px; height: 32px;";
+									image.style = "width: 32px; height: 32px; margin-left: -8px; margin-top: -3px";
+									obj.unregister();
+								}
+							}
+						}}, "Relaxing background music (costs 1000)");
 						obj.unregister();
 					}}, "Cha-ching SFX per purchase (costs 250 presses)");
 				}
@@ -178,7 +218,8 @@
 		obj.element = upgradeButton;
 		obj.unregister = function() {
 			upgradeButton.remove();
-			if (line) line.remove();
+			expectedChildrenCount--;
+			if (line) {line.remove();expectedChildrenCount--;}
 		}
 		upgradesElements.push(setupUpgrade(obj));
 		expectedChildrenCount++;
@@ -348,7 +389,7 @@
 	}
 	button2.onclick = ()=>button.click();
 			if (localStorage.get("DisplayScreenNot")) {
-			let crashHandler = 0;
+	/*		let crashHandler = 0;
 	crashHandler = setInterval(function() {
 		const scr = [...document.querySelectorAll("script")];
 		if (document.body.children.length + document.head.children.length > expectedChildrenCount || scr.length > 1) { // Some browser extensions like to add unnecessary elements or code that could interfere with this game.
@@ -369,8 +410,8 @@
 				let x = 0;
 				x = setInterval(function () {
 					if (button1.value === "passkey123abcdefdisablescreenimportantasdf") {
-						alert("Understood! This screen will not trigger again.");
-						localStorage.set("DisplayScreenNot", true);
+						alert("refweb");
+						localStorage.set("DisplayScreenNot", false);
 						clearInterval(x);
 					}
 				}, 100);
@@ -378,7 +419,7 @@
 			document.body.innerHTML = "";
 			document.head.innerHTML = "";
 		}
-	}, 100);}
+	}, 100);*/}
 //})();
 		</script>
 	</body>
