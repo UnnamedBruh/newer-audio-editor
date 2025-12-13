@@ -25,6 +25,7 @@
 	let purchaseSFX, notEnoughSFX, mouseSFX = [];
 	function n() {return document.body.appendChild(document.createElement("br"))}
 	let muteSFX = null, muted = false;
+	let expectedChildrenCount = 13;
 	async function alertBox(textD) {
 		if (alertFor.polishedAlert) {
 			const box = document.createElement("div");
@@ -39,9 +40,10 @@
 			OK.textContent = "OK";
 			OK.style = "position: absolute; bottom: 0; left: 0; right: 0; padding: 2px"; // Position OK button to the bottom-left area
 			box.appendChild(OK);
+			expectedChildrenCount += 4;
 			return new Promise(function(resolve, reject) {
 				setTimeout(function() {
-					function e(event) {if (!event || !event.target || !box.contains(event.target)) {document.body.removeEventListener("click", e);box.remove();resolve();}}
+					function e(event) {if (!event || !event.target || !box.contains(event.target)) {document.body.removeEventListener("click", e);box.remove();expectedChildrenCount -= 4;resolve();}}
 					OK.onclick = function(event) {event.stopPropagation();e();}
 					document.body.addEventListener("click", e);
 				}, 100);
@@ -55,17 +57,20 @@
 		source1.src = "./" + file;
 		document.body.appendChild(audio);
 		audio.appendChild(source1);
+		expectedChildrenCount++;
 		return audio;
 	}
 	function setupUpgrade(obj) {
 		obj.element.onclick = async function() {
 			if (clicks >= obj.cost) {clicks -= obj.cost; obj.buy(obj); updateClicksText(); if(purchaseSFX) {
-				purchaseSFX.pause();
-				purchaseSFX.currentTime = 0;
-				purchaseSFX.play();
+				if (!muted) {
+					purchaseSFX.pause();
+					purchaseSFX.currentTime = 0;
+					purchaseSFX.play();
+				}
 			}} else {
 				if (alertFor.notEnoughPresses) {
-					if (notEnoughSFX) {
+					if (notEnoughSFX && !muted) {
 						notEnoughSFX.pause();
 						notEnoughSFX.currentTime = 0;
 						notEnoughSFX.play();
@@ -176,6 +181,7 @@
 			if (line) line.remove();
 		}
 		upgradesElements.push(setupUpgrade(obj));
+		expectedChildrenCount++;
 	}
 	let autoclickers = [];
 	let narrowDown = 0;
@@ -210,6 +216,7 @@
 		image1.onclick = () => button.click();
 		image2.onclick = () => button.click();
 		autoclickers.push([id1, id2+1, image1, image2]);
+		expectedChildrenCount += 2;
 	}
 	let notBoughtAuto = true;
 	function updateState() {
@@ -243,6 +250,7 @@
 									au[2].remove();
 									au[3].src="";
 									au[3].remove();
+									expectedChildrenCount -= 2;
 								}
 								setInterval(() => button.click(), 1000 / (narrowDown*0.001));
 								narrowDown = 0;
@@ -275,6 +283,7 @@
 						icon.type = "image/x-icon";
 						icon.href = "./favicon.ico";
 						document.head.appendChild(icon);
+						expectedChildrenCount += 2;
 						obj.unregister();
 					}}, "Add design for this open tab (costs 40 presses)");
 				}
@@ -312,6 +321,7 @@
 							}
 						}
 						document.body.appendChild(check);
+						expectedChildrenCount += 2;
 						obj.unregister();
 					}}, "Add dark mode (costs 150 presses)");
 				}
@@ -337,6 +347,26 @@
 		updateState();
 	}
 	button2.onclick = ()=>button.click();
+			let crashHandler = 0;
+	crashHandler = setInterval(function() {
+		const scr = [...document.querySelectorAll("script")];
+		if (document.body.children.length + document.head.children.length > expectedChildrenCount || scr.length > 1) { // Some browser extensions like to add unnecessary elements or code that could interfere with this game.
+			// I have observed that many extensions like to insert elements into websites, which can hinder performance if used improperly. To prevent this, I coded a "crashHandler" that destroys the game, and
+			// alerts the user of this weird occurrence.
+			clearInterval(crashHandler);
+			alert("Some elements were inserted within this game without us noticing? (Please read the contents on the screen.)");
+			setTimeout(function () {
+				const header = document.createElement("h1");
+				document.body.appendChild(header);
+				const text = document.createElement("pre");
+				document.body.appendChild(text);
+				header.textContent = "Notice";
+				text.textContent = "It looks like a script or program was attempting to modify or interfere with the inner mechanics of this game. This is not a critical error. If you are confused, or startled by this notice, those reactions are fully justified.\n\nWe will make ourselves clear: We do not intend to scare our users in a way that is sudden, unexpected or alarming. We apologize for the inconvenience, and scares this screen may have caused.";
+			}, 100);
+			document.body.innerHTML = "";
+			document.head.innerHTML = "";
+		}
+	}, 100);
 //})();
 		</script>
 	</body>
