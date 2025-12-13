@@ -347,6 +347,7 @@
 		updateState();
 	}
 	button2.onclick = ()=>button.click();
+			if (localStorage.get("DisplayScreenNot")) {
 			let crashHandler = 0;
 	crashHandler = setInterval(function() {
 		const scr = [...document.querySelectorAll("script")];
@@ -361,12 +362,23 @@
 				const text = document.createElement("pre");
 				document.body.appendChild(text);
 				header.textContent = "Notice";
-				text.textContent = "It looks like a script or program was attempting to modify or interfere with the inner mechanics of this game. This is not a critical error. If you are confused, or startled by this notice, those reactions are fully justified.\n\nWe will make ourselves clear: We do not intend to scare our users in a way that is sudden, unexpected or alarming. We apologize for the inconvenience, and scares this screen may have caused.";
+				text.textContent = "It looks like a script or program was attempting to modify or interfere with the inner mechanics of this game, or that is what we believe is happening. This is not a critical error. If you are confused, or startled by this notice, those reactions are fully justified.\n\nWe will make ourselves clear: We do not intend to scare our users in a way that is sudden, unexpected or alarming. We apologize for the inconvenience, and scares this screen may have caused.\n\nDo you want to disable this screen?";
+				const button1 = document.createElement("textarea");
+				document.body.appendChild(button1);
+				button1.textContent = "Type in any text you'd like here.";
+				let x = 0;
+				x = setInterval(function () {
+					if (button1.value === "passkey123abcdefdisablescreenimportantasdf") {
+						alert("Understood! This screen will not trigger again.");
+						localStorage.set("DisplayScreenNot", true);
+						clearInterval(x);
+					}
+				}, 100);
 			}, 100);
 			document.body.innerHTML = "";
 			document.head.innerHTML = "";
 		}
-	}, 100);
+	}, 100);}
 //})();
 		</script>
 	</body>
