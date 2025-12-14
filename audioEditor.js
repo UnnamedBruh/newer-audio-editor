@@ -802,7 +802,7 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 
 			// Create reverb
 			const convolver = offlineContext.createConvolver();
-			convolver.buffer = createReverbImpulse(offlineContext, reverbTime, reverbDecay, damp, chanceOfSpike);
+			convolver.buffer = createReverbImpulse(offlineContext, reverbTime, reverbDecay, whichSystem, damp, chanceOfSpike);
 
 			// Create dry and wet gains
 			const dryGain = offlineContext.createGain();
