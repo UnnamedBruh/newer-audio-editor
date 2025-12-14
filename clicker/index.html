@@ -205,6 +205,8 @@
 										let left = document.createElement("button");
 										left.style = "position: absolute; left: calc(100vw - 32px); top: " + (muteButtonsCount*32) + "px; width: 16px; height: 24px;";
 										left.style.borderTopLeftRadius = "0px";
+										left.style.borderTopRightRadius = "0px";
+										left.style.borderBottomRightRadius = "0px";
 										left.onclick = function() {
 											music[whichMusic].pause();
 											whichMusic--;
@@ -215,7 +217,9 @@
 										left.textContent = "<";
 										left = document.createElement("button");
 										left.style = "position: absolute; left: calc(100vw - 16px); top: " + (muteButtonsCount*32) + "px; width: 16px; height: 24px;";
+										left.style.borderTopLeftRadius = "0px";
 										left.style.borderTopRightRadius = "0px";
+										left.style.borderBottomLeftRadius = "0px";
 										left.onclick = function() {
 											music[whichMusic].pause();
 											whichMusic++;
