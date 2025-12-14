@@ -203,9 +203,8 @@
 										muteSFX.style.borderBottomLeftRadius = "0px";
 										muteSFX.style.borderBottomRightRadius = "0px";
 										let left = document.createElement("button");
-										left.style = "position: absolute; left: calc(100vw - 32px); top: " + (muteButtonsCount*32) + "px; width: 16px; height: 16px;";
+										left.style = "position: absolute; left: calc(100vw - 32px); top: " + (muteButtonsCount*32) + "px; width: 16px; height: 24px;";
 										left.style.borderTopLeftRadius = "0px";
-										left.style.borderTopRightRadius = "0px";
 										left.onclick = function() {
 											music[whichMusic].pause();
 											whichMusic--;
@@ -215,8 +214,7 @@
 										document.body.appendChild(left);
 										left.textContent = "<";
 										left = document.createElement("button");
-										left.style = "position: absolute; left: calc(100vw - 16px); top: " + (muteButtonsCount*32) + "px; width: 16px; height: 16px;";
-										left.style.borderTopLeftRadius = "0px";
+										left.style = "position: absolute; left: calc(100vw - 16px); top: " + (muteButtonsCount*32) + "px; width: 16px; height: 24px;";
 										left.style.borderTopRightRadius = "0px";
 										left.onclick = function() {
 											music[whichMusic].pause();
@@ -226,7 +224,7 @@
 										}
 										document.body.appendChild(left);
 										left.textContent = ">";
-										muteButtonsCount+=0.5;
+										muteButtonsCount+=0.675;
 										obj.unregister();
 									}
 								}
