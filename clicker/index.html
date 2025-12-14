@@ -165,7 +165,7 @@
 							obj.unregister();
 						}}, "Not enough SFX (costs 200 presses)");
 						addUpgradeButton({cost: 1000, buy: function(obj) {
-							music.push(au("music/Relax1.ogg"), au("music/Relax2.ogg"), au("music/Relax3.ogg"));
+							music.push(au("music/Relax1.ogg"), au("music/Relax2.ogg"), au("music/Relax3.ogg"), au("music/Relax4.ogg"));
 							for (const song of music) song.loop = true;
 							music[0].play();
 							obj.element.textContent = "Mute music button (costs 300 presses)";
