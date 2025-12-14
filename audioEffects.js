@@ -2,6 +2,10 @@ function identifier(x) {
 	return x;
 }
 
+function percent(x) {
+	return x * 0.01;
+}
+
 const effectsList = [
 	[
 		"Gain",
@@ -142,10 +146,10 @@ const effectsList = [
 	[
 		"Convoluted Reverb",
 		"Reverberates the audio using a famous, natural algorithm.",
-		'Reverb Time (in seconds): <input id="reverb0" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Reverb Decay: <input id="reverb1" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Dry Mix: <input id="reverb2" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Wet Mix: <input id="reverb3" type="number" min="0" step="1" value="50" style="width: 100px">%',
-		4,
+		'Reverb Time (in seconds): <input id="reverb0" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Reverb Decay: <input id="reverb1" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Dry Mix: <input id="reverb2" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Wet Mix: <input id="reverb3" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Reverb Instructions Overtime: <select id="reverb4"><option value="d">Change nothing</option><option value="real">Damp frequency range</option><option value="realspike">Damp frequency range add spikes at start</option></select><br>Max Frequency Range: <input id="reverb5" type="number" min="0" step="1" value="80" style="width: 100px"><br>Chance Of Impulse Spikes (in samples): <input id="reverb6" type="number" min="1" step="0.33333333333333333333" value="3" style="width: 100px">%',
+		7,
 		"reverb",
-		[Number, Number, Number, Number]
+		[Number, Number, Number, Number, identifier, percent, Number]
 	],
 	[
 		"Sine Wave",
@@ -174,7 +178,7 @@ const effectsList = [
 	[
 		"Biquad Frequency Filter",
 		"Strips away or amplifies a certain range of frequencies of the audio.",
-		'Frequency (in Hertz): <input id="biquadfilter0" type="number" min="0" step="1" value="480" max="24000" style="width: 100px"><br>Resonance (Quality): <input id="biquadfilter1" type="number" min="0" step="0.01" value="1" style="width: 100px"><br>Filter instructions? <select id="biquadfilter2"><option value="lowpass">Strip away high frequencies</option><option value="highpass">Strip away low frequencies</option></select><br>Dry Mix: <input id="biquadfilter3" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Wet Mix: <input id="biquadfilter4" type="number" min="0" step="1" value="50" style="width: 100px">%<br><br>Frequency Reference*<br>Human Voice (Mature Male): 80 Hertz - 180 Hertz<br>Human Voice (Mature Female): 120 Hertz - 310 Hertz<br><br><a style="font-size: 8px">*Sourced from</a> <a style="font-size: 8px" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/">https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/</a>',
+		'Frequency (in Hertz): <input id="biquadfilter0" type="number" min="0" step="1" value="480" max="24000" style="width: 100px"><br>Resonance (Quality): <input id="biquadfilter1" type="number" min="0" step="0.01" value="1" style="width: 100px"><br>Filter instructions? <select id="biquadfilter2"><option value="lowpass">Strip away high frequencies</option><option value="highpass">Strip away low frequencies</option></select><br>Dry Mix: <input id="biquadfilter3" type="number" min="0" step="1" value="0" style="width: 100px">%<br>Wet Mix: <input id="biquadfilter4" type="number" min="0" step="1" value="100" style="width: 100px">%<br><br>Frequency Reference*<br>Human Voice (Mature Male): 80 Hertz - 180 Hertz<br>Human Voice (Mature Female): 120 Hertz - 310 Hertz<br><br><a style="font-size: 8px">*Sourced from</a> <a style="font-size: 8px" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/">https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/</a>',
 		5,
 		"biquadfilter",
 		[Number, Number, identifier, Number, Number]
