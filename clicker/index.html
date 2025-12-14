@@ -395,13 +395,10 @@
 		if (document.body.children.length + document.head.children.length > expectedChildrenCount || scr.length > 1) { // Some browser extensions like to add unnecessary elements or code that could interfere with this game.
 			// I have observed that many extensions like to insert elements into websites, which can hinder performance if used improperly. To notice this, I coded a "crashHandler" that assumes someone is
 			// seeing what I'm doing. But I won't cut them off. Instead, I'll catch them off guard by letting them know that "Hey! Do you like this game?"
-				clearInterval(crashHandler);
-				const text = document.createElement("a");
-				document.body.appendChild(text);
-				text.textContent = "Hello, whoever is seeing what I'm doing! How are you liking this gameplay, and my game? If you think it's great, please consider sharing it with others! I'd appreciate it if you do!";
-			}, 100);
-			document.body.innerHTML = "";
-			document.head.innerHTML = "";
+			clearInterval(crashHandler);
+			const text = document.createElement("a");
+			document.body.appendChild(text);
+			text.textContent = "Hello, whoever is seeing what I'm doing! How are you liking this gameplay, and my game? If you think it's great, please consider sharing it with others! I'd appreciate it if you do!";
 		}
 	}, 100);}
 //})();
