@@ -730,19 +730,54 @@ effects["fade"] = function(exporter, direction = "in", easing = "l") {
 	}
 }
 
-effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, wetGain2) {
+effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, wetGain2, whichSystem, damp, chanceOfSpike) {
 	dryGain2 *= 0.01;
 	wetGain2 *= 0.01;
 	// Create reverb impulse response, written by Claude Sonnet 4.5
-	function createReverbImpulse(context, duration, decay) {
+	function createReverbImpulse(context, duration, decay, whichSystem, damp = 0.2, chanceOfSpike = 4) {
 		const sampleRate = context.sampleRate;
 		const length = sampleRate * duration;
 		const impulse = context.createBuffer(1, length, sampleRate);
 		const data = impulse.getChannelData(0);
-		for (let i = 0; i < length; i++) {
-			// Create decaying noise
-			const n = Math.random() * 2 - 1;
-			data[i] = n * Math.pow(1 - i / length, decay);
+		if (whichSystem === undefined) {
+			for (let i = 0; i < length; i++) {
+				// Create decaying noise
+				const n = Math.random() * 2 - 1;
+				data[i] = n * Math.pow(1 - i / length, decay);
+			}
+		} else if (whichSystem === "real") { // This part is written by ChatGPT 5.0 Mini
+			let lastSample = 0;
+			const dampBegin = damp;
+			let kk = 0;
+			for (let i = 0; i < length; i++) {
+				// Create decaying noise
+				let n = Math.random() * 2 - 1;
+				kk = 1 - i / length;
+				n = n * Math.pow(kk, decay);
+				lastSample = lastSample + damp * (n - lastSample);
+				damp = (1-(i*0.5)/length)*dampBegin;
+				data[i] = lastSample;
+			}
+		} else if (whichSystem === "realspike") { // This part was written by ChatGPT 5.0 Mini, but it is slightly altered by me. (I simulated spikes.)
+			function y(y) {return y * (y / (y * Math.log(y))) * Math.log10(y * 2);}
+			let lastSample = 0;
+			const estimatedEndOfSpike = y(length);
+			const dampBegin = damp;
+			let kk = 0;
+			for (let i = 0; i < length; i++) {
+				// Create decaying noise
+				let n = Math.random() * 2 - 1;
+				kk = 1 - i / length;
+				n = n * Math.pow(kk, decay);
+				lastSample = lastSample + damp * (n - lastSample);
+				damp = (1-(i*0.5)/length)*dampBegin;
+				let curr = lastSample;
+				if (i > chanceOfSpike && i < estimatedEndOfSpike) {
+					curr += Math.sign(curr) * Math.cbrt(curr);
+					chanceOfSpike += chanceOfSpike * (Math.random() + 1);
+				}
+				data[i] = curr;
+			}
 		}
 
 		return impulse;
