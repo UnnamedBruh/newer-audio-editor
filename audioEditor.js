@@ -739,7 +739,7 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 		const length = sampleRate * duration;
 		const impulse = context.createBuffer(1, length, sampleRate);
 		const data = impulse.getChannelData(0);
-		if (whichSystem === undefined) {
+		if (whichSystem === "d") {
 			for (let i = 0; i < length; i++) {
 				// Create decaying noise
 				const n = Math.random() * 2 - 1;
@@ -802,7 +802,7 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 
 			// Create reverb
 			const convolver = offlineContext.createConvolver();
-			convolver.buffer = createReverbImpulse(offlineContext, reverbTime, reverbDecay);
+			convolver.buffer = createReverbImpulse(offlineContext, reverbTime, reverbDecay, damp, chanceOfSpike);
 
 			// Create dry and wet gains
 			const dryGain = offlineContext.createGain();
