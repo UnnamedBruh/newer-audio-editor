@@ -165,7 +165,7 @@
 							obj.unregister();
 						}}, "Not enough SFX (costs 200 presses)");
 						addUpgradeButton({cost: 1000, buy: function(obj) {
-							music.push(au("music/Relax1.ogg"));
+							music.push(au("music/Relax1.ogg"), au("music/Relax2.ogg"));
 							for (const song of music) song.loop = true;
 							music[0].play();
 							obj.element.textContent = "Mute music button (costs 300 presses)";
@@ -389,37 +389,21 @@
 	}
 	button2.onclick = ()=>button.click();
 			if (localStorage.getItem("DisplayScreenNot")) {
-	/*		let crashHandler = 0;
+			let crashHandler = 0;
 	crashHandler = setInterval(function() {
 		const scr = [...document.querySelectorAll("script")];
 		if (document.body.children.length + document.head.children.length > expectedChildrenCount || scr.length > 1) { // Some browser extensions like to add unnecessary elements or code that could interfere with this game.
-			// I have observed that many extensions like to insert elements into websites, which can hinder performance if used improperly. To prevent this, I coded a "crashHandler" that destroys the game, and
-			// alerts the user of this weird occurrence.
-			clearInterval(crashHandler);
-			alert("Some elements were inserted within this game without us noticing? (Please read the contents on the screen.)");
-			setTimeout(function () {
-				const header = document.createElement("h1");
-				document.body.appendChild(header);
-				const text = document.createElement("pre");
+			// I have observed that many extensions like to insert elements into websites, which can hinder performance if used improperly. To notice this, I coded a "crashHandler" that assumes someone is
+			// seeing what I'm doing. But I won't cut them off. Instead, I'll catch them off guard by letting them know that "Hey! Do you like this game?"
+				clearInterval(crashHandler);
+				const text = document.createElement("a");
 				document.body.appendChild(text);
-				header.textContent = "Notice";
-				text.textContent = "It looks like a script or program was attempting to modify or interfere with the inner mechanics of this game, or that is what we believe is happening. This is not a critical error. If you are confused, or startled by this notice, those reactions are fully justified.\n\nWe will make ourselves clear: We do not intend to scare our users in a way that is sudden, unexpected or alarming. We apologize for the inconvenience, and scares this screen may have caused.\n\nDo you want to disable this screen?";
-				const button1 = document.createElement("textarea");
-				document.body.appendChild(button1);
-				button1.textContent = "Type in any text you'd like here.";
-				let x = 0;
-				x = setInterval(function () {
-					if (button1.value === "passkey123abcdefdisablescreenimportantasdf") {
-						alert("refweb");
-						localStorage.set("DisplayScreenNot", false);
-						clearInterval(x);
-					}
-				}, 100);
+				text.textContent = "Hello, whoever is seeing what I'm doing! How are you liking this gameplay, and my game? If you think it's great, please consider sharing it with others! I'd appreciate it if you do!";
 			}, 100);
 			document.body.innerHTML = "";
 			document.head.innerHTML = "";
 		}
-	}, 100);*/}
+	}, 100);}
 //})();
 		</script>
 	</body>
