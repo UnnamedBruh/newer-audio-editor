@@ -190,7 +190,7 @@
 									muteSFX.onclick = function() {
 										musicMuted = !musicMuted;
 										music[whichMusic].volume = musicMuted ? 0 : 1;
-										image.src = "./" + (muted ? "nomusic.png" : "music.png");
+										image.src = "./" + (musicMuted ? "nomusic.png" : "music.png");
 									}
 									muteSFX.appendChild(image);
 									muteSFX.style = "position: absolute; left: calc(100vw - 32px); top: " + ((muteButtonsCount++) *32) + "px; width: 32px; height: 32px;";
