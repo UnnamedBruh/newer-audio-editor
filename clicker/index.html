@@ -189,13 +189,45 @@
 									image.src = "./" + (muted ? "nomusic.png" : "music.png");
 									muteSFX.onclick = function() {
 										musicMuted = !musicMuted;
-										music[whichMusic].volume = musicMuted ? 0 : 1;
+										for (let i = 0; i < music.length; i++) {
+											music[i].volume = musicMuted ? 0 : 1;
+										}
 										image.src = "./" + (musicMuted ? "nomusic.png" : "music.png");
 									}
 									muteSFX.appendChild(image);
 									muteSFX.style = "position: absolute; left: calc(100vw - 32px); top: " + ((muteButtonsCount++) *32) + "px; width: 32px; height: 32px;";
 									image.style = "width: 32px; height: 32px; margin-left: -8px; margin-top: -3px";
-									obj.unregister();
+									obj.element.textContent = "Add music switch buttons (costs 1500)";
+									obj.cost = 1500;
+									obj.buy = function(obj) {
+										muteSFX.style.borderBottomLeftRadius = "0px";
+										muteSFX.style.borderBottomRightRadius = "0px";
+										let left = document.createElement("button");
+										left.style = "position: absolute; left: calc(100vw - 32px); top: " + (muteButtonCount*32) + "px; width: 16px; height: 12px;";
+										left.style.borderTopLeftRadius = "0px";
+										left.style.borderTopRightRadius = "0px";
+										left.onclick = function() {
+											music[whichMusic].pause();
+											whichMusic--;
+											if (whichMusic < 0) whichMusic = music.length - 1;
+											music[whichMusic].play();
+										}
+										document.body.appendChild(left);
+										left.textContent = "<";
+										left = document.createElement("button");
+										left.style = "position: absolute; left: calc(100vw - 16px); top: " + ((muteButtonsCount+=0.375)*32) + "px; width: 16px; height: 12px;";
+										left.style.borderTopLeftRadius = "0px";
+										left.style.borderTopRightRadius = "0px";
+										left.onclick = function() {
+											music[whichMusic].pause();
+											whichMusic++;
+											if (whichMusic >= music.length) whichMusic = 0;
+											music[whichMusic].play();
+										}
+										document.body.appendChild(left);
+										left.textContent = ">";
+										obj.unregister();
+									}
 								}
 							}
 						}}, "Relaxing background music (costs 1000)");
