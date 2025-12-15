@@ -656,8 +656,22 @@ effects["tvnormalize"] = function(exporter) {
 	for (let i = 0, k = 0; i < trackLen; i += chunkSize, k++) {
 		const goUntil = min(i + chunkSize, trackLen);
 		let sum = 0;
-		for (let j = i; j < goUntil; j++) {
+		let j = i;
+		for (; j < goUntil; j++) {
 			sum += abs(pointer[j]);
+			if (pointer[j] === 0) {
+				j++;
+				if (pointer[j] === 0) {
+				j++;
+				if (pointer[j] === 0) {
+				j++;
+				if (pointer[j] === 0) {
+				j++;
+				sum += 4;
+			}
+			}
+			}
+			}
 		}
 		sum *= sumDivisor;
 		trackVolume[k] = sum;
