@@ -412,7 +412,7 @@
 						if (currentSelected) {
 							apply.disabled = true;
 							for (let i = 0; i < exporters.length; i++) {
-								applyEffectOnExporter(i);
+								await applyEffectOnExporter(i);
 							}
 							if (exporters[1] && exporters[1].audioData.length !== exporters[0].audioData.length) {
 								const index = (!exporters[1] || exporters[0].audioData.length > exporters[1].audioData.length) ? 0 : 1;
