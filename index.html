@@ -1443,8 +1443,13 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
 							let channel = sharedBuffer.getChannelData(channelNum);
 							let isProcessed = false;
+							if (sharedBuffer.numberOfChannels > 2 && confirm("Do you wish to select only that channel?")) {
+								const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
+								newBuffer.copyToChannel(channel, 0);
+								sharedBuffer = newBuffer;
+							} else {
 							if (sharedBuffer.numberOfChannels === 2) {
-								if (confirm("Should the current channel be subtracted by another? (If you want to only edit the audio, just press Cancel)")) {
+								if (confirm("Should the current channel be subtracted by another? (If you want to only edit the selected channel, press Cancel/No)")) {
 									const channelOtherNum = sharedBuffer.numberOfChannels - channelNum - 1;
 									const len = channel.length;
 									const channelOther = sharedBuffer.getChannelData(channelOtherNum);
@@ -1523,10 +1528,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									channel = sharedBuffer.getChannelData(0);
 								}
 							} else if (sharedBuffer.numberOfChannels === 8) {
-								if (confirm("The editor will assume that this surround sound audio follows specific conventions. This may not be important, but it will play a role in rendering audio into stereo. You may view the page in another tab if you press OK or Yes.")) window.open('https://unnamedbruh.github.io/newer-audio-editor/surroundsoundconventions-81.html', '_blank');
-								alert("Press OK/Yes or Cancel/No. There is a similar message that may pop up. This message prevents your browser from skipping these message boxes without your knowledge.");
-								alert("Press OK/Yes or Cancel/No.");
-								const which = confirm("Do you want the 8 surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
+								const open = confirm("The editor will assume that this surround sound audio follows specific conventions. This may not be important, but it will play a role in rendering audio into stereo. You may view the page in another tab if you press OK or Yes.");
+								const which = confirm("Do you want the 7.1 (or 8.1) surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
 								if (which) {
 									const newBuffer = audioContext.createBuffer(2, sharedBuffer.length, sharedBuffer.sampleRate);
 									const lenBuffer = sharedBuffer.length;
@@ -1580,7 +1583,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									sharedBuffer = newBuffer;
 									channel = sharedBuffer.getChannelData(0);
 								}
-							}
+								if (open) window.open('https://unnamedbruh.github.io/newer-audio-editor/surroundsoundconventions-81.html', '_blank');
+							}}
 							const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
 							if (sharedBuffer.numberOfChannels > 1 && !stereo) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
 								for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
