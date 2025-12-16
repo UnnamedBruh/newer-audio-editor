@@ -1669,7 +1669,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				}
 				if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
 				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
-				loadDiv(exporters, true);
+				loadDiv(exporters);
 			}
 			tick();
 		</script>
