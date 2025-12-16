@@ -1513,12 +1513,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 										}
 									}
 								}
+								oldSharedBufferFor = copyBuffer(sharedBuffer);
 								exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 								loadDiv(exporters);
 								return;
 							}
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
-							oldSharedBufferFor = copyBuffer(sharedBuffer);
 							if (isCorrect) {
 								alert("The first audio file was decoded.");
 								const fileReader2 = new FileReader();
@@ -1592,6 +1592,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									}
 								});
 							}
+							oldSharedBufferFor = copyBuffer(sharedBuffer);
 							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
 							let channel = sharedBuffer.getChannelData(channelNum);
 							let isProcessed = false;
@@ -1638,7 +1639,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				reimp.disabled = true;
 			}
 			reimp.onclick = function() {
+				let x = copyBuffer(oldSharedBufferFor);
 				sharedBuffer = oldSharedBufferFor;
+				oldSharedBufferFor = x;
 				exporters = null;
 				if (ed) {
 					ed.innerHTML = "";
