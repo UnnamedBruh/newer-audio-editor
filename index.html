@@ -1395,7 +1395,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					}
 					if (open) window.open('https://unnamedbruh.github.io/newer-audio-editor/surroundsoundconventions-81.html', '_blank');
 				}
-				return isProcessed;
+				return [channel,isProcessed];
 			}
 
 			let oldSharedBufferFor = null;
@@ -1600,7 +1600,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
 								newBuffer.copyToChannel(channel, 0);
 								sharedBuffer = newBuffer;
-							} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x;}
+							} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];}
 							const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
 							if (sharedBuffer.numberOfChannels > 1 && !stereo) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
 								for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
@@ -1658,7 +1658,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
 					newBuffer.copyToChannel(channel, 0);
 					sharedBuffer = newBuffer;
-				} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x;}
+				} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];}
 				const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
 				if (sharedBuffer.numberOfChannels > 1 && !stereo) {
 					for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
