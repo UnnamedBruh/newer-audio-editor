@@ -1403,7 +1403,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			function copyBuffer(buff) {
 				const copy = audioContext.createBuffer(buff.numberOfChannels, buff.length, buff.sampleRate);
 				for (let i = 0; i < buff.numberOfChannels; i++) {
-					copy.copyToChannel(buff.getChannelData(i), 0);
+					copy.copyToChannel(buff.getChannelData(i), i);
 				}
 				return copy;
 			}
