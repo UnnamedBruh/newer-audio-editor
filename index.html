@@ -1523,8 +1523,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									channel = sharedBuffer.getChannelData(0);
 								}
 							} else if (sharedBuffer.numberOfChannels === 8) {
-								alert("The editor will assume that this surround sound audio follows specific conventions. This may not be important, but it will play a role in rendering audio into stereo. You may view the page in another tab.");
-								window.open('https://unnamedbruh.github.io/newer-audio-editor/surroundsoundconventions-81.html', '_blank');
+								if (confirm("The editor will assume that this surround sound audio follows specific conventions. This may not be important, but it will play a role in rendering audio into stereo. You may view the page in another tab if you press OK or Yes.")) window.open('https://unnamedbruh.github.io/newer-audio-editor/surroundsoundconventions-81.html', '_blank');
 								alert("Press OK/Yes or Cancel/No. There is a similar message that may pop up. This message prevents your browser from skipping these message boxes without your knowledge.");
 								alert("Press OK/Yes or Cancel/No.");
 								const which = confirm("Do you want the 8 surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
