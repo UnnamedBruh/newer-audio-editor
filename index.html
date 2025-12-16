@@ -1522,6 +1522,65 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									sharedBuffer = newBuffer;
 									channel = sharedBuffer.getChannelData(0);
 								}
+							} else if (sharedBuffer.numberOfChannels === 8) {
+								alert("The editor will assume that this surround sound audio follows specific conventions. This may not be important, but it will play a role in rendering audio into stereo. You may view the page in another tab.");
+								window.open('https://unnamedbruh.github.io/newer-audio-editor/surroundsoundconventions-71.html', '_blank');
+								alert("Press OK/Yes or Cancel/No. There is a similar message that may pop up. This message prevents your browser from skipping these message boxes without your knowledge.");
+								alert("Press OK/Yes or Cancel/No.");
+								const which = confirm("Do you want the 8 surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
+								if (which) {
+									const newBuffer = audioContext.createBuffer(2, sharedBuffer.length, sharedBuffer.sampleRate);
+									const lenBuffer = sharedBuffer.length;
+									const channel1 = newBuffer.getChannelData(0);
+									const channel2 = newBuffer.getChannelData(1);
+									const channel1S = sharedBuffer.getChannelData(0);
+									const channel2S = sharedBuffer.getChannelData(1);
+									const channel3S = sharedBuffer.getChannelData(2);
+									const channel4S = sharedBuffer.getChannelData(3);
+									const channel5S = sharedBuffer.getChannelData(4);
+									const channel6S = sharedBuffer.getChannelData(5);
+									const channel7S = sharedBuffer.getChannelData(6);
+									const channel8S = sharedBuffer.getChannelData(7);
+									const leftorright = confirm("Okay! Do you want to keep all the centered channels (OK/Yes), or do you want to discard them (Cancel/No)?");
+									const xy = 1/5;
+									if (leftorright) {
+										for (let i = 0; i < lenBuffer; i++) {
+											channel1[i] = (channel1S[i] + channel3S[i] + channel4S[i] + channel5S[i] + channel7S[i]) * xy;
+											channel2[i] = (channel2S[i] + channel3S[i] + channel4S[i] + channel6S[i] + channel8S[i]) * xy;
+										}
+									} else {
+										for (let i = 0; i < lenBuffer; i++) {
+											channel1[i] = (channel1S[i] + channel5S[i] + channel7S[i]) * 0.3333333333333333333333333;
+											channel2[i] = (channel2S[i] + channel6S[i] + channel8S[i]) * 0.3333333333333333333333333;
+										}
+									}
+									sharedBuffer = newBuffer;
+									channel = sharedBuffer.getChannelData(channelNum & 1);
+								} else {
+									const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
+									const lenBuffer = sharedBuffer.length;
+									const channel1 = newBuffer.getChannelData(0);
+									const channel1S = sharedBuffer.getChannelData(0);
+									const channel2S = sharedBuffer.getChannelData(1);
+									const channel3S = sharedBuffer.getChannelData(2);
+									const channel4S = sharedBuffer.getChannelData(3);
+									const channel5S = sharedBuffer.getChannelData(4);
+									const channel6S = sharedBuffer.getChannelData(5);
+									const channel7S = sharedBuffer.getChannelData(6);
+									const channel8S = sharedBuffer.getChannelData(7);
+									const leftorright = confirm("Okay! Do you want to keep all the centered channels (OK/Yes), or do you want to discard them (Cancel/No)?");
+									if (leftorright) {
+										for (let i = 0; i < lenBuffer; i++) {
+											channel1[i] = (channel1S[i] + channel2S[i] + channel3S[i]*2 + channel4S[i]*2 + channel5S[i] + channel6S[i] + channel7S[i] + channel8S[i]) * 0.1;
+										}
+									} else {
+										for (let i = 0; i < lenBuffer; i++) {
+											channel1[i] = (channel1S[i] + channel2S[i] + channel5S[i] + channel6S[i] + channel7S[i] + channel8S[i]) * 0.16666666666666666666;
+										}
+									}
+									sharedBuffer = newBuffer;
+									channel = sharedBuffer.getChannelData(0);
+								}
 							}
 							const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
 							if (sharedBuffer.numberOfChannels > 1 && !stereo) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
