@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<style>
+			body {
+				background-color: black;
+				color: white;
+				font-family: Arial, sans-serif;
+				min-width: 100vw;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Surround Sound 8.1: Channel Reference Table</h1>
+		<p>This document specifies the channel label presumptions the audio editor makes during rendering Surround Sound 8.1 audio. Fun fact: Many surround sound options have their own ".1" variant, which means that <i>there is a separate channel for audio with high bass. One example for that situation is explosions, or deep earthquakes.</i></p>
+		<table>
+			<tbody>
+				<tr>
+					<th>Channel Index</th>
+					<th>Corresponding Label</th>
+					<th>Is Often Ignored</th>
+				</tr>
+			</tbody>
+			<thead>
+				<tr>
+					<th>1</th>
+					<th>Front Left</th>
+					<th>no</th>
+				</tr>
+				<tr>
+					<th>2</th>
+					<th>Front Right</th>
+					<th>no</th>
+				</tr>
+				<tr>
+					<th>3</th>
+					<th>Center</th>
+					<th>yes</th>
+				</tr>
+				<tr>
+					<th>4</th>
+					<th>Subwoofer Bass</th>
+					<th>yes</th>
+				</tr>
+				<tr>
+					<th>5</th>
+					<th>Back Left</th>
+					<th>no</th>
+				</tr>
+				<tr>
+					<th>6</th>
+					<th>Back Right</th>
+					<th>no</th>
+				</tr>
+				<tr>
+					<th>7</th>
+					<th>Auxiliary Left (Center Left)</th>
+					<th>yes</th>
+				</tr>
+				<tr>
+					<th>8</th>
+					<th>Auxiliary Right (Center Right)</th>
+					<th>yes</th>
+				</tr>
+			</thead>
+		</table>
+		<p>If these conventions are not explicitly followed, the audio editor will not refuse to render the audio. Rather, <b>the audio may sound uneven, rough or telepathic.</b> This is not a critical point to consider, but this may be mandatory if you plan the final product (the exported audio) to be immersive.</p>
+		<a>Are you struggling to navigate through this page? If so, you can click <a href="./">this link</a>, although the imported audio may not be available if you do. If you wish to preserve the imported state, you may close the tab leading to this page.</a>
+	</body>
+</html>
