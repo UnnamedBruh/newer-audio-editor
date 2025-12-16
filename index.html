@@ -1400,6 +1400,14 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 
 			let oldSharedBufferFor = null;
 
+			function copyBuffer(buff) {
+				const copy = audioContext.createBuffer(buff.numberOfChannels, buff.length, buff.sampleRate);
+				for (let i = 0; i < buff.numberOfChannels; i++) {
+					copy.copyToChannel(buff.getChannelData(i), 0);
+				}
+				return copy;
+			}
+
 			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
 				let firstFile = eve.target.files[0];
@@ -1510,7 +1518,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								return;
 							}
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
-							oldSharedBufferFor = sharedBuffer;
+							oldSharedBufferFor = copyBuffer(sharedBuffer);
 							if (isCorrect) {
 								alert("The first audio file was decoded.");
 								const fileReader2 = new FileReader();
