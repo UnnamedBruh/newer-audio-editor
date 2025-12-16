@@ -1354,16 +1354,16 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const channel7S = sharedBuffer.getChannelData(6);
 						const channel8S = sharedBuffer.getChannelData(7);
 						const leftorright = confirm("Okay! Do you want to keep all the centered channels (OK/Yes), or do you want to discard them (Cancel/No)?");
-						const xy = 1/5;
+						const xy = 1/5.4;
 						if (leftorright) {
 							for (let i = 0; i < lenBuffer; i++) {
-								channel1[i] = (channel1S[i] + channel3S[i] + channel4S[i] + channel5S[i] + channel7S[i]) * xy;
-								channel2[i] = (channel2S[i] + channel3S[i] + channel4S[i] + channel6S[i] + channel8S[i]) * xy;
+								channel1[i] = (channel1S[i]*0.75 + channel3S[i] + channel4S[i]*2 + channel5S[i]*0.65 + channel7S[i]) * xy;
+								channel2[i] = (channel2S[i]*0.75 + channel3S[i] + channel4S[i]*2 + channel6S[i]*0.65 + channel8S[i]) * xy;
 							}
 						} else {
 							for (let i = 0; i < lenBuffer; i++) {
-								channel1[i] = (channel1S[i] + channel5S[i] + channel7S[i]) * 0.3333333333333333333333333;
-								channel2[i] = (channel2S[i] + channel6S[i] + channel8S[i]) * 0.3333333333333333333333333;
+								channel1[i] = (channel1S[i]*0.75 + channel5S[i]*0.65 + channel7S[i]) * 0.4166666666666667;
+								channel2[i] = (channel2S[i]*0.75 + channel6S[i]*0.65 + channel8S[i]) * 0.4166666666666667;
 							}
 						}
 						sharedBuffer = newBuffer;
