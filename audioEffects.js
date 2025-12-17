@@ -185,7 +185,7 @@ const effectsList = [
 	],
 	[
 		"Mid/Side Representation",
-		"This audio effect performs the stereo -> Mid/Side conversion formula, which often allows better psychoacoustic compression in many audio codecs by separating centered sound and the panned sound into different categories.<br><a style=\"color: red\">THIS DOES NOT ENHANCE OR AFFECT AUDIO COMPRESSION FOR OTHER CODECS!</a>",
+		"This audio effect performs the stereo -> Mid/Side conversion formula, which often allows better psychoacoustic compression in many audio codecs by separating centered sound and the panned sound into different categories.",
 		'Mode: <select id="midside0"><option>Perform</option><option value="rev">Reverse</option></select> Conversion',
 		1,
 		"midside",
