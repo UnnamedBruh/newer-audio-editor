@@ -961,3 +961,24 @@ effects["biquadfilter"] = async function(exporter, freq, res, type, dryGain2, we
 
 	await renderWithFilter(bb);
 }
+
+effects["midside"] = function(exporters, mode) { // Mode
+	const len = exporters[0].audioData.length;
+	const pointer1 = exporters[0].audioData;
+	const pointer2 = exporters[1].audioData;
+	if (mode === "rev") {
+		let temp = 0;
+		for (let i = 0; i < len; i++) {
+			temp = pointer1[i];
+			pointer1[i] = (pointer1[i] - pointer2[i]) * 2;
+			pointer2[i] = (temp + pointer2[i]) * 2;
+		}
+	} else {
+		let temp = 0;
+		for (let i = 0; i < len; i++) {
+			temp = pointer1[i];
+			pointer1[i] = (pointer1[i] + pointer2[i]) * 0.5;
+			pointer2[i] = (temp - pointer2[i]) * 0.5;
+		}
+	}
+}
