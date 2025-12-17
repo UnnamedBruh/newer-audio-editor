@@ -182,5 +182,14 @@ const effectsList = [
 		5,
 		"biquadfilter",
 		[Number, Number, identifier, Number, Number]
+	],
+	[
+		"Mid/Side Representation",
+		"This audio effect performs the stereo -> Mid/Side conversion formula, which often allows better psychoacoustic compression in many audio codecs by separating centered sound and the panned sound into different categories.<br><a style=\"color: red\">THIS DOES NOT ENHANCE OR AFFECT AUDIO COMPRESSION FOR OTHER CODECS!</a>",
+		'Mode: <select id="midside0"><option>Perform</option><option value="rev">Reverse</option></select> Conversion',
+		1,
+		"midside",
+		[identifier],
+		2
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
