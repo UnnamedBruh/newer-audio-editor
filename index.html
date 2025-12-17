@@ -349,7 +349,7 @@
 						let data1Data = [], data2Data = [];
 						const wid = div.clientWidth;
 						for (let i = 0, j = 0; i < wid; i += inc, j++) {
-							if ((j & 3) === 0) data1Data.push(`M${i},0 V200`); else data2Data.push(`M${i},0 V200`);
+							if (j & 3) data2Data.push(`M${i},0 V200`); else data1Data.push(`M${i},0 V200`);
 						}
 						data1.setAttribute("d", data1Data.join(" "));
 						data2.setAttribute("d", data2Data.join(" "));
@@ -390,6 +390,7 @@
 								return effect[5][i](x.value);
 							}
 						})];
+						if (effect[6] > 1) values[0] = exporters;
 						console.log(values);
 						if (timelineBeginAudio !== 0 && effect[4] !== "trim") values[0] = {audioData: expor.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: expor.sampleRate};
 						const le = values[0].audioData.length;
