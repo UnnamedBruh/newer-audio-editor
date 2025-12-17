@@ -372,7 +372,7 @@
 						option.textContent = effect[0];
 						option.value = effect[4];
 						opt.appendChild(option);
-						if (effect[6] > 1) opt.style.color = "gray";
+						if (effect[6] && effect[6] > 1) opt.style.color = "gray";
 					}
 					v.appendChild(params);
 					apply.textContent = "Apply";
