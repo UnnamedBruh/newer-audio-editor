@@ -621,7 +621,8 @@
 					exportBtn.disabled = true;
 
 					const fixEncodeTable = {32: 0.75, 16: 0.75, 8: 0.75};
-					const fixEncodeTable2 = {32: 2.177427725956358, 16: 3.0012627195702253};
+					const fixEncodeTable2 = {32: 2.177427725956358, 16: 3.0012627195702253, 128: 1.0891036274839623};
+					const fixEncodeTable3 = {128: 0.6802741668361607};
 					const tttt = fixEncodeTable[kbps] || 1;
 
 					for (let i = 0; i < lossTimes; i++) {
@@ -633,10 +634,13 @@
 						const mp3Encoder = new lamejs.Mp3Encoder(channels + shouldSplit, i === 0 ? sampleRate : altRate, kbps, qual);
 
 						let mp3Data = [];
+						let quantity = channels === 2 || shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1);
 
-						let pcmData = [floatTo16BitPCM(buffer[0], channels === 2 || shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1))];
+						if (isJoint) quantity *= fixEncodeTable3[kbps] || 1;
+
+						let pcmData = [floatTo16BitPCM(buffer[0], quantity)];
 						const len = pcmData[0].length;
-						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], ((2 / (kbps/64)) * tttt))];
+						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], quantity)];
 						if (isJoint) {
 							if (isJoint == 1) {
 								let temp = 0, len = pcmData[0].length;
