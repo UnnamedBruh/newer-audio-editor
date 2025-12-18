@@ -611,7 +611,9 @@
 					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") ?? 3));
 
 					const channels = (exporters.length === 2) ? 2 : 1;
-					const shouldSplit = channels !== 2 && confirm("Should the same buffer be split into two channels? (If so, the audio may sound a bit choppier)");
+					const shouldSplit = channels !== 2 && confirm("Should the same buffer be split into two channels? (If so, the audio may sound 2X lower-quality)");
+
+					const isJoint = channels !== 2 && confirm("Should the encoder use Mid/Side encoding for more efficient audio compression?");
 
 					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
 
@@ -635,6 +637,15 @@
 						let pcmData = [floatTo16BitPCM(buffer[0], channels === 2 || shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1))];
 						const len = pcmData[0].length;
 						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], ((2 / (kbps/64)) * tttt))];
+						if (channels === 2 && isJoint) {
+							let temp = 0, len = pcmData[0].length;
+							const left = pcmData[0], right = pcmData[1];
+							for (let i = 0; i < len; i++) {
+								temp = left[i];
+								left[i] = (left[i] + right[i]) * 0.5;
+								right[i] = (temp - right[i]) * 0.5;
+							}
+						}
 						const len2 = len - 1152;
 						let xx;
 
