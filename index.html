@@ -394,17 +394,18 @@
 						if (effect[6] > 1) values[0] = exporters;
 						console.log(values);
 						if (timelineBeginAudio !== 0 && effect[4] !== "trim") values[0] = {audioData: expor.audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: expor.sampleRate};
-						const le = values[0].audioData.length;
+						const le = (effect[6] > 1 ? values[0][0] : values[0]).audioData.length;
+						const exporterT = (effect[6] > 1 ? values[0][0] : values[0]);
 						await effects[effect[4]](...values);
 						if (timelineBeginAudio !== 0) {
-							if (values[0].audioData.buffer !== expor.audioData.buffer) {
-								if (values[0].audioData.length === timelineEndAudio - timelineBeginAudio) {
-									expor.audioData.set(values[0].audioData, timelineBeginAudio);
+							if (exporterT.audioData.buffer !== expor.audioData.buffer) {
+								if (exporterT.audioData.length === timelineEndAudio - timelineBeginAudio) {
+									expor.audioData.set(exporterT.audioData, timelineBeginAudio);
 								} else {
-									const data = new Float32Array(values[0].audioData.length + expor.audioData.length - le);
+									const data = new Float32Array(exporterT.audioData.length + expor.audioData.length - le);
 									data.set(expor.audioData.subarray(0, timelineBeginAudio), 0);
-									data.set(values[0].audioData, timelineBeginAudio);
-									data.set(expor.audioData.subarray(timelineEndAudio, expor.audioData.length), values[0].audioData.length + timelineBeginAudio);
+									data.set(exporterT.audioData, timelineBeginAudio);
+									data.set(expor.audioData.subarray(timelineEndAudio, expor.audioData.length), exporterT.audioData.length + timelineBeginAudio);
 									expor.audioData = data;
 									//timelineEndAudio = values[0].audioData.length - timelineBeginAudio;
 								}
@@ -627,11 +628,11 @@
 						if (i > 0) {
 							if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0), buffer.getChannelData(0)];
 						}
-						const mp3Encoder = new lamejs.Mp3Encoder(channels, i === 0 ? sampleRate : altRate, kbps, qual);
+						const mp3Encoder = new lamejs.Mp3Encoder(channels + shouldSplit, i === 0 ? sampleRate : altRate, kbps, qual);
 
 						let mp3Data = [];
 
-						let pcmData = [floatTo16BitPCM(buffer[0], channels === 2 && !shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1))];
+						let pcmData = [floatTo16BitPCM(buffer[0], channels === 2 || shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1))];
 						const len = pcmData[0].length;
 						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], ((2 / (kbps/64)) * tttt))];
 						const len2 = len - 1152;
