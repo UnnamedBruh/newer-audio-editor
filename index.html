@@ -605,7 +605,7 @@
 					}
 
 					let sampleRate = exporters[0].sampleRate;
-					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 8, 16, 32, 64, 80, 96, 128, 192, 256, 320)")) / 16) * 16;
+					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 8, 16, 32, 64, 80, 96, 128, 168, 192, 256, 320)")) / 16) * 16;
 					if (kbps === 0 || isNaN(kbps) || kbps === undefined || kbps === null) return;
 
 					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") ?? 3));
@@ -613,7 +613,7 @@
 					const channels = (exporters.length === 2) ? 2 : 1;
 					const shouldSplit = channels !== 2 && confirm("Should the same buffer be split into two channels? (If so, the audio may sound 2X lower-quality)");
 
-					const isJoint = channels !== 2 && confirm("Should the encoder use Mid/Side encoding for more efficient audio compression?");
+					const isJoint = (channels === 2 || shouldSplit) ? prompt("Should the encoder use Mid/Side encoding for more efficient audio compression? (0 = No, 1 = Yes, 2 = Yes; swap Mid/Side, 3 = Yes; move into the Side because the Side has the least amount of bits)") : 0;
 
 					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
 
@@ -637,13 +637,30 @@
 						let pcmData = [floatTo16BitPCM(buffer[0], channels === 2 || shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1))];
 						const len = pcmData[0].length;
 						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], ((2 / (kbps/64)) * tttt))];
-						if (channels === 2 && isJoint) {
-							let temp = 0, len = pcmData[0].length;
-							const left = pcmData[0], right = pcmData[1];
-							for (let i = 0; i < len; i++) {
-								temp = left[i];
-								left[i] = (left[i] + right[i]) * 0.5;
-								right[i] = (temp - right[i]) * 0.5;
+						if (isJoint) {
+							if (isJoint == 1) {
+								let temp = 0, len = pcmData[0].length;
+								const left = pcmData[0], right = pcmData[1];
+								for (let i = 0; i < len; i++) {
+									temp = left[i];
+									left[i] = (left[i] + right[i]) * 0.5;
+									right[i] = (temp - right[i]) * 0.5;
+								}
+							} else if (isJoint == 2) {
+								let temp = 0, len = pcmData[0].length;
+								const left = pcmData[0], right = pcmData[1];
+								for (let i = 0; i < len; i++) {
+									temp = right[i];
+									right[i] = (left[i] + right[i]) * 0.5;
+									left[i] = (left[i] - temp) * 0.5;
+								}
+							} else {
+								let len = pcmData[0].length;
+								const left = pcmData[0], right = pcmData[1];
+								for (let i = 0; i < len; i++) {
+									right[i] = (left[i] + right[i]) * 0.5;
+									left[i] = 0;
+								}
 							}
 						}
 						const len2 = len - 1152;
