@@ -1,6 +1,6 @@
 // Imported from https://github.com/lvillasen/FFT.js/blob/main/FFT.js, altered by UnnamedBruh.
 
-function FFT_IP(real, imag) { // I used GPT-5.0 Mini to optimize the original library (I struggled with optimizing the original without tampering)
+function FFT_IP(real, imag) { // I used GPT-5.0 Mini to optimize the original library (I struggled with optimizing the original without breaking it.)
 	const N = real.length;
 	if (N <= 1) return;
 
