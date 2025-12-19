@@ -103,6 +103,33 @@
 					}
 				}
 			}
+			function __(s) {
+				if (!s) return ""; else return ":";
+			}
+			function formatTime(seconds) {
+				let str = "";
+				let f = "";
+				if (seconds >= 3600) {
+					str += __(str) + Math.floor(seconds/3600).toFixed(0).padStart("0", 2);
+					seconds = seconds % 3600;
+					f += __(f) + "hh";
+				}
+				if (seconds >= 60) {
+					str += __(str) + Math.floor(seconds/60).toFixed(0).padStart("0", 2);
+					seconds = seconds % 60;
+					f += __(f) + "mm";
+				}
+				if (seconds >= 1) {
+					str += __(str) + Math.floor(seconds).toFixed(0).padStart("0", 2);
+					seconds = seconds % 1;
+					f += __(f) + "ss";
+				}
+				if (seconds > 0) {
+					str += __(str) + Math.floor(seconds%1000).toFixed(0).padStart("0", 2);
+					f += __(f) + "ms";
+				}
+				return str + " (in " + f + " format)";
+			}
 			function tick() {
 				if (timeline && playing) {
 					let x = (Date.now() - whenPlayed) / 1000;
@@ -377,7 +404,7 @@
 				v.appendChild(document.createElement("br"));
 				const metadataOfAudio = document.createElement("pre");
 				function updateMetadata() {
-					metadataOfAudio.textContent = "Duration: " + (exporters[0].audioData.length / exporters[0].sampleRate);
+					metadataOfAudio.textContent = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate);
 				}
 				updateMetadata();
 				v.appendChild(metadataOfAudio);
