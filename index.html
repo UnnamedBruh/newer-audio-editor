@@ -159,6 +159,14 @@
 				data2.push("L " + (len / sampleSkip) + ",100");
 				return data2.join(" ");
 			}
+			let filename = "";
+			function downloadFile(blob, extension) {
+				const link = document.createElement("a");
+				link.download = (filename || "exportedAudio") + extension;
+				link.href = URL.createObjectURL(blob);
+				link.click();
+				link.remove();
+			}
 			function loadDiv(exp, blank = false) {
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
@@ -333,7 +341,7 @@
 							alert("There are too many BPM.");
 							return;
 						} else if (bpmNum <= 1) {
-							alert("The amount of BPM is too low.")
+							alert("The amount of BPM is too low.");
 							return;
 						}
 						const inc = (60 / bpmNum) * (div.clientWidth / sharedBuffer.duration);
@@ -359,6 +367,18 @@
 						bpmMarks.push(data1, data2);
 					}
 				}
+				v.appendChild(document.createElement("br"));
+				const renameFile = document.createElement("button");
+				v.appendChild(renameFile);
+				renameFile.textContent = "Rename Audio";
+				renameFile.onclick = function() {
+					filename = prompt("What will be the name of the edited audio?").split(".")[0];
+				}
+				v.appendChild(document.createElement("br"));
+				const metadataOfAudio = document.createElement("pre");
+				metadataOfAudio.textContent = "Duration: " + (exporters[0].audioData.length / exporters[0].sampleRate);
+				v.appendChild(metadataOfAudio);
+				v.appendChild(document.createElement("br"));
 				{
 					const label = document.createElement("a");
 					label.textContent = "Effect To Apply: ";
@@ -536,21 +556,17 @@
 							exporters2.encoding = "xandpcm";
 						}
 					}
-					
+
 					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? exporters[1].audioData : undefined, isCompatible);
 
 					exporters2.bits = encodeBits;
 
-					const link = document.createElement("a");
-					link.download = (name || "exportedAudio") + ".wav";
-					link.href = URL.createObjectURL(blob);
-					link.click();
-					link.remove();
+					downloadFile(blob, ".wav");
 				}
-				exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
-				exportBtn.textContent = "Sierra Audio (.SOL or .AUD)";
-				exportBtn.onclick = async function() {
+				const exportBtn1 = document.createElement("button");
+				v.appendChild(exportBtn1);
+				exportBtn1.textContent = "Sierra Audio (.SOL or .AUD)";
+				exportBtn1.onclick = async function() {
 					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 16-bit. 2 = 8-bit old ADPCM. 3 = 8-bit new ADPCM. 4 = 16-bit new ADPCM.)");
 
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
@@ -576,16 +592,12 @@
 
 					exporters2.bits = encodeBits;
 
-					const link = document.createElement("a");
-					link.download = "exportedAudio.sol";
-					link.href = URL.createObjectURL(blob);
-					link.click();
-					link.remove();
+					downloadFile(blob, ".sol");
 				}
-				exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as MP3 (liblamejs)";
-				exportBtn.onclick = async function() {
+				const exportBtn2 = document.createElement("button");
+				v.appendChild(exportBtn2);
+				exportBtn2.textContent = "Export as MP3 (liblamejs)";
+				exportBtn2.onclick = async function() {
 					function floatTo16BitPCM(float32Array, channels) {
 						const len = float32Array.length / channels;
 						const buffer = new Int16Array(len);
@@ -618,7 +630,7 @@
 					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
 
 					let blob;
-					exportBtn.disabled = true;
+					exportBtn2.disabled = true;
 
 					const fixEncodeTable = {32: 0.75, 16: 0.75, 8: 0.75};
 					const fixEncodeTable2 = {32: 2.177427725956358, 16: 3.0012627195702253, 128: 1.0891036274839623};
@@ -682,18 +694,14 @@
 						mp3Data.push(mp3Encoder.flush());
 						blob = new Blob(mp3Data, { type: "audio/mp3" });
 					}
-					exportBtn.disabled = false;
+					exportBtn2.disabled = false;
 
-					const link = document.createElement("a");
-					link.download = "exportedAudio.mp3";
-					link.href = URL.createObjectURL(blob);
-					link.click();
-					link.remove();
+					downloadFile(blob, ".mp3");
 				}
-				exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as OGG (Vorbis format, wasm-media-encoders)";
-				exportBtn.onclick = async function() {
+				const exportBtn3 = document.createElement("button");
+				v.appendChild(exportBtn3);
+				exportBtn3.textContent = "Export as OGG (Vorbis format, wasm-media-encoders)";
+				exportBtn3.onclick = async function() {
 					exportBtn.disabled = true;
 					try {
 						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, low sizes; 10.0 = best quality, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes; -2.0 = absolute worst, lowest sizes)") ?? 4.0) ?? 4.0;
@@ -725,22 +733,18 @@
 							blob = new Blob([encodedCopy, finalData], { type: "audio/ogg" });
 						}
 
-						const link = document.createElement("a");
-						link.download = "exportedAudio.ogg";
-						link.href = URL.createObjectURL(blob);
-						link.click();
-						link.remove();
+						downloadFile(blob, ".ogg");
 					} catch (err) {
 						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
 						console.log(err.message, err.stack);
 					}
-					exportBtn.disabled = false;
+					exportBtn3.disabled = false;
 				}
-				exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as OGG (Opus format, libopusjs)";
-				exportBtn.onclick = async function() {
-					exportBtn.disabled = true;
+				const exportBtn4 = document.createElement("button");
+				v.appendChild(exportBtn4);
+				exportBtn4.textContent = "Export as OGG (Opus format, libopusjs)";
+				exportBtn4.onclick = async function() {
+					exportBtn4.disabled = true;
 					function floatTo16BitPCM(float32Array, channels) {
 						const len = float32Array[0].length;
 						const buffer = new Int16Array(len * channels);
@@ -1042,22 +1046,18 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							encoder.destroy();
 						}
 
-						const link = document.createElement("a");
-						link.download = "exportedAudio.ogg";
-						link.href = URL.createObjectURL(blob);
-						link.click();
-						link.remove();
+						downloadFile(blob, ".ogg");
 					} catch (err) {
 						alert("It seems like the OGG Opus codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
 						console.log(err.message, err.stack);
 					}
-					exportBtn.disabled = false;
+					exportBtn4.disabled = false;
 				}
-				exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as FLAC (libflac.js)";
-				exportBtn.onclick = async function() { // This function was written entirely by Claude Sonnet 4.5. I made some modifications to the original code.
-					exportBtn.disabled = true;
+				const exportBtn5 = document.createElement("button");
+				v.appendChild(exportBtn5);
+				exportBtn5.textContent = "Export as FLAC (libflac.js)";
+				exportBtn5.onclick = async function() { // This function was written entirely by Claude Sonnet 4.5. I made some modifications to the original code.
+					exportBtn5.disabled = true;
 					try {
 						// Setup for collecting encoded data
 						const encBuffer = [];
@@ -1219,16 +1219,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 
 						// Download
 						const blob = new Blob([flacData], { type: "audio/flac" });
-						const link = document.createElement("a");
-						link.download = "exportedAudio.flac";
-						link.href = URL.createObjectURL(blob);
-						link.click();
-						link.remove();
+						downloadFile(blob, ".flac");
 					} catch (err) {
 						alert("The FLAC encoding failed: " + err.message);
 						console.error(err);
 					}
-					exportBtn.disabled = false;
+					exportBtn5.disabled = false;
 				}
 				/*exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
@@ -1259,6 +1255,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					opt.style.marginLeft = apply.style.marginLeft;
 					params.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.marginLeft = apply.style.marginLeft;
+					metadataOfAudio.style.marginLeft = apply.style.marginLeft;
+					renameFile.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
 					if (window.scrollX > window.innerWidth - selectLabel.getBoundingClientRect().width) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
@@ -1683,6 +1681,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 							loadDiv(exporters);
 							reimp.disabled = false;
+							filename = firstFile.name.split(".")[0];
 						} catch (err) {
 							alert("The audio could not be properly loaded! We couldn't gather any info on what exactly failed, so the best we can say is: try selecting another audio file, or using another browser.");
 							console.log(err.message + err.stack);
