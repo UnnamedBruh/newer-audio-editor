@@ -376,7 +376,10 @@
 				}
 				v.appendChild(document.createElement("br"));
 				const metadataOfAudio = document.createElement("pre");
-				metadataOfAudio.textContent = "Duration: " + (exporters[0].audioData.length / exporters[0].sampleRate);
+				function updateMetadata() {
+					metadataOfAudio.textContent = "Duration: " + (exporters[0].audioData.length / exporters[0].sampleRate);
+				}
+				updateMetadata();
 				v.appendChild(metadataOfAudio);
 				v.appendChild(document.createElement("br"));
 				{
@@ -459,6 +462,7 @@
 							apply.disabled = false;
 							x.onclick = playWithTimeline; // Reset playing function, just in case browsers like Chrome misbehave every time an effect is applied
 							yu = exp[0].audioData.length;
+							updateMetadata();
 						}
 					}
 					apply.onclick = async function() {
