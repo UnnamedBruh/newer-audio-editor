@@ -63,7 +63,7 @@
 			}
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
-			volume.oninput = function() {
+			function volumeHandle(volume, label) {
 				if (volumeWarning) {
 					volumeWarning = false;
 					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly and ethically, as these are very experimental features.");
@@ -83,25 +83,11 @@
 					}
 				}
 			}
+			volume.oninput = function() {
+				volumeHandle(volume, label);
+			}
 			volume2.oninput = function() {
-				if (volumeWarning) {
-					volumeWarning = false;
-					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly and ethically, as these are very experimental features.");
-					volume.value = 1;
-				}
-				let x = +volume2.value;
-				if (x > 0.9 && x < 1.1) x = volume2.value = 1;
-				label2.textContent = Math.round(x * 100);
-				label2.textContent = label2.textContent;
-				gainNode.gain.value = x * +volume.value;
-				if (x >= +volume2.max / 1.1) {
-					volume2.max *= 10;
-					volume2.disabled = true;
-					document.body.onmouseup = function() {
-						volume2.disabled = false;
-						document.body.onmouseup = null;
-					}
-				}
+				volumeHandle(volume2, label2);
 			}
 			function __(s) {
 				if (!s) return ""; else return ":";
@@ -125,7 +111,7 @@
 					f += __(f) + "ss";
 				}
 				if (seconds > 0) {
-					str += __(str) + Math.floor(seconds%1000).toFixed(0).padStart("0", 2);
+					str += __(str) + Math.floor(seconds*1000).toFixed(0).padStart("0", 2);
 					f += __(f) + "ms";
 				}
 				return str + " (in " + f + " format)";
