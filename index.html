@@ -89,30 +89,35 @@
 			volume2.oninput = function() {
 				volumeHandle(volume2, label2);
 			}
-			function __(s) {
-				if (!s) return ""; else return ":";
+			function __(s,m) {
+				if (!s) return ""; else return m||":";
 			}
 			function formatTime(seconds) {
 				let str = "";
 				let f = "";
+				let y = false;
 				if (seconds >= 3600) {
 					str += __(str) + Math.floor(seconds/3600).toFixed(0).padStart("0", 2);
 					seconds = seconds % 3600;
 					f += __(f) + "hh";
+					y = true;
 				}
-				if (seconds >= 60) {
+				if (y || seconds >= 60) {
 					str += __(str) + Math.floor(seconds/60).toFixed(0).padStart("0", 2);
 					seconds = seconds % 60;
 					f += __(f) + "mm";
+					y = true;
 				}
-				if (seconds >= 1) {
+				if (y || seconds >= 1) {
 					str += __(str) + Math.floor(seconds).toFixed(0).padStart("0", 2);
 					seconds = seconds % 1;
 					f += __(f) + "ss";
+					y = true;
 				}
-				if (seconds > 0) {
-					str += __(str) + Math.floor(seconds*1000).toFixed(0).padStart("0", 2);
-					f += __(f) + "ms";
+				if (y || seconds > 0) {
+					str += __(str) + Math.floor(seconds*1000).toFixed(0).padStart("0", 3);
+					f += __(f,".") + "ms";
+					y = true;
 				}
 				return str + " (in " + f + " format)";
 			}
@@ -390,7 +395,7 @@
 				v.appendChild(document.createElement("br"));
 				const metadataOfAudio = document.createElement("pre");
 				function updateMetadata() {
-					metadataOfAudio.textContent = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate);
+					metadataOfAudio.textContent = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate) + "\nSamplerate: " + exporters[0].sampleRate;
 				}
 				updateMetadata();
 				v.appendChild(metadataOfAudio);
