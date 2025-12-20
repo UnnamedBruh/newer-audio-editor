@@ -47,11 +47,12 @@ const SRT = (function() {
 		let skipBadStep = true;
 		while (pointer < len) {
 			// If there is garbage data, many parsing systems would throw an error. But that's not very convenient, so we'll just ignore the garbage data.
-			if (skipBadStep) {pointer = __skipBadData(data, pointer, len);}
-			skipBadStep = true;
+			if (skipBadStep) {pointer = __skipBadData(data, pointer, len);skipBadStep = true;}
 
 			// Skip the sequence number
+			let oldPointer = pointer;
 			pointer = __parseInt(data, pointer, len)[0];
+			if (data[pointer] === 58 || data[pointer] === 59 || data[pointer] === 46 || data[pointer] === 44) pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline
 
 			// Skip more "bad" data
 			pointer = __skipBadData(data, pointer, len);
@@ -59,8 +60,8 @@ const SRT = (function() {
 			for (let j = 0; pointer < len; j++) {
 				const parse = __parseInt(data, pointer, len);
 				fakeUnits.push(parse[1]);
-				pointer = parse[0] - 1;
-				if (data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46) break; else pointer++; // Normally, timestamps are separated by either a : or . but we'll also allow ;
+				pointer = __skipBadData(data, parse[0] - 1, len);
+				if (data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44) break; else pointer++; // Normally, timestamps are separated by either a : , or . but we'll also allow ;
 			}
 
 			const timeStart = fakeUnits[Math.max(0, fakeUnits.length-4)] * 3600 + fakeUnits[Math.max(0, fakeUnits.length-3)] * 60 + fakeUnits[Math.max(0, fakeUnits.length-2)] + fakeUnits[Math.max(0, fakeUnits.length-1)] * 0.001;
@@ -85,13 +86,13 @@ const SRT = (function() {
 			for (let j = 0; pointer < len; j++) {
 				const parse = __parseInt(data, pointer, len);
 				fakeUnits.push(parse[1]);
-				pointer = parse[0] - 1;
-				if (data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46) break; else pointer++; // Normally, timestamps are separated by either a : or . but we'll also allow ;
+				pointer = __skipBadData(data, parse[0] - 1, len);
+				if (data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44) break; else pointer++;
 			}
 
 			const timeEnd = fakeUnits[Math.max(0, fakeUnits.length-4)] * 3600 + fakeUnits[Math.max(0, fakeUnits.length-3)] * 60 + fakeUnits[Math.max(0, fakeUnits.length-2)] + fakeUnits[Math.max(0, fakeUnits.length-1)] * 0.001;
 
-			let oldPointer = pointer;
+			oldPointer = pointer;
 			pointer = __skipWhitespace(data, pointer, len);
 			if ((pointer - oldPointer >= 2) && !(__intLookup[data[pointer]] & 0x10)) {
 				if (!noBlankSubtitles) {
