@@ -151,7 +151,7 @@ const SRT = (function() {
 	}
 
 	function __timeline(start, end) {
-		return [__timestamp(start), "-->", __timestamp(end)].join("");
+		return [__timestamp(start), "-->", __timestamp(end)].join(" ");
 	}
 
 	function ExportFromSubtitles(subtitles = [], __isAlreadySorted = true) {
@@ -160,7 +160,7 @@ const SRT = (function() {
 		const binaryData = [];
 		for (let i = 0; i < len; i++) {
 			const subtitle = subtitles[i];
-			const data = [i.toFixed(0), __timeline(subtitle.start, subtitle.end), subtitle.text].join("");
+			const data = [i.toFixed(0), __timeline(subtitle.start, subtitle.end), subtitle.text].join("\n");
 			binaryData.push(data);
 		}
 		return binaryData.join("\n\n");
