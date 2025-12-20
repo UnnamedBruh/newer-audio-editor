@@ -499,11 +499,11 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 			} else if (bits === 12) {
 				if (encodeBetter) {
 					for (let i = 0; i < len; i++) {
-						let b = Math.round((samples[i]+1) * 2047.5);
-						let x = Math.round((buffer2[i]+1) * 2047.5);
-						view.setUint16(offset, b & 0xFFF, true);
+						let b = Math.round(samples[i] * 2047);
+						let x = Math.round(buffer2[i] * 2047);
+						view.setInt16(offset, b >> 4, true);
 						offset += 2;
-						view.setUint16(offset, x & 0xFFF, true);
+						view.setUint16(offset, x >> 4, true);
 						offset += 2;
 					}
 				} else {
@@ -567,8 +567,8 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 			} else if (bits === 12) {
 				if (encodeBetter) {
 					for (let i = 0; i < len; i++) {
-						let b = Math.round((samples[i]+1) * 2047.5);
-						view.setUint16(offset, b & 0xFFF, true);
+						let b = Math.round(samples[i] * 2047);
+						view.setInt16(offset, b >> 4, true);
 						offset += 2;
 					}
 				} else {
