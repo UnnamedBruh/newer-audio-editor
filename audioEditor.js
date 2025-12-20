@@ -652,6 +652,7 @@ effects["tvnormalize"] = function(exporter) {
 	const min = Math.min;
 
 	const sumDivisor = 1 / (chunkSize * 0.25);
+	let c = false;
 
 	for (let i = 0, k = 0; i < trackLen; i += chunkSize, k++) {
 		const goUntil = min(i + chunkSize, trackLen);
@@ -663,18 +664,14 @@ effects["tvnormalize"] = function(exporter) {
 				j++;
 				if (pointer[j] === 0) {
 				j++;
-				if (pointer[j] === 0) {
-				j++;
-				if (pointer[j] === 0) {
-				j++;
-				sum += 4;
-			}
-			}
+				if (!sum) sum = 1; // Non-zero the sum to minimize distortion
 			}
 			}
 		}
 		sum *= sumDivisor;
 		trackVolume[k] = sum;
+		if (c && trackVolume[k-1] < sum) trackVolume[k-1] = interpolate(trackVolume[k-1], sum, 0.5); // Minimize distortion
+		c = true;
 	}
 	i = 0;
 	
