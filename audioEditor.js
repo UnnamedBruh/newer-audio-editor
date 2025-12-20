@@ -677,7 +677,7 @@ effects["tvnormalize"] = function(exporter) {
 
 	trackVolume[trackVolume.length - 1] *= (len % chunkSize) / chunkSize;
 
-	function yy(p) {p<-1?-1:p>1?1:p}
+	function yy(p) {p < -1 ? -1 : (p > 1 ? 1 : p)}
 
 	for (; i < len; i++) {
 		const x = i * chunkSizeDiv;
