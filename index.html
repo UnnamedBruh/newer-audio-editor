@@ -117,12 +117,18 @@
 				if (y || seconds > 0) {
 					str += __(str,".") + Math.floor(seconds*1000).toFixed(0).padStart(3, "0");
 					f += __(f,".") + "SSS";
-					seconds = (seconds * 1000) % 1000;
+					seconds = (seconds * 1000) % 1;
 					y = true;
 				}
 				if (y || seconds > 0) {
 					str += __(str,".") + Math.floor(seconds*1000).toFixed(0).padStart(3, "0");
 					f += __(f,".") + "μμμ";
+					seconds = (seconds * 1000) % 1;
+					y = true;
+				}
+				if (y || seconds > 0) {
+					str += __(str,".") + Math.floor(seconds*1000).toFixed(0).padStart(3, "0");
+					f += __(f,".") + "NNN";
 				}
 				return str + " (in " + f + " format)";
 			}
@@ -391,18 +397,19 @@
 					}
 				}
 				v.appendChild(document.createElement("br"));
+				const metadataOfAudio = document.createElement("pre");
+				function updateMetadata() {
+					metadataOfAudio.textContent = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate) + "\nSamplerate: " + exporters[0].sampleRate + "\nFilename: " + filename;
+				}
+				updateMetadata();
 				const renameFile = document.createElement("button");
 				v.appendChild(renameFile);
 				renameFile.textContent = "Rename Audio";
 				renameFile.onclick = function() {
 					filename = prompt("What will be the name of the edited audio?").split(".")[0];
+					updateMetadata();
 				}
 				v.appendChild(document.createElement("br"));
-				const metadataOfAudio = document.createElement("pre");
-				function updateMetadata() {
-					metadataOfAudio.textContent = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate) + "\nSamplerate: " + exporters[0].sampleRate;
-				}
-				updateMetadata();
 				v.appendChild(metadataOfAudio);
 				v.appendChild(document.createElement("br"));
 				{
