@@ -677,6 +677,8 @@ effects["tvnormalize"] = function(exporter) {
 
 	trackVolume[trackVolume.length - 1] *= (len % chunkSize) / chunkSize;
 
+	function c(p) {p<-1?-1:p>1?1:p}
+
 	for (; i < len; i++) {
 		const x = i * chunkSizeDiv;
 		if ((x | 0) !== x) {
@@ -688,6 +690,7 @@ effects["tvnormalize"] = function(exporter) {
 			if (!isFinite(inter) || isNaN(inter) || inter === 0) inter = 2;
 			pointer[i] /= inter;
 		}
+		pointer[i] = c(pointer[i]);
 	}
 }
 
