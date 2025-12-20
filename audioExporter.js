@@ -626,7 +626,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 };
 
 AudioExporter.prototype.convertToSol = async function(buffer2) { // https://wiki.multimedia.cx/index.php/Sierra_Audio
-	alert("SOL (Sierra Audio) FILES CAN OFFICIALLY BE ENCODED WITHOUT ANY ISSUES! VIDEO GAME FILES ARE BACK FROM THE LOST AND FOUND! EVERYONE CAN CELEBRATE SIERRA ENTERTAINMENT AGAIN!\n\nThe format was carefully reverse-engineered through online sources and real samples of audio in the .sol format!\n\nA documented format that was originally ambiguous can now be accessed... correctly! However, only PCM encoding is supported as of now. BUT, there will be more later!");
+	alert("SOL (Sierra Audio) FILES CAN OFFICIALLY BE ENCODED WITHOUT ANY ISSUES! VIDEO GAME FILES ARE BACK FROM THE LOST AND FOUND! EVERYONE CAN CELEBRATE SIERRA ENTERTAINMENT AGAIN!\n\nThe format was carefully reverse-engineered through online sources and real samples of audio in the .sol format!\n\nA documented format that was originally ambiguous can now be accessed... correctly! Sierra DPCM is NOW OFFICIALLY SUPPORTED!");
 	function writeString(view, offset, string) {
 		for (let i = 0; i < string.length; i++) {
 			view.setUint8(offset + i, string.charCodeAt(i));
