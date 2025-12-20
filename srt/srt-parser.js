@@ -1,3 +1,10 @@
+/*
+const lookup = new Uint8Array(256);lookup.fill(0);
+for (let i = 0; i < 256; i++) {
+    lookup[i] = i === 58 || i === 59 || i === 46 || i === 44;
+}
+*/
+
 const SRT = (function() {
 	class SRTSubtitle {
 		constructor(subtitleText = "", start = 0, end = 0) {
@@ -20,7 +27,6 @@ const SRT = (function() {
 		let x = __intLookup[data[offset++]];
 		if (x & 0x10) return [offset, x];
 		let current = 0;
-		let multiply = 10;
 		while (offset < len && !((current = __intLookup[data[offset++]]) & 0x10)) {
 			x = x*10+current;
 		}
@@ -125,8 +131,61 @@ const SRT = (function() {
 		return subtitles.sort((x,y)=>x.start - y.start);
 	}
 
+	class __vector {
+		constructor() {
+			this.array = [];
+			this.capacity = 1;
+			this.length = 0;
+		}
+
+		push(item) {
+			if (this.length >= this.capacity) {
+				const len = this.array.length;
+				this.array.push(...(new Array(len)));
+				this.capacity = len * 2;
+			}
+			
+		}
+	}
+
+	function __timestamp(time) {
+		const t = new Array(7);
+		const hours = Math.floor(time/3600);
+		t[0] = hours.toFixed(0).padStart(2, "0"));
+		time -= hours*3600;
+		t[1] = ":";
+		const minutes = Math.floor(time/60);
+		t[2] = minutes.toFixed(0).padStart(2, "0"));
+		time -= minutes*60;
+		t[3] = ":";
+		const seconds = Math.floor(time);
+		t[4] = seconds.toFixed(0).padStart(2, "0"));
+		time -= seconds;
+		t[5] = ",";
+		const milliseconds = Math.floor(time * 1000);
+		t[6] = milliseconds.toFixed(0).padStart(3, "0"));
+		return t.join("");
+	}
+
+	function __timeline(start, end) {
+		return [__timestamp(start), "-->", __timestamp(end)].join("");
+	}
+
+	function ExportFromSubtitles(subtitles = [], __isAlreadySorted = true) {
+		if (!__isAlreadySorted) subtitles = subtitles.sort((x,y)=>x.start - y.start);
+		const len = subtitles.length;
+		const binaryData = [];
+		for (let i = 0; i < len; i++) {
+			const subtitle = subtitles[i];
+			const data = [i.toFixed(0), __timeline(subtitle.start, subtitle.end), subtitle.text].join("");
+			binaryData.push(data);
+		}
+		return binaryData.join("\n\n");
+	}
+
 	return {
 		SRTSubtitle,
-		ParseSRTFile
+		ParseSRTFile,
+		ExportFromSubtitles
 	}
 })();
