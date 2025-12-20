@@ -59,8 +59,8 @@ const SRT = (function() {
 			// Skip the sequence number
 			let oldPointer = pointer;
 			pointer = __parseInt(data, pointer, len)[0];
-			if (__sepLookup[data[pointer]]) // data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44
-				pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline
+			/*if (__sepLookup[data[pointer]]) // data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44
+				pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline*/
 
 			// Skip more "bad" data
 			pointer = __skipBadData(data, pointer, len);
@@ -68,8 +68,8 @@ const SRT = (function() {
 			for (let j = 0; pointer < len; j++) {
 				const parse = __parseInt(data, pointer, len);
 				fakeUnits.push(parse[1]);
-				pointer = __skipBadData(data, parse[0] - 1, len);
-				if (__sepLookup[data[pointer]]) break; else pointer++; // Normally, timestamps are separated by either a : , or . but we'll also allow ;
+				pointer = parse[0]-1;
+				if (!__sepLookup[data[pointer]]) break; else pointer++; // Normally, timestamps are separated by either a : , or . but we'll also allow ;
 			}
 
 			const timeStart = fakeUnits[Math.max(0, fakeUnits.length-4)] * 3600 + fakeUnits[Math.max(0, fakeUnits.length-3)] * 60 + fakeUnits[Math.max(0, fakeUnits.length-2)] + fakeUnits[Math.max(0, fakeUnits.length-1)] * 0.001;
@@ -94,8 +94,8 @@ const SRT = (function() {
 			for (let j = 0; pointer < len; j++) {
 				const parse = __parseInt(data, pointer, len);
 				fakeUnits.push(parse[1]);
-				pointer = __skipBadData(data, parse[0] - 1, len);
-				if (__sepLookup[data[pointer]]) break; else pointer++;
+				pointer = parse[0]-1;
+				if (!__sepLookup[data[pointer]]) break; else pointer++;
 			}
 
 			const timeEnd = fakeUnits[Math.max(0, fakeUnits.length-4)] * 3600 + fakeUnits[Math.max(0, fakeUnits.length-3)] * 60 + fakeUnits[Math.max(0, fakeUnits.length-2)] + fakeUnits[Math.max(0, fakeUnits.length-1)] * 0.001;
@@ -134,19 +134,19 @@ const SRT = (function() {
 	function __timestamp(time) {
 		const t = new Array(7);
 		const hours = Math.floor(time/3600);
-		t[0] = hours.toFixed(0).padStart(2, "0"));
+		t[0] = hours.toFixed(0).padStart(2, "0");
 		time -= hours*3600;
 		t[1] = ":";
 		const minutes = Math.floor(time/60);
-		t[2] = minutes.toFixed(0).padStart(2, "0"));
+		t[2] = minutes.toFixed(0).padStart(2, "0");
 		time -= minutes*60;
 		t[3] = ":";
 		const seconds = Math.floor(time);
-		t[4] = seconds.toFixed(0).padStart(2, "0"));
+		t[4] = seconds.toFixed(0).padStart(2, "0");
 		time -= seconds;
 		t[5] = ",";
 		const milliseconds = Math.floor(time * 1000);
-		t[6] = milliseconds.toFixed(0).padStart(3, "0"));
+		t[6] = milliseconds.toFixed(0).padStart(3, "0");
 		return t.join("");
 	}
 
