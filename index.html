@@ -115,7 +115,7 @@
 					y = true;
 				}
 				if (y || seconds > 0) {
-					str += __(str) + Math.floor(seconds*1000).toFixed(0).padStart(3, "0");
+					str += __(str,".") + Math.floor(seconds*1000).toFixed(0).padStart(3, "0");
 					f += __(f,".") + "SSS";
 					y = true;
 				}
