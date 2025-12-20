@@ -97,26 +97,26 @@
 				let f = "";
 				let y = false;
 				if (seconds >= 3600) {
-					str += __(str) + Math.floor(seconds/3600).toFixed(0).padStart("0", 2);
+					str += __(str) + Math.floor(seconds/3600).toFixed(0).padStart(2, "0");
 					seconds = seconds % 3600;
 					f += __(f) + "hh";
 					y = true;
 				}
 				if (y || seconds >= 60) {
-					str += __(str) + Math.floor(seconds/60).toFixed(0).padStart("0", 2);
+					str += __(str) + Math.floor(seconds/60).toFixed(0).padStart(2, "0");
 					seconds = seconds % 60;
 					f += __(f) + "mm";
 					y = true;
 				}
 				if (y || seconds >= 1) {
-					str += __(str) + Math.floor(seconds).toFixed(0).padStart("0", 2);
+					str += __(str) + Math.floor(seconds).toFixed(0).padStart(2, "0");
 					seconds = seconds % 1;
 					f += __(f) + "ss";
 					y = true;
 				}
 				if (y || seconds > 0) {
-					str += __(str) + Math.floor(seconds*1000).toFixed(0).padStart("0", 3);
-					f += __(f,".") + "ms";
+					str += __(str) + Math.floor(seconds*1000).toFixed(0).padStart(3, "0");
+					f += __(f,".") + "SSS";
 					y = true;
 				}
 				return str + " (in " + f + " format)";
