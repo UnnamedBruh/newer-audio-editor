@@ -1713,9 +1713,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							}
 							if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
 							else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
+							filename = firstFile.name.split(".")[0];
 							loadDiv(exporters);
 							reimp.disabled = false;
-							filename = firstFile.name.split(".")[0];
 						} catch (err) {
 							alert("The audio could not be properly loaded! We couldn't gather any info on what exactly failed, so the best we can say is: try selecting another audio file, or using another browser.");
 							console.log(err.message + err.stack);
@@ -1738,6 +1738,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				const stereo = sharedBuffer.numberOfChannels === 2;
 				if (stereo) exporters = [new AudioExporter(sharedBuffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1), sharedBuffer.sampleRate, 1, 32)];
 				else exporters = [new AudioExporter(sharedBuffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32)];
+				filename = "My Blank Audio";
 				loadDiv(exporters, true);
 				reimp.disabled = true;
 			}
@@ -1772,6 +1773,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				}
 				if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
 				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
+				filename = firstFile.name.split(".")[0];
 				loadDiv(exporters);
 			}
 			tick();
