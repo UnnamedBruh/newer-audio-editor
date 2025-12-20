@@ -14,6 +14,7 @@ const SRT = (function() {
 
 	const __intLookup = new Uint8Array([16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,0,1,2,3,4,5,6,7,8,9,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16]);
 	const __spaLookup = new Uint8Array([0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+	const __sepLookup = new Uint8Array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 
 	function __parseInt(data = new Uint8Array(0), offset = 0, len) {
 		let x = __intLookup[data[offset++]];
@@ -52,7 +53,8 @@ const SRT = (function() {
 			// Skip the sequence number
 			let oldPointer = pointer;
 			pointer = __parseInt(data, pointer, len)[0];
-			if (data[pointer] === 58 || data[pointer] === 59 || data[pointer] === 46 || data[pointer] === 44) pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline
+			if (__sepLookup[data[pointer]]) // data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44
+				pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline
 
 			// Skip more "bad" data
 			pointer = __skipBadData(data, pointer, len);
@@ -61,7 +63,7 @@ const SRT = (function() {
 				const parse = __parseInt(data, pointer, len);
 				fakeUnits.push(parse[1]);
 				pointer = __skipBadData(data, parse[0] - 1, len);
-				if (data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44) break; else pointer++; // Normally, timestamps are separated by either a : , or . but we'll also allow ;
+				if (__sepLookup[data[pointer]]) break; else pointer++; // Normally, timestamps are separated by either a : , or . but we'll also allow ;
 			}
 
 			const timeStart = fakeUnits[Math.max(0, fakeUnits.length-4)] * 3600 + fakeUnits[Math.max(0, fakeUnits.length-3)] * 60 + fakeUnits[Math.max(0, fakeUnits.length-2)] + fakeUnits[Math.max(0, fakeUnits.length-1)] * 0.001;
@@ -87,7 +89,7 @@ const SRT = (function() {
 				const parse = __parseInt(data, pointer, len);
 				fakeUnits.push(parse[1]);
 				pointer = __skipBadData(data, parse[0] - 1, len);
-				if (data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44) break; else pointer++;
+				if (__sepLookup[data[pointer]]) break; else pointer++;
 			}
 
 			const timeEnd = fakeUnits[Math.max(0, fakeUnits.length-4)] * 3600 + fakeUnits[Math.max(0, fakeUnits.length-3)] * 60 + fakeUnits[Math.max(0, fakeUnits.length-2)] + fakeUnits[Math.max(0, fakeUnits.length-1)] * 0.001;
