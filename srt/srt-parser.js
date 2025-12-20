@@ -131,23 +131,6 @@ const SRT = (function() {
 		return subtitles.sort((x,y)=>x.start - y.start);
 	}
 
-	class __vector {
-		constructor() {
-			this.array = [];
-			this.capacity = 1;
-			this.length = 0;
-		}
-
-		push(item) {
-			if (this.length >= this.capacity) {
-				const len = this.array.length;
-				this.array.push(...(new Array(len)));
-				this.capacity = len * 2;
-			}
-			
-		}
-	}
-
 	function __timestamp(time) {
 		const t = new Array(7);
 		const hours = Math.floor(time/3600);
