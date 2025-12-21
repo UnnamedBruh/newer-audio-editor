@@ -185,14 +185,15 @@
 									text.textContent = currentSubtitleS.text;
 									subtitlesDiv.prepend(text);
 									numberOfSubtitles++;
-									if (currentSubtitleS.end - currentSubtitleS.start > 0) {
-										setTimeout(function() {
-											text.remove();
-											numberOfSubtitles--;
-										}, (currentSubtitleS.end - currentSubtitleS.start) * 1000);
-									}
+									subtitlesDiv.style.display = "";
+									setTimeout(function() {
+										text.remove();
+										numberOfSubtitles--;
+										if (!numberOfSubtitles) subtitlesDiv.style.display = "none";
+									}, (currentSubtitleS.end - currentSubtitleS.start) * 1000);
 								}
 								currentSubtitle++;
+								currentSubtitleS = subtitlesToDisplay[currentSubtitle];
 							}
 						}
 					}
