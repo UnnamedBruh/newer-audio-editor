@@ -210,9 +210,10 @@
 			function findSubtitleIndex(p) {
 				if (p === 0) return 0;
 				for (let i = 0; i < subtitlesToDisplay.length; i++) {
-					if ((subtitlesToDisplay[i-1]?.end || 0) >= p && subtitlesToDisplay[i].end < p) return i;
+					const x = subtitlesToDisplay[i];
+					if (x.start <= p && p <= x.end) return i;
 				}
-				return subtitlesToDisplay.length-1;
+				return subtitlesToDisplay.length;
 			}
 			let whenDate = 0;
 			function playSound() {
