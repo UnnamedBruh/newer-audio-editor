@@ -134,7 +134,7 @@ const VTT = (function() {
 					} else continue;
 				}
 				else if (data[pointer] === 60) { // <
-					const text = data.subarray(oldPointer, pointer);
+					const text = data.subarray(oldPointer-1, pointer);
 					if (text.length) {
 						let end = text.length;
 						for (let i = end-1; end >= 0; end--) {
@@ -164,7 +164,7 @@ const VTT = (function() {
 								if (data[pointer] === 10) {newlineNum++;break;} // \n
 								pointer++;
 							}
-							node.text = new TextDecoder().decode(data.subarray(oldPointer, pointer));
+							node.text = new TextDecoder().decode(data.subarray(oldPointer, pointer - 1));
 							currentSubtitleContent.push(node);
 							oldPointer = pointer+1;
 							continueLoop = true;
