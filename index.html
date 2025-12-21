@@ -210,7 +210,7 @@
 			function findSubtitleIndex(p) {
 				if (p === 0) return 0;
 				for (let i = 0; i < subtitlesToDisplay.length; i++) {
-					if (subtitlesToDisplay[i].start >= p && subtitlesToDisplay[i].end < p) return i;
+					if ((subtitlesToDisplay[i-1]?.end || 0) >= p && subtitlesToDisplay[i].end < p) return i;
 				}
 				return subtitlesToDisplay.length-1;
 			}
