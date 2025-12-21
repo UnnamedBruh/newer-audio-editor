@@ -24,13 +24,13 @@
 		<script src="audioEncoders.unpkg.js"></script>
 		<script src="flacjs/libflac.min.js"></script>
 		<script src="opus/libopus.wasm.js"></script>
-		<script src="modules/cooley-FFT.js"></script>
+		<script src="srt/srt-parser.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select">
 		<h1>Audio Editor</h1>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff .lsac, .fbac" multiple><br>
-		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button>
+		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button>
 		<br>
 		<div id="frame" style="display: inline-block; width: max-content;"></div>
 		<hr>
@@ -44,9 +44,10 @@
 		<a>Thank you for understanding the unintentionally-wordy section above, and your patience.</a>
 		<h2>Privacy Policy</h2>
 		<a>We value your privacy and are committed to transparency regarding how we handle your information. When you upload files to this project, we do not collect, store, sell, track, monitor, accumulate, hoard, gather, lend, send, transfer or transmit any data associated with these files or your personal information. This includes uploaded files, any data generated from this software, and additional fetching information your browser sends to the original newer-audio-editor website.</a>
+		<div id="subtitles" style="display: none; background-color: black; color: white; font-size: 8px; font-family: sans-serif; position: absolute; top: 70vh; left: 0px; width: 100%; height: min-content; text-align: center;"></div>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp");
+			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles");
 			let exporters = null;
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, dataSecond = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
@@ -132,44 +133,6 @@
 				}
 				return str + " (in " + f + " format)";
 			}
-			function tick() {
-				if (timeline && playing) {
-					let x = (Date.now() - whenPlayed) / 1000;
-					if (sampleSkip === 1) {
-						timeline.setAttribute("x", x * sharedBuffer.sampleRate / sampleSkip + bbb - window.pageXOffset);
-					} else {
-						timeline.setAttribute("x", x * sharedBuffer.sampleRate / sampleSkip + bbb);
-					}
-					if (timelineEndNum !== 0 && x > timelineEndNumCache) {
-						playing = false;
-						src.stop();
-					}
-				}
-				requestAnimationFrame(() => tick());
-			}
-			function playSound() {
-				if (!sharedBuffer) return;
-				if (src) {
-					src.onended = function() {};
-					if (playing) {
-						try {
-							src.stop();
-						} catch {};
-					}
-				}
-				src = audioContext.createBufferSource();
-				src.buffer = sharedBuffer;
-				src.connect(gainNode);
-				startAt += timelineBeginNum / div.clientWidth * sharedBuffer.duration;
-				src.start(0, startAt);
-				whenPlayed = Date.now() - startAt * 1000;
-				playing = true;
-				if (timeline) timeline.setAttribute("fill", "red");
-				src.onended = function() {
-					playing = false;
-					timeline.setAttribute("fill", "none");
-				}
-			}
 			function generateWaveform(exp) {
 				let data2 = ["M 0,100 L 0,100"];
 				const len = exp.audioData.length, y = exp.audioData;
@@ -196,6 +159,107 @@
 				link.click();
 				link.remove();
 			}
+
+			let subtitlesToDisplay = [];
+			let readyToDisplaySubtitles = false;
+			let currentSubtitle = 0;
+			let numberOfSubtitles = 0;
+			let currentSubtitleS = null;
+
+			let tickCache = 0, progress = 0;
+			function tick() {
+				if (timeline && playing) {
+					progress = (Date.now() - whenPlayed) * 0.001;
+					timeline.setAttribute("x", progress * tickCache);
+					if (timelineEndNum && progress > timelineEndNumCache) {
+						playing = false;
+						src.stop();
+					}
+					if (readyToDisplaySubtitles&&subtitlesToDisplay.length) {
+						if (!currentSubtitleS) {
+							readyToDisplaySubtitles = false;
+						} else {
+							if (progress >= currentSubtitleS.start) {
+								if (numberOfSubtitles < 4) {
+									const text = document.createElement("pre");
+									text.textContent = currentSubtitleS.text;
+									subtitlesDiv.prepend(text);
+									numberOfSubtitles++;
+									if (currentSubtitleS.end - currentSubtitleS.start > 0) {
+										setTimeout(function() {
+											text.remove();
+											numberOfSubtitles--;
+										}, (currentSubtitleS.end - currentSubtitleS.start) * 1000);
+									}
+								}
+								currentSubtitle++;
+							}
+						}
+					}
+					requestAnimationFrame(() => tick());
+				}
+			}
+			function findSubtitleIndex(p) {
+				for (let i = 1; i < subtitlesToDisplay.length; i++) {
+					if (subtitlesToDisplay[i].start > p) return i - 1;
+				}
+			}
+			function playSound() {
+				if (!sharedBuffer) return;
+				if (src) {
+					src.onended = function() {};
+					if (playing) {
+						try {
+							src.stop();
+						} catch {};
+					}
+				}
+				src = audioContext.createBufferSource();
+				src.buffer = sharedBuffer;
+				src.connect(gainNode);
+				startAt += timelineBeginNum / div.clientWidth * sharedBuffer.duration;
+				src.start(0, startAt);
+				whenPlayed = Date.now() - startAt * 1000;
+				playing = true;
+				if (timeline) timeline.setAttribute("fill", "red");
+				src.onended = function() {
+					playing = false;
+					timeline.setAttribute("fill", "none");
+				}
+				currentSubtitleS = subtitlesToDisplay[0];
+				currentSubtitle = findSubtitleIndex(startAt);
+				readyToDisplaySubtitles = true;
+				tick();
+			}
+	
+			importSubtitles.onclick = async function() {
+				try {
+					let arrayBuff = new Uint8Array(0);
+					await new Promise(function(resolve, reject) {
+						const file = document.createElement("input");
+						file.type = "file";
+						document.body.appendChild(file);
+						file.oninput = function(event) {
+							const firstFile = event.target.files[0];
+							if (firstFile) {
+								const fileReader = new FileReader();
+								fileReader.onload = function(event) {
+									arrayBuff = new Uint8Array(event.target.result);
+									resolve();
+								}
+								fileReader.readAsArrayBuffer(firstFile);
+							} else reject();
+						}
+						file.accept = ".srt";
+						file.click();
+						file.remove();
+					});
+					subtitlesToDisplay = SRT.ParseSRTFile(arrayBuff);
+				} catch {
+					alert("You did not import any subtitle files.");
+				}
+			}
+			
 			function loadDiv(exp, blank = false) {
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
@@ -525,6 +589,7 @@
 						previous = opt.selectedIndex;
 					}
 				}
+				tickCache = sharedBuffer.sampleRate / sampleSkip;
 				v.appendChild(document.createElement("br"));
 				let exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
@@ -1616,7 +1681,10 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								}
 								oldSharedBufferFor = copyBuffer(sharedBuffer);
 								exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
+								filename = "My File Interpreted As Raw Audio";
 								loadDiv(exporters);
+								importSubtitles.disabled = false;
+								reimp.disabled = false;
 								return;
 							}
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
@@ -1714,6 +1782,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 							filename = firstFile.name.split(".")[0];
 							loadDiv(exporters);
+							importSubtitles.disabled = false;
 							reimp.disabled = false;
 						} catch (err) {
 							alert("The audio could not be properly loaded! We couldn't gather any info on what exactly failed, so the best we can say is: try selecting another audio file, or using another browser.");
@@ -1740,6 +1809,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				filename = "My Blank Audio";
 				loadDiv(exporters, true);
 				reimp.disabled = true;
+				importSubtitles.disabled = false;
 			}
 			reimp.onclick = function() {
 				let x = copyBuffer(oldSharedBufferFor);
