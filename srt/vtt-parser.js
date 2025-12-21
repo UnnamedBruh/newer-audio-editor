@@ -186,16 +186,6 @@ const VTT = (function() {
 						case 47: {
 							pointer++;
 							if (data[pointer] === 99) { // c
-								console.log("e");
-								/*const text = data.subarray(oldPointer-1, pointer+1);
-								if (text.length) {
-									let end = text.length;
-									for (let i = end-1; end >= 0; end--) {
-										if (text[end] === 32 || text[end] === 9) break; // Space or Tab
-									}
-									// Trimming out the additional newlines of `text`, while also keeping spaces and tabs at the end of `text`
-									currentSubtitleContent.push(new VTTTextNode(new TextDecoder().decode(text.subarray(0, end+2)), VTT_NORMAL));
-								}*/
 								classNodeEnd(currentSubtitleContent);
 								node = new VTTTextNode("", VTT_NORMAL);
 								oldPointer = (pointer+=2);
