@@ -261,6 +261,11 @@
 													}
 												}
 												if (currentSubtitleS.type < 5) text.textContent = node.text;
+												if (elements.length) {
+													const d = document.createElement("br");
+													elements.push(d);
+													subtitlesDiv.appendChild(d);
+												}
 												subtitlesDiv.appendChild(text);
 												numberOfSubtitles++;
 												subtitlesDiv.style.display = "";
