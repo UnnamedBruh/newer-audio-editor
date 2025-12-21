@@ -211,7 +211,7 @@
 				if (p === 0) return 0;
 				for (let i = 0; i < subtitlesToDisplay.length; i++) {
 					const x = subtitlesToDisplay[i];
-					if (x.start <= p && p <= x.end) return i;
+					if (p <= x.end) return i;
 				}
 				return subtitlesToDisplay.length;
 			}
