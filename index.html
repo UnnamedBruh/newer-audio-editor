@@ -168,6 +168,14 @@
 			let tickCache = 0, progress = 0;
 			let subtitlesText = [];
 
+			function findSubtitleIndex(p, offset = 0) {
+				if (p === 0) return 0;
+				for (let i = offset; i < subtitlesToDisplay.length; i++) {
+					const x = subtitlesToDisplay[i];
+					if (p <= x.end) return i;
+				}
+				return subtitlesToDisplay.length;
+			}
 			function tick() {
 				if (timeline && playing) {
 					progress = (Date.now() - whenPlayed) * 0.001;
@@ -199,21 +207,13 @@
 										if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
 									}, (currentSubtitleS.end * 1000) - (Date.now() - whenPlayed));
 								}
-								currentSubtitle++;
+								currentSubtitle = findSubtitleIndex((Date.now() - whenPlayed) * 0.001, currentSubtitle + 1); // skip subtitles that couldn't be displayed on time
 								currentSubtitleS = subtitlesToDisplay[currentSubtitle];
 							}
 						}
 					}
 					requestAnimationFrame(() => tick());
 				}
-			}
-			function findSubtitleIndex(p) {
-				if (p === 0) return 0;
-				for (let i = 0; i < subtitlesToDisplay.length; i++) {
-					const x = subtitlesToDisplay[i];
-					if (p <= x.end) return i;
-				}
-				return subtitlesToDisplay.length;
 			}
 			let whenDate = 0;
 			function playSound() {
@@ -1802,7 +1802,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							}
 							if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
 							else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
-							filename = firstFile.name.split(".")[0];
+							filename = firstFile.name.split(".").slice(0, -1).join(".");
 							loadDiv(exporters);
 							importSubtitles.disabled = false;
 							reimp.disabled = false;
