@@ -194,7 +194,7 @@
 						playing = false;
 						src.stop();
 					}
-					if (readyToDisplaySubtitles&&(subtitleType===0?subtitlesToDisplay.length:subtitlesToDisplay.subtitles.length) {
+					if (readyToDisplaySubtitles&&(subtitleType===0?subtitlesToDisplay.length:subtitlesToDisplay.subtitles.length)) {
 						if (!currentSubtitleS) {
 							readyToDisplaySubtitles = false;
 						} else {
@@ -221,12 +221,10 @@
 											break;
 										}
 										case 1: {
-											console.log("Called...");
 											let text = null;
 											const elements = [];
 											const currentSubtitleNodes = currentSubtitleS.text;
 											for (let i = 0; i < currentSubtitleNodes.length; i++) {
-												console.log(i);
 												const node = currentSubtitleNodes[i];
 												switch (node.type) {
 													case 0: {
@@ -282,9 +280,6 @@
 												if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
 											}, (currentSubtitleS.end * 1000) - (Date.now() - whenPlayed));
 											break;
-										}
-										default: {
-											console.log("Not passed");
 										}
 									}
 								}
