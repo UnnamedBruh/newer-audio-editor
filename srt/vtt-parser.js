@@ -123,7 +123,9 @@ const VTT = (function() {
 			let newlineNum = 0;
 			const currentSubtitleContent = [];
 			pointer--;
+			let continueLoop = false;
 			for (; pointer < len; pointer++) {
+				continueLoop = false;
 				if (data[pointer] === 13) pointer++; // \r
 				if (data[pointer] === 10) { // \n
 					newlineNum++;
@@ -164,7 +166,8 @@ const VTT = (function() {
 							}
 							node.text = new TextDecoder().decode(data.subarray(oldPointer, pointer));
 							currentSubtitleContent.push(node);
-							oldPointer = ++pointer;
+							oldPointer = pointer+1;
+							continueLoop = true;
 							break;
 						}
 						default: {
@@ -195,10 +198,12 @@ const VTT = (function() {
 							node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer));
 							currentSubtitleContent.push(node);
 							oldPointer = pointer;
+							continueLoop = true;
 							break;
 						}
 					}
 				}
+				if (continueLoop) continue;
 				newlineNum = 0;
 			}
 			if (oldPointer < pointer) {
