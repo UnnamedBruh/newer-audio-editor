@@ -208,7 +208,7 @@ const VTT = (function() {
 			}
 			if (oldPointer < pointer) {
 				const yyx = new TextDecoder().decode(data.subarray(oldPointer-1, pointer>=minusLen?pointer:pointer-1));
-				if (yyx && yyx !== "\n") currentSubtitleContent.push(new VTTTextNode(yyx, VTT_NORMAL));
+				if (yyx && yyx.trim()) currentSubtitleContent.push(new VTTTextNode(yyx, VTT_NORMAL));
 			}
 			subtitles.push(new VTTSubtitle(currentSubtitleContent, timeStart, timeEnd));
 		}
