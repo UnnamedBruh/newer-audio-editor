@@ -252,15 +252,16 @@
 														text = document.createElement("div");
 														const speaker = document.createElement("a");
 														speaker.textContent = subtitlesToDisplay.names[node.speaker] + ": ";
-														speaker.style.color = colorPalette[node.speaker];
+														speaker.style.color = `rgb(${colorPalette[node.speaker]})`;
 														const dialog = document.createElement("a");
 														dialog.textContent = node.text;
 														text.appendChild(speaker);
 														text.appendChild(dialog);
+														text.style.backgroundColor = "black";
 														break;
 													}
 												}
-												if (currentSubtitleS.type < 5) text.textContent = node.text;
+												if (node.type < 5) text.textContent = node.text;
 												subtitlesDiv.appendChild(text);
 												numberOfSubtitles++;
 												subtitlesDiv.style.display = "";
