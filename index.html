@@ -232,7 +232,6 @@
 				startAt += timelineBeginNum / div.clientWidth * sharedBuffer.duration;
 				src.start(0, startAt);
 				whenPlayed = Date.now() - startAt * 1000;
-				playing = true;
 				if (timeline) timeline.setAttribute("fill", "red");
 				src.onended = function() {
 					playing = false;
@@ -249,7 +248,8 @@
 				}
 				subtitlesText = [];
 				numberOfSubtitles = 0;
-				requestAnimationFrame(() => tick());
+				if (!playing) requestAnimationFrame(() => tick());
+				playing = true;
 			}
 	
 			importSubtitles.onclick = async function() {
