@@ -274,7 +274,10 @@
 						file.click();
 						file.remove();
 					});
+					const st = performance.now();
 					subtitlesToDisplay = SRT.ParseSRTFile(arrayBuff);
+					const en = performance.now();
+					alert("Parsed the subtitles in " + (en - st) + " seconds.");
 				} catch {
 					alert("You did not import any subtitle files.");
 				}
