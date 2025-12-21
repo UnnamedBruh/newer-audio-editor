@@ -159,7 +159,7 @@ const VTT = (function() {
 							oldPointer = pointer;
 							while (pointer < len) {
 								if (data[pointer] === 13) pointer++; // \r
-								if (data[pointer] === 10) break; // \n
+								if (data[pointer] === 10) {newlineNum++;break;} // \n
 								pointer++;
 							}
 							node.text = new TextDecoder().decode(data.subarray(oldPointer, pointer));
@@ -175,7 +175,7 @@ const VTT = (function() {
 							let setPointer = pointer;
 							while (pointer < len) {
 								if (data[pointer] === 13) pointer++; // \r
-								if (data[pointer] === 10) break; // \n
+								if (data[pointer] === 10) {newlineNum++;break;} // \n
 								else if (data[pointer] === 60) { // <
 									setPointer = pointer;
 									pointer++;
