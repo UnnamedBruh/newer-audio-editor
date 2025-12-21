@@ -25,6 +25,7 @@
 		<script src="flacjs/libflac.min.js"></script>
 		<script src="opus/libopus.wasm.js"></script>
 		<script src="srt/srt-parser.js"></script>
+		<script src="srt/vtt-parser.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select">
@@ -166,15 +167,24 @@
 			let numberOfSubtitles = 0;
 			let currentSubtitleS = null;
 			let tickCache = 0, progress = 0;
+			let subtitleType = 0;
 			let subtitlesText = [];
 
 			function findSubtitleIndex(p, offset = 0) {
 				if (p === 0) return 0;
-				for (let i = offset; i < subtitlesToDisplay.length; i++) {
-					const x = subtitlesToDisplay[i];
-					if (p <= x.end) return i;
+				if (subtitleType === 0) {
+					for (let i = offset; i < subtitlesToDisplay.length; i++) {
+						const x = subtitlesToDisplay[i];
+						if (p <= x.end) return i;
+					}
+					return subtitlesToDisplay.length;
+				} else if (subtitleType === 1) {
+					for (let i = offset; i < subtitlesToDisplay.subtitles.length; i++) {
+						const x = subtitlesToDisplay.subtitles[i];
+						if (p <= x.end) return i;
+					}
+					return subtitlesToDisplay.subtitles.length;
 				}
-				return subtitlesToDisplay.length;
 			}
 			function tick() {
 				if (timeline && playing) {
@@ -190,22 +200,88 @@
 						} else {
 							if (progress >= currentSubtitleS.start) {
 								if (numberOfSubtitles < 4) {
-									const text = document.createElement("pre");
-									text.textContent = currentSubtitleS.text;
-									subtitlesDiv.prepend(text);
-									numberOfSubtitles++;
-									subtitlesDiv.style.display = "";
-									text.style.overflowWrap = "break-word";
-									text.style.wordBreak = "break-word";
-									text.style.whiteSpace = "pre-wrap";
-									const index = subtitlesText.length;
-									subtitlesText.push([text,0]);
-									subtitlesText[index][1] = setTimeout(function() {
-										text.remove();
-										numberOfSubtitles--;
-										subtitlesText[index] = null;
-										if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
-									}, (currentSubtitleS.end * 1000) - (Date.now() - whenPlayed));
+									switch (subtitleType) {
+										case 0: {
+											const text = document.createElement("pre");
+											text.textContent = currentSubtitleS.text;
+											subtitlesDiv.prepend(text);
+											numberOfSubtitles++;
+											subtitlesDiv.style.display = "";
+											text.style.overflowWrap = "break-word";
+											text.style.wordBreak = "break-word";
+											text.style.whiteSpace = "pre-wrap";
+											const index = subtitlesText.length;
+											subtitlesText.push([text,0]);
+											subtitlesText[index][1] = setTimeout(function() {
+												text.remove();
+												numberOfSubtitles--;
+												subtitlesText[index] = null;
+												if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
+											}, (currentSubtitleS.end * 1000) - (Date.now() - whenPlayed));
+											break;
+										}
+										case 1: {
+											let text = null;
+											const elements = [];
+											const currentSubtitleNodes = currentSubtitleS.text;
+											for (let i = 0; i < currentSubtitleNodes.length; i++) {
+												const node = currentSubtitleNodes[i];
+												switch (node.type) {
+													case 0: {
+														text = document.createElement("a");
+														break;
+													}
+													case 1: {
+														text = document.createElement("b");
+														break;
+													}
+													case 2: {
+														text = document.createElement("i");
+														break;
+													}
+													case 3: {
+														text = document.createElement("u");
+														break;
+													}
+													case 4: {
+														text = document.createElement("s");
+														break;
+													}
+													case 5: {
+														const colorPalette = ["255,162,0","255,0,255","255,255,0","0,109,117"];
+														text = document.createElement("div");
+														const speaker = document.createElement("a");
+														speaker.textContent = subtitlesToDisplay.names[node.speaker] + ": ";
+														speaker.style.color = colorPalette[node.speaker];
+														const dialog = document.createElement("a");
+														dialog.textContent = node.text;
+														text.appendChild(speaker);
+														text.appendChild(dialog);
+														break;
+													}
+												}
+												if (currentSubtitleS.type < 5) text.textContent = node.text;
+												subtitlesDiv.prepend(text);
+												numberOfSubtitles++;
+												subtitlesDiv.style.display = "";
+												text.style.overflowWrap = "break-word";
+												text.style.wordBreak = "break-word";
+												text.style.whiteSpace = "pre-wrap";
+												elements.push(text);
+											}
+											const index = subtitlesText.length;
+											subtitlesText.push([elements,0]);
+											subtitlesText[index][1] = setTimeout(function() {
+												for (const e of elements) {
+													e.remove();
+												}
+												numberOfSubtitles--;
+												subtitlesText[index] = null;
+												if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
+											}, (currentSubtitleS.end * 1000) - (Date.now() - whenPlayed));
+											break;
+										}
+									}
 								}
 								currentSubtitle = findSubtitleIndex((Date.now() - whenPlayed) * 0.001, currentSubtitle + 1); // skip subtitles that couldn't be displayed on time
 								currentSubtitleS = subtitlesToDisplay[currentSubtitle];
@@ -217,10 +293,21 @@
 			}
 			let whenDate = 0;
 			function clearSubtitles() {
-				for (const sub of subtitlesText) {
-					if (sub) {
-						sub[0].remove();
-						clearTimeout(sub[1]);
+				if (subtitleType === 0) {
+					for (const sub of subtitlesText) {
+						if (sub) {
+							sub[0].remove();
+							clearTimeout(sub[1]);
+						}
+					}
+				} else if (subtitleType === 1) {
+					for (const sub of subtitlesText) {
+						if (sub) {
+							for (const e of sub[0]) {
+								s.remove();
+							}
+							clearTimeout(sub[1]);
+						}
 					}
 				}
 				subtitlesText = [];
@@ -249,7 +336,11 @@
 					clearSubtitles();
 				}
 				currentSubtitle = findSubtitleIndex(startAt);
-				currentSubtitleS = subtitlesToDisplay[currentSubtitle];
+				if (subtitleType === 0) {
+					currentSubtitleS = subtitlesToDisplay[currentSubtitle];
+				} else if (subtitleType === 1) {
+					currentSubtitleS = subtitlesToDisplay.subtitles[currentSubtitle];
+				}
 				readyToDisplaySubtitles = true;
 				clearSubtitles();
 				if (!playing) requestAnimationFrame(() => tick());
@@ -257,6 +348,7 @@
 			}
 	
 			importSubtitles.onclick = async function() {
+				importSubtitles.disabled = true;
 				try {
 					let arrayBuff = new Uint8Array(0);
 					await new Promise(function(resolve, reject) {
@@ -274,19 +366,18 @@
 								fileReader.readAsArrayBuffer(firstFile);
 							} else reject();
 						}
-						file.accept = ".srt";
+						file.accept = ".srt, .vtt";
 						file.click();
 						file.remove();
 					});
 					const st = performance.now();
-					subtitlesToDisplay = SRT.ParseSRTFile(arrayBuff);
+					if (array[0] === 87) {subtitlesToDisplay = VTT.ParseVTTFile(arrayBuff);subtitleType = 1;} else {subtitlesToDisplay = SRT.ParseSRTFile(arrayBuff);subtitleType = 0;}
 					const en = performance.now();
 					alert("Parsed the subtitles in " + (en - st) + " seconds.");
-				} catch {
-					alert("You did not import any subtitle files.");
-				}
+				} catch {}
+				importSubtitles.disabled = false;
 			}
-			
+
 			function loadDiv(exp, blank = false) {
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
