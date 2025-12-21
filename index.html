@@ -216,6 +216,16 @@
 				}
 			}
 			let whenDate = 0;
+			function clearSubtitles() {
+				for (const sub of subtitlesText) {
+					if (sub) {
+						sub[0].remove();
+						clearTimeout(sub[1]);
+					}
+				}
+				subtitlesText = [];
+				numberOfSubtitles = 0;
+			}
 			function playSound() {
 				if (!sharedBuffer) return;
 				if (src) {
@@ -236,18 +246,12 @@
 				src.onended = function() {
 					playing = false;
 					timeline.setAttribute("fill", "none");
+					clearSubtitles();
 				}
 				currentSubtitle = findSubtitleIndex(startAt);
 				currentSubtitleS = subtitlesToDisplay[currentSubtitle];
 				readyToDisplaySubtitles = true;
-				for (const sub of subtitlesText) {
-					if (sub) {
-						sub[0].remove();
-						clearTimeout(sub[1]);
-					}
-				}
-				subtitlesText = [];
-				numberOfSubtitles = 0;
+				clearSubtitles();
 				if (!playing) requestAnimationFrame(() => tick());
 				playing = true;
 			}
@@ -492,7 +496,7 @@
 				v.appendChild(renameFile);
 				renameFile.textContent = "Rename Audio";
 				renameFile.onclick = function() {
-					filename = prompt("What will be the name of the edited audio?").split(".")[0];
+					filename = prompt("What will be the name of the edited audio?");
 					updateMetadata();
 				}
 				v.appendChild(document.createElement("br"));
