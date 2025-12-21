@@ -197,7 +197,7 @@
 										numberOfSubtitles--;
 										subtitlesText[index] = null;
 										if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
-									}, (currentSubtitleS.end - currentSubtitleS.start) * 1000);
+									}, (currentSubtitleS.end * 1000) - (Date.now() - whenDate));
 								}
 								currentSubtitle++;
 								currentSubtitleS = subtitlesToDisplay[currentSubtitle];
@@ -209,12 +209,13 @@
 			}
 			function findSubtitleIndex(p) {
 				if (p === 0) return 0;
-				for (let i = 0; i < subtitlesToDisplay.length; i++) {
-					if (subtitlesToDisplay[i].start <= p) return i;
+				for (let i = 1; i < subtitlesToDisplay.length; i++) {
+					if (subtitlesToDisplay[i].start >= p) return i - 1;
 					if (subtitlesToDisplay[i].end < p) break;
 				}
-				return subtitlesToDisplay.length;
+				return subtitlesToDisplay.length-1;
 			}
+			let whenDate = 0;
 			function playSound() {
 				if (!sharedBuffer) return;
 				if (src) {
@@ -231,6 +232,7 @@
 				startAt += timelineBeginNum / div.clientWidth * sharedBuffer.duration;
 				src.start(0, startAt);
 				whenPlayed = Date.now() - startAt * 1000;
+				whenDate = Date.now();
 				playing = true;
 				if (timeline) timeline.setAttribute("fill", "red");
 				src.onended = function() {
@@ -247,7 +249,7 @@
 					}
 				}
 				subtitlesText = [];
-				tick();
+				requestAnimationFrame(() => tick());
 			}
 	
 			importSubtitles.onclick = async function() {
