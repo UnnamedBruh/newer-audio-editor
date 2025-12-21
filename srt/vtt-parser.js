@@ -1,10 +1,3 @@
-/*
-const lookup = new Uint8Array(256);lookup.fill(0);
-for (let i = 0; i < 256; i++) {
-    lookup[i] = i === 58 || i === 59 || i === 46 || i === 44;
-}
-*/
-
 const VTT = (function() {
 	const VTT_NORMAL = 0, VTT_BOLD = 1, VTT_ITALIC = 2, VTT_UNDERLINE = 3, VTT_STROKE = 4, VTT_SPEAKER = 5;
 
@@ -12,7 +5,7 @@ const VTT = (function() {
 		constructor(text, type, speak) {
 			this.text = text;
 			this.type = type;
-			if (speak === VTT_SPEAKER) this.speaker = speak;
+			if (type === VTT_SPEAKER) this.speaker = speak;
 		}
 	}
 
@@ -152,7 +145,6 @@ const VTT = (function() {
 					if (pointer >= len) break;
 					switch (data[pointer]) {
 						case 118: { // Voice (v)
-							console.log(pointer);
 							pointer = __skipWhitespace(data, pointer + 1, len);
 							const node = new VTTTextNode("", VTT_SPEAKER, "");
 							oldPointer = pointer-1;
