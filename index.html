@@ -165,9 +165,9 @@
 			let currentSubtitle = 0;
 			let numberOfSubtitles = 0;
 			let currentSubtitleS = null;
-
 			let tickCache = 0, progress = 0;
 			let subtitlesText = [];
+
 			function tick() {
 				if (timeline && playing) {
 					progress = (Date.now() - whenPlayed) * 0.001;
@@ -249,6 +249,7 @@
 					}
 				}
 				subtitlesText = [];
+				numberOfSubtitles = 0;
 				requestAnimationFrame(() => tick());
 			}
 	
