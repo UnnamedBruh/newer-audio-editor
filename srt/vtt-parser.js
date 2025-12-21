@@ -9,6 +9,12 @@ const VTT = (function() {
 		}
 	}
 
+	class VTTClasses {
+		constructor(classes) {
+			this.classes = classes;
+		}
+	}
+
 	class VTTNote {
 		constructor(text) {
 			this.text = text;
@@ -69,6 +75,36 @@ const VTT = (function() {
 
 		const names = Object.create(null);
 		let numberOfNames = 0;
+		let oldPointer = 0;
+
+		function classNode(currentSubtitleContent) {
+			pointer++;
+			if (pointer < len && data[pointer] === 46) { // .
+				pointer++;
+			}
+			pointer = __skipWhitespace(data, pointer, len);
+			const node = new VTTClasses([]);
+			oldPointer = pointer-1;
+			for (; pointer < len; pointer++) {
+				if (data[pointer] === 62) {
+					const className = new TextDecoder().decode(data.subarray(oldPointer, pointer)).trimEnd();
+					node.classes.push(className);
+					break;
+				} else if (data[pointer] === 46) { // .
+					const className = new TextDecoder().decode(data.subarray(oldPointer, pointer)).trimEnd();
+					node.classes.push(className);
+					oldPointer = ++pointer;
+				}
+			}
+			pointer++;
+			currentSubtitleContent.push(node);
+			oldPointer = pointer+1;
+		}
+
+		function classNodeEnd(currentSubtitleContent) {
+			pointer++;
+			currentSubtitleContent.push(new VTTClasses([]));
+		}
 
 		while (pointer < len) {
 			// If there is garbage data, many parsing systems would throw an error. But that's not very convenient, so we'll just ignore the garbage data (including the WEBVTT header)
@@ -124,6 +160,7 @@ const VTT = (function() {
 			const currentSubtitleContent = [];
 			pointer--;
 			let continueLoop = false;
+
 			for (; pointer < len; pointer++) {
 				continueLoop = false;
 				if (data[pointer] === 13) pointer++; // \r
@@ -134,18 +171,41 @@ const VTT = (function() {
 					} else continue;
 				}
 				else if (data[pointer] === 60) { // <
-					const text = data.subarray(oldPointer-1, pointer);
+					const text = data.subarray(oldPointer-1, pointer + (data[pointer+2]===99?1:0));
 					if (text.length) {
 						let end = text.length;
 						for (let i = end-1; end >= 0; end--) {
-							if (text[end] === 32 || text[end] === 9) break; // Space or Tab
+							if (text[end] < 10 || text[end] > 13) break; // Space or Tab
 						}
 						// Trimming out the additional newlines of `text`, while also keeping spaces and tabs at the end of `text`
-						currentSubtitleContent.push(new VTTTextNode(new TextDecoder().decode(text.subarray(0, end+2)), VTT_NORMAL));
+						currentSubtitleContent.push(new VTTTextNode(new TextDecoder().decode(text.subarray(0, end)), VTT_NORMAL));
 					}
 					pointer++;
 					if (pointer >= len) break;
 					switch (data[pointer]) {
+						case 47: {
+							pointer++;
+							if (data[pointer] === 99) { // c
+								console.log("e");
+								/*const text = data.subarray(oldPointer-1, pointer+1);
+								if (text.length) {
+									let end = text.length;
+									for (let i = end-1; end >= 0; end--) {
+										if (text[end] === 32 || text[end] === 9) break; // Space or Tab
+									}
+									// Trimming out the additional newlines of `text`, while also keeping spaces and tabs at the end of `text`
+									currentSubtitleContent.push(new VTTTextNode(new TextDecoder().decode(text.subarray(0, end+2)), VTT_NORMAL));
+								}*/
+								classNodeEnd(currentSubtitleContent);
+								node = new VTTTextNode("", VTT_NORMAL);
+								oldPointer = (pointer+=2);
+							}
+							break;
+						}
+						case 99: { // Class (c)
+							classNode(currentSubtitleContent);
+							break;
+						}
 						case 118: { // Voice (v)
 							pointer = __skipWhitespace(data, pointer + 1, len);
 							const node = new VTTTextNode("", VTT_SPEAKER, "");
@@ -162,6 +222,21 @@ const VTT = (function() {
 							while (pointer < len) {
 								if (data[pointer] === 13) pointer++; // \r
 								if (data[pointer] === 10) {newlineNum++;break;} // \n
+								if (data[pointer] === 60) {
+									pointer++;
+									if (data[pointer] === 47) { // /
+										console.log("f");
+										pointer++;
+										if (data[pointer] === 99) { // c
+											node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer+2));
+											classNodeEnd(currentSubtitleContent);
+											currentSubtitleContent.push(node);
+											node = new VTTTextNode("", mapOfLetters[l]);
+											oldPointer = pointer;
+											continue;
+										}
+									}
+								}
 								pointer++;
 							}
 							node.text = new TextDecoder().decode(data.subarray(oldPointer, pointer - 1));
@@ -172,7 +247,7 @@ const VTT = (function() {
 						}
 						default: {
 							const l = data[pointer++];
-							const node = new VTTTextNode("", mapOfLetters[l]);
+							let node = new VTTTextNode("", mapOfLetters[l]);
 							if (data[pointer] === 62) pointer++;
 							oldPointer = pointer;
 							let setPointer = pointer;
@@ -190,6 +265,21 @@ const VTT = (function() {
 											pointer += 3;
 											break;
 										}
+										if (data[pointer] === 99) { // c
+											console.log("g");
+											node.text = new TextDecoder().decode(data.subarray(oldPointer-1, setPointer));
+											currentSubtitleContent.push(node);
+											node = new VTTTextNode("", mapOfLetters[l]);
+											oldPointer = ++pointer;
+											classNodeEnd(currentSubtitleContent);
+											continue;
+										}
+									} else if (data[pointer] === 99) {
+										node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer));
+										currentSubtitleContent.push(node);
+										node = new VTTTextNode("", mapOfLetters[l]);
+										oldPointer = pointer;
+										classNode(currentSubtitleContent);
 									}
 								}
 								pointer++;
