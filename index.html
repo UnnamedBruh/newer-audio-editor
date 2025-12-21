@@ -263,7 +263,6 @@
 												}
 												if (node.type < 5) text.textContent = node.text;
 												subtitlesDiv.appendChild(text);
-												numberOfSubtitles++;
 												subtitlesDiv.style.display = "";
 												text.style.overflowWrap = "break-word";
 												text.style.wordBreak = "break-word";
@@ -271,6 +270,7 @@
 												elements.push(text);
 											}
 											const index = subtitlesText.length;
+											numberOfSubtitles++;
 											subtitlesText.push([elements,0]);
 											subtitlesText[index][1] = setTimeout(function() {
 												for (const e of elements) {
