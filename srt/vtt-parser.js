@@ -197,7 +197,7 @@ const VTT = (function() {
 							}
 							node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer));
 							currentSubtitleContent.push(node);
-							oldPointer = pointer;
+							oldPointer = pointer+1;
 							continueLoop = true;
 							break;
 						}
@@ -214,7 +214,7 @@ const VTT = (function() {
 		}
 
 		const lastSubtitle = subtitles[subtitles.length - 1];
-		if (lastSubtitle.text === "" && isNaN(lastSubtitle.start) && isNaN(lastSubtitle.end)) {
+		if (!lastSubtitle.text.length && isNaN(lastSubtitle.start) && isNaN(lastSubtitle.end)) {
 			subtitles.pop();
 		}
 
