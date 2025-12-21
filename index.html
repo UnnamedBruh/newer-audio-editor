@@ -44,7 +44,7 @@
 		<a>Thank you for understanding the unintentionally-wordy section above, and your patience.</a>
 		<h2>Privacy Policy</h2>
 		<a>We value your privacy and are committed to transparency regarding how we handle your information. When you upload files to this project, we do not collect, store, sell, track, monitor, accumulate, hoard, gather, lend, send, transfer or transmit any data associated with these files or your personal information. This includes uploaded files, any data generated from this software, and additional fetching information your browser sends to the original newer-audio-editor website.</a>
-		<div id="subtitles" style="display: none; background-color: black; color: white; font-size: 8px; font-family: sans-serif; position: absolute; top: 70vh; left: 0px; width: 100%; height: min-content; text-align: center;"></div>
+		<div id="subtitles" style="display: none; background-color: black; color: white; font-size: 14px; font-family: sans-serif; position: absolute; top: 70vh; left: 0px; width: 100%; height: min-content; text-align: center;"></div>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles");
@@ -167,6 +167,7 @@
 			let currentSubtitleS = null;
 
 			let tickCache = 0, progress = 0;
+			let subtitlesText = [];
 			function tick() {
 				if (timeline && playing) {
 					progress = (Date.now() - whenPlayed) * 0.001;
@@ -186,10 +187,16 @@
 									subtitlesDiv.prepend(text);
 									numberOfSubtitles++;
 									subtitlesDiv.style.display = "";
-									setTimeout(function() {
+									text.style.overflowWrap = "break-word";
+									text.style.wordBreak = "break-word";
+									text.style.whiteSpace = "pre-wrap";
+									const index = subtitlesText.length;
+									subtitlesText.push([text,0]);
+									subtitlesText[index][1] = setTimeout(function() {
 										text.remove();
 										numberOfSubtitles--;
-										if (!numberOfSubtitles) subtitlesDiv.style.display = "none";
+										subtitlesText[index] = null;
+										if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
 									}, (currentSubtitleS.end - currentSubtitleS.start) * 1000);
 								}
 								currentSubtitle++;
@@ -202,8 +209,10 @@
 			}
 			function findSubtitleIndex(p) {
 				for (let i = 1; i < subtitlesToDisplay.length; i++) {
-					if (subtitlesToDisplay[i].start > p) return i - 1;
+					if (subtitlesToDisplay[i].start < p) return i;
+					if (subtitlesToDisplay[i].end < p) break;
 				}
+				return subtitlesToDisplay.length;
 			}
 			function playSound() {
 				if (!sharedBuffer) return;
@@ -227,9 +236,16 @@
 					playing = false;
 					timeline.setAttribute("fill", "none");
 				}
-				currentSubtitleS = subtitlesToDisplay[0];
 				currentSubtitle = findSubtitleIndex(startAt);
+				currentSubtitleS = subtitlesToDisplay[currentSubtitle];
 				readyToDisplaySubtitles = true;
+				for (const sub of subtitlesText) {
+					if (sub) {
+						sub[0].remove();
+						clearTimeout(sub[1]);
+					}
+				}
+				subtitlesText = [];
 				tick();
 			}
 	
@@ -1358,6 +1374,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					renameFile.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
+					subtitlesDiv.style.top = ["calc(70vh + ", window.scrollY, "px)"].join("");
 					if (window.scrollX > window.innerWidth - selectLabel.getBoundingClientRect().width) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
 					if (sampleSkip === 1) {
 						count++;
