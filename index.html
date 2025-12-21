@@ -204,7 +204,7 @@
 										case 0: {
 											const text = document.createElement("pre");
 											text.textContent = currentSubtitleS.text;
-											subtitlesDiv.prepend(text);
+											subtitlesDiv.append(text);
 											numberOfSubtitles++;
 											subtitlesDiv.style.display = "";
 											text.style.overflowWrap = "break-word";
@@ -261,7 +261,7 @@
 													}
 												}
 												if (currentSubtitleS.type < 5) text.textContent = node.text;
-												subtitlesDiv.prepend(text);
+												subtitlesDiv.appendChild(text);
 												numberOfSubtitles++;
 												subtitlesDiv.style.display = "";
 												text.style.overflowWrap = "break-word";
@@ -284,7 +284,7 @@
 									}
 								}
 								currentSubtitle = findSubtitleIndex((Date.now() - whenPlayed) * 0.001, currentSubtitle + 1); // skip subtitles that couldn't be displayed on time
-								currentSubtitleS = subtitlesToDisplay[currentSubtitle];
+								if (subtitleType === 0) currentSubtitleS = subtitlesToDisplay[currentSubtitle]; else if (subtitleType === 1) currentSubtitleS = subtitlesToDisplay.subtitles[currentSubtitle];
 							}
 						}
 					}
