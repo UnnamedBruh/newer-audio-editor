@@ -197,7 +197,7 @@
 										numberOfSubtitles--;
 										subtitlesText[index] = null;
 										if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
-									}, (currentSubtitleS.end * 1000) - (Date.now() - whenDate));
+									}, (currentSubtitleS.end * 1000) - (Date.now() - whenPlayed));
 								}
 								currentSubtitle++;
 								currentSubtitleS = subtitlesToDisplay[currentSubtitle];
@@ -232,7 +232,6 @@
 				startAt += timelineBeginNum / div.clientWidth * sharedBuffer.duration;
 				src.start(0, startAt);
 				whenPlayed = Date.now() - startAt * 1000;
-				whenDate = Date.now();
 				playing = true;
 				if (timeline) timeline.setAttribute("fill", "red");
 				src.onended = function() {
