@@ -194,7 +194,7 @@
 						playing = false;
 						src.stop();
 					}
-					if (readyToDisplaySubtitles&&subtitlesToDisplay.length) {
+					if (readyToDisplaySubtitles&&(subtitleType===0?subtitlesToDisplay.length:subtitlesToDisplay.subtitles.length) {
 						if (!currentSubtitleS) {
 							readyToDisplaySubtitles = false;
 						} else {
@@ -204,7 +204,7 @@
 										case 0: {
 											const text = document.createElement("pre");
 											text.textContent = currentSubtitleS.text;
-											subtitlesDiv.append(text);
+											subtitlesDiv.appendChild(text);
 											numberOfSubtitles++;
 											subtitlesDiv.style.display = "";
 											text.style.overflowWrap = "break-word";
@@ -221,10 +221,12 @@
 											break;
 										}
 										case 1: {
+											console.log("Called...");
 											let text = null;
 											const elements = [];
 											const currentSubtitleNodes = currentSubtitleS.text;
 											for (let i = 0; i < currentSubtitleNodes.length; i++) {
+												console.log(i);
 												const node = currentSubtitleNodes[i];
 												switch (node.type) {
 													case 0: {
@@ -261,11 +263,6 @@
 													}
 												}
 												if (currentSubtitleS.type < 5) text.textContent = node.text;
-												if (elements.length) {
-													const d = document.createElement("br");
-													elements.push(d);
-													subtitlesDiv.appendChild(d);
-												}
 												subtitlesDiv.appendChild(text);
 												numberOfSubtitles++;
 												subtitlesDiv.style.display = "";
@@ -285,6 +282,9 @@
 												if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
 											}, (currentSubtitleS.end * 1000) - (Date.now() - whenPlayed));
 											break;
+										}
+										default: {
+											console.log("Not passed");
 										}
 									}
 								}
@@ -351,7 +351,6 @@
 				if (!playing) requestAnimationFrame(() => tick());
 				playing = true;
 			}
-	
 			importSubtitles.onclick = async function() {
 				importSubtitles.disabled = true;
 				try {
