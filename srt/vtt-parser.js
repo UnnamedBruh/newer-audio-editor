@@ -197,7 +197,7 @@ const VTT = (function() {
 							}
 							node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer));
 							currentSubtitleContent.push(node);
-							oldPointer = pointer+1;
+							oldPointer = pointer;
 							continueLoop = true;
 							break;
 						}
@@ -208,7 +208,7 @@ const VTT = (function() {
 			}
 			if (oldPointer < pointer) {
 				const yyx = new TextDecoder().decode(data.subarray(oldPointer-1, pointer>=minusLen?pointer:pointer-1));
-				if (yyx) currentSubtitleContent.push(new VTTTextNode(yyx, VTT_NORMAL));
+				if (yyx && yyx !== "\n") currentSubtitleContent.push(new VTTTextNode(yyx, VTT_NORMAL));
 			}
 			subtitles.push(new VTTSubtitle(currentSubtitleContent, timeStart, timeEnd));
 		}
