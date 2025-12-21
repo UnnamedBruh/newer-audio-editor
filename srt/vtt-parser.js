@@ -267,7 +267,7 @@ const VTT = (function() {
 										}
 										if (data[pointer] === 99) { // c
 											console.log("g");
-											node.text = new TextDecoder().decode(data.subarray(oldPointer-1, setPointer));
+											node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer));
 											currentSubtitleContent.push(node);
 											node = new VTTTextNode("", mapOfLetters[l]);
 											oldPointer = ++pointer;
