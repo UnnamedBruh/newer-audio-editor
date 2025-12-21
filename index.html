@@ -1375,6 +1375,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
 					subtitlesDiv.style.top = ["calc(70vh + ", window.scrollY, "px)"].join("");
+					subtitlesDiv.style.left = [window.scrollX, "px"].join("");
 					if (window.scrollX > window.innerWidth - selectLabel.getBoundingClientRect().width) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
 					if (sampleSkip === 1) {
 						count++;
