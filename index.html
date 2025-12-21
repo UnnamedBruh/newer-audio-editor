@@ -208,8 +208,9 @@
 				}
 			}
 			function findSubtitleIndex(p) {
-				for (let i = 1; i < subtitlesToDisplay.length; i++) {
-					if (subtitlesToDisplay[i].start < p) return i;
+				if (p === 0) return 0;
+				for (let i = 0; i < subtitlesToDisplay.length; i++) {
+					if (subtitlesToDisplay[i].start <= p) return i;
 					if (subtitlesToDisplay[i].end < p) break;
 				}
 				return subtitlesToDisplay.length;
