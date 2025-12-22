@@ -49,11 +49,12 @@ const SRT = (function() {
 	}
 
 	const de = new TextDecoder().decode;
-	const sub = data.subarray;
 
 	function ParseSRTFile(data = new Uint8Array(0), settings = {
 		noBlankSubtitles: true
 	}) {
+		const sub = data.subarray;
+
 		const subtitles = [];
 		const len = data.length;
 		let pointer = 0;
@@ -130,7 +131,8 @@ const SRT = (function() {
 				setPointer = pointer+1;
 				newlineNum = 0;
 			}
-			subtitles.push(new SRTSubtitle(de(sub(oldPointer-1, setPointer)), timeStart, timeEnd));
+			const text = de(sub(oldPointer-1, setPointer));
+			if (!noBlankSubtitles || text) subtitles.push(new SRTSubtitle(text, timeStart, timeEnd));
 		}
 
 		const lastSubtitle = subtitles[subtitles.length - 1];
