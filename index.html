@@ -17,9 +17,11 @@
 			.emphasis{font-weight:bold}.warning{background-color:yellow;color:black}.thought{color:gray;font-style:italic}.aside{color:gray;font-size:10px;}.flashback{color:rgb(255,243,163);}
 			.hidden,.nodisplay,.none,.invisible,.transparent,.noopaque{display:none}.left{text-align:left;width:50%}.right{text-align:right;width:50%}
 			.fadein{opacity:0;animation:fadeintransition 1s forwards;}@keyframes fadeintransition{to{opacity:1;}}
-			.fadeout{opacity:0;animation:fadeouttransition 2s forwards;}@keyframes fadeouttransition{to{opacity:0;}}
+			.fadeout{opacity:1;animation:fadeouttransition 2s forwards;}@keyframes fadeouttransition{to{opacity:0;}}
 			.slideinleft,.slideleftin,.slidefromleft{margin-right:130%;animation:slideleftin 1.5s forwards;}@keyframes slideleftin{to{margin-right:0%;}}
 			.slideinright,.sliderightin,.slidefromright{margin-left:130%;animation:sliderightin 1.5s forwards;}@keyframes sliderightin{to{margin-left:0%;}}
+			.grow,.growin,.growlarge,.growbig{font-size:0px;animation:growin 1s forwards;}@keyframes growin{to{font-size:14px;}}
+			.shrink,.shrinkout,.shrinkin,.shrinksmall,.shrinktiny{font-size:14px;animation:shrinkout 1.5s forwards;}@keyframes shrinkout{to{font-size:0px;}}
 			.blink,.wink,.switch{animation:blinkingtext 0.9s infinite;}@keyframes blinkingtext{0%{opacity:1;}70%{opacity:0;}100%{opacity:1;}}
 			.flicker{animation:flickeringtext 4.5s infinite;}@keyframes flickeringtext{0%{opacity:1;}7%{opacity:0;}12%{opacity:1;}18%{opacity:0;}20%{opacity:1;}23%{opacity:0;}29%{opacity:1;}35%{opacity:0;}44%{opacity:1;}50%{opacity:0;}51%{opacity:1;}54%{opacity:0;}55%{opacity:1;}61%{opacity:0;}68%{opacity:1;}69%{opacity:0;}73%{opacity:1;}83%{opacity:0;}88%{opacity:1;}91%{opacity:0;}93%{opacity:1;}96%{opacity:0;}100%{opacity:1;}}
 			.flash,.flashbang{background-color:rgba(255,255,255,1);color:rgb(255,255,255);animation:flashout 0.6s forwards;}@keyframes flashout{to{background-color:rgba(0,0,0,0);}}
