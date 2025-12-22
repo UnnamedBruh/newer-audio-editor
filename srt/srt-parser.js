@@ -33,6 +33,11 @@ const SRT = (function() {
 		return [offset, x];
 	}
 
+	function __skipInt(data = new Uint8Array(0), offset = 0, len) {
+		while (offset < len && __intLookup[data[offset++]] ^ 0x10) {}
+		return offset;
+	}
+
 	function __skipBadData(data = new Uint8Array(0), offset = 0, len) {
 		while (offset < len && (__intLookup[data[offset]] & 0x10) && __spaLookup[data[offset++]]) {}
 		return offset;
@@ -42,6 +47,8 @@ const SRT = (function() {
 		while (offset < len && __spaLookup[data[offset++]]) {}
 		return offset;
 	}
+
+	const de = new TextDecoder().decode;
 
 	function ParseSRTFile(data = new Uint8Array(0), settings = {
 		noBlankSubtitles: true
@@ -58,9 +65,9 @@ const SRT = (function() {
 
 			// Skip the sequence number
 			let oldPointer = pointer;
-			pointer = __parseInt(data, pointer, len)[0];
-			/*if (__sepLookup[data[pointer]]) // data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44
-				pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline*/
+			pointer = __skipInt(data, pointer, len);
+			if (__sepLookup[data[pointer]]) // data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44
+				pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline
 
 			// Skip more "bad" data
 			pointer = __skipBadData(data, pointer, len);
@@ -111,6 +118,7 @@ const SRT = (function() {
 			}
 
 			oldPointer = pointer;
+			let setPointer = 0;
 			let newlineNum = 0;
 			for (; pointer < len; pointer++) {
 				if (data[pointer] === 13) pointer++; // \r
@@ -118,9 +126,10 @@ const SRT = (function() {
 					newlineNum++;
 					if (newlineNum >= 2) break; else continue;
 				}
+				setPointer = pointer+1;
 				newlineNum = 0;
 			}
-			subtitles.push(new SRTSubtitle(new TextDecoder().decode(data.subarray(oldPointer-1, pointer)).trimEnd(), timeStart, timeEnd));
+			subtitles.push(new SRTSubtitle(de(data.subarray(oldPointer-1, setPointer)), timeStart, timeEnd));
 		}
 
 		const lastSubtitle = subtitles[subtitles.length - 1];
