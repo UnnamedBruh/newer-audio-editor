@@ -66,8 +66,8 @@ const VTT = (function() {
 	const mapOfLetters = {
 		98: VTT_BOLD, 105: VTT_ITALIC, 117: VTT_UNDERLINE, 115: VTT_STROKE
 	}
-
-	const de = new TextDecoder().decode;
+	const ___decoder = new TextDecoder();
+	const de = ___decoder.decode.bind(___decoder);
 
 	function ParseVTTFile(data = new Uint8Array(0), settings = {
 		noBlankSubtitles: true
@@ -300,7 +300,7 @@ const VTT = (function() {
 				newlineNum = 0;
 			}
 			if (oldPointer < pointer) {
-				const yyx = data.subarray(oldPointer-1, pointer>=minusLen?pointer:pointer-1);
+				const yyx = de(data.subarray(oldPointer-1, pointer>=minusLen?pointer:pointer-1));
 				if (yyx && yyx.trim()) currentSubtitleContent.push(new VTTTextNode(yyx, VTT_NORMAL));
 			}
 			subtitles.push(new VTTSubtitle(currentSubtitleContent, timeStart, timeEnd));
