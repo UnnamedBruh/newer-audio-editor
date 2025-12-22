@@ -48,7 +48,8 @@ const SRT = (function() {
 		return offset;
 	}
 
-	const de = new TextDecoder().decode;
+	const ___decoder = new TextDecoder();
+	const de = ___decoder.decode.bind(___decoder);
 
 	function ParseSRTFile(data = new Uint8Array(0), settings = {
 		noBlankSubtitles: true
