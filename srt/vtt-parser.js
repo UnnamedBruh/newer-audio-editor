@@ -175,10 +175,10 @@ const VTT = (function() {
 					if (text.length) {
 						let end = text.length;
 						for (let i = end-1; end >= 0; end--) {
-							if (text[end] < 10 || text[end] > 13) break; // Space or Tab
+							if (text[end] < 10 || text[end] > 13) break; // All kinds of terminators
 						}
 						// Trimming out the additional newlines of `text`, while also keeping spaces and tabs at the end of `text`
-						currentSubtitleContent.push(new VTTTextNode(new TextDecoder().decode(text.subarray(0, end)), VTT_NORMAL));
+						currentSubtitleContent.push(new VTTTextNode(new TextDecoder().decode(text.subarray(0, end+1)), VTT_NORMAL));
 					}
 					pointer++;
 					if (pointer >= len) break;
