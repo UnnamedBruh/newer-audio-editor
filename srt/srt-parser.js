@@ -49,6 +49,7 @@ const SRT = (function() {
 	}
 
 	const de = new TextDecoder().decode;
+	const sub = data.subarray;
 
 	function ParseSRTFile(data = new Uint8Array(0), settings = {
 		noBlankSubtitles: true
@@ -76,7 +77,7 @@ const SRT = (function() {
 				const parse = __parseInt(data, pointer, len);
 				fakeUnits.push(parse[1]);
 				pointer = parse[0]-1;
-				if (!__sepLookup[data[pointer]]) break; else pointer++; // Normally, timestamps are separated by either a : , or . but we'll also allow ;
+				if (__sepLookup[data[pointer]]) pointer++; else break; // Normally, timestamps are separated by either a : , or . but we'll also allow ;
 			}
 
 			const timeStart = fakeUnits[Math.max(0, fakeUnits.length-4)] * 3600 + fakeUnits[Math.max(0, fakeUnits.length-3)] * 60 + fakeUnits[Math.max(0, fakeUnits.length-2)] + fakeUnits[Math.max(0, fakeUnits.length-1)] * 0.001;
@@ -94,7 +95,7 @@ const SRT = (function() {
 				}
 
 				pointer = __skipBadData(data, pointer, len);
-				if (!(__intLookup[data[pointer]] & 0x10)) break;
+				if (__intLookup[data[pointer]] ^ 0x10) break;
 			}
 			fakeUnits = [];
 
@@ -129,7 +130,7 @@ const SRT = (function() {
 				setPointer = pointer+1;
 				newlineNum = 0;
 			}
-			subtitles.push(new SRTSubtitle(de(data.subarray(oldPointer-1, setPointer)), timeStart, timeEnd));
+			subtitles.push(new SRTSubtitle(de(sub(oldPointer-1, setPointer)), timeStart, timeEnd));
 		}
 
 		const lastSubtitle = subtitles[subtitles.length - 1];
