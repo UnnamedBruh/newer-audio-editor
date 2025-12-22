@@ -404,7 +404,7 @@
 					if (arrayBuff[0] === 87) {subtitlesToDisplay = VTT.ParseVTTFile(arrayBuff);subtitleType = 1;} else {subtitlesToDisplay = SRT.ParseSRTFile(arrayBuff);subtitleType = 0;}
 					const en = performance.now();
 					alert("Parsed the subtitles in " + (en - st) + " seconds.");
-				} catch {}
+				} catch (err) {console.log(err.stack);}
 				importSubtitles.disabled = false;
 			}
 
