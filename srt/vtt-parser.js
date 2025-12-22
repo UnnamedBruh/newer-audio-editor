@@ -48,6 +48,11 @@ const VTT = (function() {
 		return [offset, x];
 	}
 
+	function __skipInt(data = new Uint8Array(0), offset = 0, len) {
+		while (offset < len && __intLookup[data[offset++]] ^ 0x10) {}
+		return offset;
+	}
+
 	function __skipBadData(data = new Uint8Array(0), offset = 0, len) {
 		while (offset < len && __intLookup[data[offset++]] & 0x10) {}
 		return offset;
@@ -61,6 +66,8 @@ const VTT = (function() {
 	const mapOfLetters = {
 		98: VTT_BOLD, 105: VTT_ITALIC, 117: VTT_UNDERLINE, 115: VTT_STROKE
 	}
+
+	const de = new TextDecoder().decode;
 
 	function ParseVTTFile(data = new Uint8Array(0), settings = {
 		noBlankSubtitles: true
@@ -87,11 +94,11 @@ const VTT = (function() {
 			oldPointer = pointer-1;
 			for (; pointer < len; pointer++) {
 				if (data[pointer] === 62) {
-					const className = new TextDecoder().decode(data.subarray(oldPointer, pointer)).trimEnd();
+					const className = de(data.subarray(oldPointer, pointer)).trimEnd();
 					node.classes.push(className);
 					break;
 				} else if (data[pointer] === 46) { // .
-					const className = new TextDecoder().decode(data.subarray(oldPointer, pointer)).trimEnd();
+					const className = de(data.subarray(oldPointer, pointer)).trimEnd();
 					node.classes.push(className);
 					oldPointer = ++pointer;
 				}
@@ -109,6 +116,12 @@ const VTT = (function() {
 		while (pointer < len) {
 			// If there is garbage data, many parsing systems would throw an error. But that's not very convenient, so we'll just ignore the garbage data (including the WEBVTT header)
 			if (skipBadStep) {pointer = __skipBadData(data, pointer, len);skipBadStep = true;}
+
+			// Skip the sequence number
+			let oldPointer = pointer;
+			pointer = __skipInt(data, pointer, len);
+			if (__sepLookup[data[pointer]]) pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline
+
 			let fakeUnits = [];
 			for (let j = 0; pointer < len; j++) {
 				const parse = __parseInt(data, pointer, len);
@@ -178,7 +191,7 @@ const VTT = (function() {
 							if (text[end] < 10 || text[end] > 13) break; // All kinds of terminators
 						}
 						// Trimming out the additional newlines of `text`, while also keeping spaces and tabs at the end of `text`
-						currentSubtitleContent.push(new VTTTextNode(new TextDecoder().decode(text.subarray(0, end+1)), VTT_NORMAL));
+						currentSubtitleContent.push(new VTTTextNode(de(text.subarray(0, end+1)), VTT_NORMAL));
 					}
 					pointer++;
 					if (pointer >= len) break;
@@ -202,7 +215,7 @@ const VTT = (function() {
 							oldPointer = pointer-1;
 							for (; pointer < len; pointer++) {
 								if (data[pointer] === 62) {
-									const voice = new TextDecoder().decode(data.subarray(oldPointer, pointer)).trimEnd();
+									const voice = de(data.subarray(oldPointer, pointer)).trimEnd();
 									if ((__index = names[voice])) node.speaker = __index; else node.speaker = (names[voice] = numberOfNames++);
 									break;
 								}
@@ -218,7 +231,7 @@ const VTT = (function() {
 										console.log("f");
 										pointer++;
 										if (data[pointer] === 99) { // c
-											node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer+2));
+											node.text = de(data.subarray(oldPointer, setPointer+2));
 											classNodeEnd(currentSubtitleContent);
 											currentSubtitleContent.push(node);
 											node = new VTTTextNode("", mapOfLetters[l]);
@@ -229,7 +242,7 @@ const VTT = (function() {
 								}
 								pointer++;
 							}
-							node.text = new TextDecoder().decode(data.subarray(oldPointer, pointer - 1));
+							node.text = de(data.subarray(oldPointer, pointer - 1));
 							currentSubtitleContent.push(node);
 							oldPointer = pointer+1;
 							continueLoop = true;
@@ -257,7 +270,7 @@ const VTT = (function() {
 										}
 										if (data[pointer] === 99) { // c
 											console.log("g");
-											node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer));
+											node.text = de(data.subarray(oldPointer, setPointer));
 											currentSubtitleContent.push(node);
 											node = new VTTTextNode("", mapOfLetters[l]);
 											oldPointer = ++pointer;
@@ -265,7 +278,7 @@ const VTT = (function() {
 											continue;
 										}
 									} else if (data[pointer] === 99) {
-										node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer));
+										node.text = de(data.subarray(oldPointer, setPointer));
 										currentSubtitleContent.push(node);
 										node = new VTTTextNode("", mapOfLetters[l]);
 										oldPointer = pointer;
@@ -275,7 +288,7 @@ const VTT = (function() {
 								pointer++;
 								setPointer = pointer;
 							}
-							node.text = new TextDecoder().decode(data.subarray(oldPointer, setPointer));
+							node.text = de(data.subarray(oldPointer, setPointer));
 							currentSubtitleContent.push(node);
 							oldPointer = pointer;
 							continueLoop = true;
@@ -287,7 +300,7 @@ const VTT = (function() {
 				newlineNum = 0;
 			}
 			if (oldPointer < pointer) {
-				const yyx = new TextDecoder().decode(data.subarray(oldPointer-1, pointer>=minusLen?pointer:pointer-1));
+				const yyx = data.subarray(oldPointer-1, pointer>=minusLen?pointer:pointer-1));
 				if (yyx && yyx.trim()) currentSubtitleContent.push(new VTTTextNode(yyx, VTT_NORMAL));
 			}
 			subtitles.push(new VTTSubtitle(currentSubtitleContent, timeStart, timeEnd));
