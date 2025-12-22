@@ -53,7 +53,7 @@ const SRT = (function() {
 	function ParseSRTFile(data = new Uint8Array(0), settings = {
 		noBlankSubtitles: true
 	}) {
-		const sub = data.subarray;
+		const sub = data.subarray.bind(data);
 
 		const subtitles = [];
 		const len = data.length;
