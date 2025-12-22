@@ -300,7 +300,7 @@ const VTT = (function() {
 				newlineNum = 0;
 			}
 			if (oldPointer < pointer) {
-				const yyx = data.subarray(oldPointer-1, pointer>=minusLen?pointer:pointer-1));
+				const yyx = data.subarray(oldPointer-1, pointer>=minusLen?pointer:pointer-1);
 				if (yyx && yyx.trim()) currentSubtitleContent.push(new VTTTextNode(yyx, VTT_NORMAL));
 			}
 			subtitles.push(new VTTSubtitle(currentSubtitleContent, timeStart, timeEnd));
