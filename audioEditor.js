@@ -785,9 +785,22 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 				let curr = lastSample;
 				if (i > chanceOfSpike && i < estimatedEndOfSpike) {
 					curr += Math.sign(curr) * Math.cbrt(curr);
-					chanceOfSpike += chanceOfSpike * (Math.random() + 1);
+					chanceOfSpike += chanceOfSpike * (Math.random() + 0.5);
 				}
 				data[i] = curr;
+			}
+		} else if (whichSystem === "realrapid") { // This part was duplicated from the snippet inside the "real" branch, except the frequency of the IR decreases a lot quicker.
+			let lastSample = 0;
+			const dampBegin = damp;
+			let kk = 0;
+			for (let i = 0; i < length; i++) {
+				// Create decaying noise
+				let n = Math.random() * 2 - 1;
+				kk = 1 - i / length;
+				n = n * Math.pow(kk, decay);
+				lastSample = lastSample + damp * (n - lastSample);
+				damp = (1-sqrt(i/length))*dampBegin;
+				data[i] = lastSample;
 			}
 		}
 
