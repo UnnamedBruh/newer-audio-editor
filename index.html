@@ -224,8 +224,14 @@
 											let text = null;
 											const elements = [];
 											const currentSubtitleNodes = currentSubtitleS.text;
+											let classes = [];
+											let prevType = null;
 											for (let i = 0; i < currentSubtitleNodes.length; i++) {
 												const node = currentSubtitleNodes[i];
+												if (!(node instanceof VTT.VTTSubtitle)) {
+													classes = node.classes;
+													continue;
+												}
 												switch (node.type) {
 													case 0: {
 														text = document.createElement("a");
@@ -248,14 +254,17 @@
 														break;
 													}
 													case 5: {
-														const colorPalette = ["255,162,0","255,0,255","255,255,0","0,109,117"];
+														const colorPalette = ["255,162,0","255,0,255","255,255,0","0,109,117","46,178,72","138,138,138","0,0,117","82,82,0","255,255,255","117,0,0"];
 														text = document.createElement("div");
-														const speaker = document.createElement("a");
-														speaker.textContent = subtitlesToDisplay.names[node.speaker] + ": ";
-														speaker.style.color = `rgb(${colorPalette[node.speaker]})`;
+														let speaker = null;
+														if (!(prevType === 5 && !(currentSubtitleNodes[i-1] instanceof VTT.VTTSubtitle))) {
+															speaker = document.createElement("a");
+															speaker.textContent = subtitlesToDisplay.names[node.speaker] + ": ";
+															speaker.style.color = `rgb(${colorPalette[node.speaker]})`;
+														}
 														const dialog = document.createElement("a");
 														dialog.textContent = node.text;
-														text.appendChild(speaker);
+														if (speaker) text.appendChild(speaker);
 														text.appendChild(dialog);
 														text.style.backgroundColor = "black";
 														break;
@@ -267,6 +276,12 @@
 												text.style.overflowWrap = "break-word";
 												text.style.wordBreak = "break-word";
 												text.style.whiteSpace = "pre-wrap";
+												prevType = node.type;
+												if (classes.length) {
+													for (const className of classes) {
+														if (className) text.classList.add(className);
+													}
+												}
 												elements.push(text);
 											}
 											const index = subtitlesText.length;
