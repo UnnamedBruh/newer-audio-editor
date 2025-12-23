@@ -30,11 +30,10 @@ const SUB = (function() {
 		while (offset < len && !((current = __intLookup[data[offset++]]) & 0x10)) {
 			x = x*10+current;
 		}
-		if (data[offset] === 46) { // 46
-			offset++;
+		if (data[offset-1] === 46) { // 46
 			let mult = 0.1;
 			while (offset < len && !((current = __intLookup[data[offset++]]) & 0x10)) {
-				x = x*mult+current;
+				x = x+current*mult;
 				mult *= 0.1;
 			}
 		}
