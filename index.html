@@ -153,16 +153,20 @@
 			function generateWaveform(exp) {
 				let data2 = ["M 0,100 L 0,100"];
 				const len = exp.audioData.length, y = exp.audioData;
-				let prev = 0, val;
+				let prev = 0, val, prevVal=0;
 				let ep = 0.004;
-				val = y[0];
+				val = prevVal = y[0];
 				let b = 0;
+				let m = 0;
 				for (let i = 0, j = 0; i < len; i = b, j++) {
 					b = i + sampleSkip;
 					if (Math.abs(prev - val) >= ep) {
+						if (m !== j-1) data2.push("L " + (j-1) + "," + Math.round(100 + prevVal * 100));
 						data2.push("L " + j + "," + Math.round(100 + val * 100));
 						val = y[b] || 0;
+						m = j;
 					}
+					prevVal = prev;
 					prev = y[i];
 				}
 				data2.push("L " + (len / sampleSkip) + ",100");
