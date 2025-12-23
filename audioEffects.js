@@ -187,18 +187,18 @@ const effectsList = [
 	[
 		"Trim Silence",
 		"Trims out the selected locations (specified by the dropdown) of the silent sections of audio.",
-		'Locations: <select id="trimsilence0"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select>',
-		1,
+		'Locations: <select id="trimsilence0"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select><br>Tolerance Level: <input id="trimsilence1" type="number" min="0" step="0.0060554543779289816" value="0.0060554543779289816" max="0.1" style="width: 100px">',
+		2,
 		"trimsilence",
-		[identifier]
+		[identifier, Number]
 	],
 	[
 		"Trim Silence (Stereo)",
 		"Trims out the selected locations (specified by the dropdown) of the silent sections of audio, while also keeping sync of both channels.",
-		'Locations: <select id="trimsilence20"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select>',
-		1,
+		'Locations: <select id="trimsilence20"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select><br>Tolerance Level: <input id="trimsilence21" type="number" min="0" step="0.0060554543779289816" value="0.0060554543779289816" max="0.1" style="width: 100px">',
+		2,
 		"trimsilence2",
-		[identifier],
+		[identifier, Number],
 		2
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
