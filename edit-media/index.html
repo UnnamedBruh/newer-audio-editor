@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<style>
+			body {
+				background-color: black;
+				color: white;
+				font-family: Arial, sans-serif;
+				min-width: 100vw;
+			}
+			div {
+				border-radius: 8px;
+				background-color: rgb(30, 30, 30);
+			}
+		</style>
+	</head>
+	<body>
+		<p style="color: red">THIS PAGE IS UNDER DEVELOPMENT. THIS PAGE IS NOT RELIABLE AS A SUBSTITUTE FOR ANY TOOL, UTILITY, OR APPLICATION YET. DO NOT TRUST THE TEXT THAT THIS PAGE DISPLAYS (NOT INCLUDING THIS WARNING), AND ASSUME THAT THIS PAGE MAY NOT FUNCTION OR OPERATE CORRECTLY AT ANY TIME, WITH OR WITHOUT ANY NOTICE. (You, the entity(s) who are visiting and using this page, are encouraged to follow those instructions carefully. You are not required to follow them, therefore they are not strictly enforced.)</p>
+		<h1>Media Editor</h1>
+		<a>This editor is designed to allow users to edit almost any file asdfghjklmnbvcxzqwertyuiopahdidcfriuhfcekjhfkujh</a>
+		<hr>
+		<a id="lab1">Current</a> <select id="inputtype"><option value="txt">Text File</option><option value="txt8B">Text UTF8 BOM File</option></select>: <button id="file">Open File</button>
+		<script>
+			const label = document.getElementById("lab1"), type = document.getElementById("inputtype"), fileInput = document.getElementById("file");
+			fileInput.onclick = async function() {
+				fileInput.disabled = true;
+				try {
+					let arrayBuff = [];
+					await new Promise(function(resolve, reject) {
+						const file = document.createElement("input");
+						file.type = "file";
+						document.body.appendChild(file);
+						file.oninput = function(event) {
+							const files = event.target.files;
+							if (files) {
+								for (const firstFile of files) {
+									await new Promise(function(resolve, reject) {
+										const fileReader = new FileReader();
+										fileReader.onload = function(event) {
+											arrayBuff.push(new Uint8Array(event.target.result));
+											resolve();
+										}
+										fileReader.readAsArrayBuffer(firstFile);
+									});
+								}
+							} else reject();
+							resolve();
+						}
+						file.accept = "*";
+						file.click();
+						file.remove();
+					});
+				} catch {}
+				fileInput.disabled = false;
+			}
+		</script>
+	</body>
+</html>
