@@ -396,14 +396,23 @@
 								fileReader.readAsArrayBuffer(firstFile);
 							} else reject();
 						}
-						file.accept = ".srt, .vtt";
+						file.accept = ".srt, .sub, .vtt";
 						file.click();
 						file.remove();
 					});
-					const st = performance.now();
-					if (arrayBuff[0] === 87) {subtitlesToDisplay = VTT.ParseVTTFile(arrayBuff);subtitleType = 1;} else {subtitlesToDisplay = SRT.ParseSRTFile(arrayBuff);subtitleType = 0;}
+					let st = 0;
+					if (arrayBuff[0] === 87) {st = performance.now();subtitlesToDisplay = VTT.ParseVTTFile(arrayBuff);subtitleType = 1;} else {
+						const lookFor = new Uint8Array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+						let pointer = 0;
+						while (!lookFor[arrayBuff[pointer]]) {
+							pointer++;
+						}
+						st = performance.now();
+						if (lookFor[arrayBuff[pointer]] & 0x01) {subtitlesToDisplay = SUB.ParseSUBFile(arrayBuff);} else {subtitlesToDisplay = SRT.ParseSRTFile(arrayBuff);}
+						subtitleType = 0;
+					}
 					const en = performance.now();
-					alert("Parsed the subtitles in " + (en - st) + " seconds.");
+					alert("Parsed the subtitles in " + ((en - st)*0.001) + " seconds.");
 				} catch (err) {console.log(err.stack);}
 				importSubtitles.disabled = false;
 			}
