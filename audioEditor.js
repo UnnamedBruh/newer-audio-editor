@@ -997,7 +997,7 @@ effects["trimsilence"] = function(exporters, mode) {
 	const len = exporters.audioData.length;
 	const pointer = exporters.audioData;
 	if (!len) return;
-	const ep = 0.0000060554543779289816;
+	const ep = 0.0060554543779289816;
 	let offset = 0;
 	if (mode === "f") {
 		const start = pointer[0];
@@ -1067,7 +1067,7 @@ effects["trimsilence2"] = function(exporters, mode) {
 	const pointer1 = exporters[0].audioData;
 	const pointer2 = exporters[1].audioData;
 	if (!len) return;
-	const ep = 0.000060554543779289816;
+	const ep = 0.0060554543779289816;
 	let offsetL = 0;
 	if (mode === "f") {
 		const start1 = pointer1[0];
