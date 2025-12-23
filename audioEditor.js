@@ -1220,7 +1220,7 @@ effects["keepsilence"] = function(exporters, mode, tolerance = 0.006055454377928
 	}
 }
 
-effects["trimsilence2"] = function(exporters, mode, tolerance = 0.0060554543779289816) {
+effects["keepsilence2"] = function(exporters, mode, tolerance = 0.0060554543779289816) {
 	const len = exporters[0].audioData.length;
 	const pointer1 = exporters[0].audioData;
 	const pointer2 = exporters[1].audioData;
