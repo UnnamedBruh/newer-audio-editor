@@ -146,7 +146,7 @@ const effectsList = [
 	[
 		"Convoluted Reverb",
 		"Reverberates the audio using a famous, natural algorithm.",
-		'Reverb Time (in seconds): <input id="reverb0" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Reverb Decay: <input id="reverb1" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Dry Mix: <input id="reverb2" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Wet Mix: <input id="reverb3" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Reverb Instructions Overtime: <select id="reverb4"><option value="d">Change nothing</option><option value="real">Damp frequency range</option><option value="realspike">Damp frequency range add spikes at start</option></select><br>Max Frequency Range: <input id="reverb5" type="number" min="0" step="1" value="80" style="width: 100px"><br>Chance Of Impulse Spikes (in samples): <input id="reverb6" type="number" min="1" step="0.33333333333333333333" value="3" style="width: 100px">%',
+		'Reverb Time (in seconds): <input id="reverb0" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Reverb Decay: <input id="reverb1" type="number" min="0" step="0.083333333333333" value="2" style="width: 100px"><br>Dry Mix: <input id="reverb2" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Wet Mix: <input id="reverb3" type="number" min="0" step="1" value="50" style="width: 100px">%<br>Reverb Instructions Overtime: <select id="reverb4"><option value="d">Change nothing</option><option value="real">Linearly damp frequency range</option><option value="realfast">Quickly damp frequency range</option><option value="realspike">Damp frequency range add spikes at start</option></select><br>Max Frequency Range: <input id="reverb5" type="number" min="0" step="1" value="80" style="width: 100px"><br>Chance Of Impulse Spikes (in samples): <input id="reverb6" type="number" min="1" step="0.33333333333333333333" value="3" style="width: 100px">%',
 		7,
 		"reverb",
 		[Number, Number, Number, Number, identifier, percent, Number]
@@ -191,5 +191,13 @@ const effectsList = [
 		"midside",
 		[identifier],
 		2
+	],
+	[
+		"Trim Silence",
+		"Trims out the selected locations (specified by the dropdown) of the silent sections of audio.",
+		'Locations: <select id="trimsilence0"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select>',
+		1,
+		"trimsilence",
+		[identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
