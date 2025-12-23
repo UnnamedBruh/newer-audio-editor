@@ -556,72 +556,6 @@ effects["difference"] = function(buffer, interpolation = 1, step = -1) {
 	}
 }
 
-/*effects["pitch"] = function(buffer, pitch, frames) { // This is the old implementation I wrote.
-	if (pitch === 0 || frames <= 2) return;
-	const len = buffer.audioData.length;
-	const pointer = buffer.audioData;
-	const pitchShift = pow(2, pitch);
-	const newAudioData = buffer.audioData.slice();
-	let affectedAudio = {audioData: newAudioData, sampleRate: buffer.sampleRate};
-	const speed = _resampleAudio(affectedAudio, pitchShift, true);
-	affectedAudio = affectedAudio.audioData;
-	const interpolated = new Float32Array(len);
-	const affectedLen = affectedAudio.length;
-	for (let i = 0; i < len; i++) { // This loop was implemented by GPT-5.0 Mini. I wasn't sure how to properly implement the idea I thought myself.
-		let srcIndex = i * (affectedLen / len);
-		let indexInt = floor(srcIndex);
-		let frac = srcIndex - indexInt;
-		let sample1 = affectedAudio[indexInt] || 0;
-		let sample2 = affectedAudio[indexInt + 1] || 0;
-		interpolated[i] = sample1 * (1 - frac) + sample2 * frac;
-	}
-	pointer.set(interpolated);
-}*/
-
-effects["pitch"] = function(buffer, pitch, frameSize) { // This was written entirely by GPT-5.0 Mini. Not me! All I did was make a few basic precomputing optimizations!
-	// But this effect isn't reliable either! It slows down the audio significantly.
-	if (pitch === 0 || frameSize < 2) return;
-
-	const audio = buffer.audioData;
-	const len = audio.length;
-	const pitchFactor = pow(2, pitch); // convert octave shift to factor
-	const output = new Float32Array(len);
-
-	let writePos = 0; // position in output
-	let readPos = 0;  // position in input
-
-	const min = Math.min;
-	const backtrackFactor = floor(frameSize / pitchFactor / 2);
-
-	while (writePos < len) {
-		// Determine frame bounds
-		const frameEnd = min(readPos + frameSize, len);
-		const frame = audio.subarray(readPos, frameEnd);
-		const frameLen = frame.length;
-		const frameLenSub = frameLen - 1;
-
-		// Process each sample in the frame
-		for (let i = 0; i < frameLen && writePos < len; i++) {
-			// Calculate interpolated position
-			const pos = i * pitchFactor;
-
-			const i0 = floor(pos);
-			const i1 = min(i0 + 1, frameLenSub);
-			const frac = pos - i0;
-
-			// Linear interpolation
-			output[writePos] = frame[i0] * (1 - frac) + frame[i1] * frac;
-
-			writePos++;
-		}
-
-		// Back-track a bit to blend frames (avoids gaps)
-		readPos += backtrackFactor;
-	}
-
-	buffer.audioData.set(output);
-};
-
 effects["normalize"] = function(exporter) {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
@@ -892,7 +826,7 @@ effects["saw"] = function(exporters, midiNote, volume) { // TODO: Optimize this 
 
 	const freqInverse = 1 / freq;
 
-	if (volume === 1) {
+	if (volume === 0.5) {
 		for (let i = 0; i < len; i++) {
 			pointer[i] += ((dt * i) % freqInverse) * freq - 0.5;
 		}
@@ -904,24 +838,23 @@ effects["saw"] = function(exporters, midiNote, volume) { // TODO: Optimize this 
 	}
 }
 
-effects["tri"] = function(exporters, midiNote, volume) { // TODO: Optimize this using
+effects["tri"] = function(exporters, midiNote, volume) {
 	const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
 	const len = exporters.audioData.length;
 	const pointer = exporters.audioData;
 	volume *= 0.01;
 	const dt = 1 / exporters.sampleRate;
 	if (volume === 0 || len < 2) return;
+	const f = dt*freq;
 
-	const freqInverse = 1 / freq;
-
-	if (volume === 0.5) {
+	if (volume === 1) {
 		for (let i = 0; i < len; i++) {
-			pointer[i] += abs((i*dt*freq)%1 - 0.5);
+			pointer[i] += abs((i*f)%1 - 0.5)*2 - 1;
 		}
 	} else {
-		volume *= 2;
+		const doubleVolume = volume*2;
 		for (let i = 0; i < len; i++) {
-			pointer[i] += volume * abs((i*dt*freq)%1 - 0.5);
+			pointer[i] += (abs((i*f)%1 - 0.5)*doubleVolume - volume);
 		}
 	}
 }
