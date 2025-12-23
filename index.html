@@ -175,7 +175,6 @@
 				link.click();
 				link.remove();
 			}
-
 			let subtitlesToDisplay = [];
 			let readyToDisplaySubtitles = false;
 			let currentSubtitle = 0;
@@ -184,7 +183,6 @@
 			let tickCache = 0, progress = 0;
 			let subtitleType = 0;
 			let subtitlesText = [];
-
 			function findSubtitleIndex(p, offset = 0) {
 				if (p === 0) return 0;
 				if (subtitleType === 0) {
@@ -416,7 +414,6 @@
 				} catch (err) {console.log(err.stack);}
 				importSubtitles.disabled = false;
 			}
-
 			function loadDiv(exp, blank = false) {
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
@@ -754,22 +751,17 @@
 				exportBtn.onclick = function() {
 					const metadata = {};
 					const author = prompt("Who is the author of this audio? (e.g. \"John Smith\") Leave the input blank if you don't want the author to be specified.");
-
 					if (author === "" || author === undefined || author === null) return;
 					const name = prompt("What is the name of this audio? (e.g. \"Electro Dance (Techno Mix)\") Leave the input blank if you don't want the name to be specified.");
 					const genre = prompt("What is the genre of this audio? (e.g. \"Techno\") Leave the input blank if you don't want the genre to be specified.");
 					const notes = prompt("Any notes or comments for this audio? (e.g. \"This audio is super cool\") Leave the input blank if you don't have any notes or comments.");
-
 					const software = prompt("What software did you use to create this audio? (e.g. \"UnnamedBruh's Audio Editor\") If input is \"UAE\" without quotes, this software's name will be appended to the audio metadata.");
-
 					if (author) metadata["IART"] = author;
 					if (name) metadata["INAM"] = name;
 					if (genre) metadata["IGNR"] = genre;
 					if (notes) metadata["ICMT"] = notes;
 					if (software) metadata["ISFT"] = software === "UAE" ? "UnnamedBruh's Audio Editor" : software;
-
 					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 12-bit. 2 = 16-bit. 3 = 24-bit. 4 = 32-bit. 5 = 32-bit float. 6 = 64-bit float. 7 = mu-law. 8 = a-law. 9 = dpcm.)");
-
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
 					const oldBits = exporters2.bits;
 					let isCompatible = false;
@@ -811,11 +803,8 @@
 							exporters2.encoding = "xandpcm";
 						}
 					}
-
 					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? exporters[1].audioData : undefined, isCompatible);
-
 					exporters2.bits = encodeBits;
-
 					downloadFile(blob, ".wav");
 				}
 				const exportBtn1 = document.createElement("button");
@@ -823,7 +812,6 @@
 				exportBtn1.textContent = "Sierra Audio (.SOL or .AUD)";
 				exportBtn1.onclick = async function() {
 					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 16-bit. 2 = 8-bit old ADPCM. 3 = 8-bit new ADPCM. 4 = 16-bit new ADPCM.)");
-
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
 					const oldBits = exporters2.bits;
 					if (encodeBits == 0) {
@@ -842,11 +830,8 @@
 						exporters2.bits = 16;
 						exporters2.encoding = "dpcm";
 					}
-					
 					const blob = await exporters2.convertToSol(exporters.length > 1 ? exporters[1].audioData : undefined);
-
 					exporters2.bits = encodeBits;
-
 					downloadFile(blob, ".sol");
 				}
 				const exportBtn2 = document.createElement("button");
@@ -870,28 +855,20 @@
 						}
 						return buffer;
 					}
-
 					let sampleRate = exporters[0].sampleRate;
 					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 8, 16, 32, 64, 80, 96, 128, 168, 192, 256, 320)")) / 16) * 16;
 					if (kbps === 0 || isNaN(kbps) || kbps === undefined || kbps === null) return;
-
 					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") ?? 3));
-
 					const channels = (exporters.length === 2) ? 2 : 1;
 					const shouldSplit = channels !== 2 && confirm("Should the same buffer be split into two channels? (If so, the audio may sound 2X lower-quality)");
-
 					const isJoint = (channels === 2 || shouldSplit) ? prompt("Should the encoder use Mid/Side encoding for more efficient audio compression? (0 = No, 1 = Yes, 2 = Yes; swap Mid/Side, 3 = Yes; move into the Side because the Side has the least amount of bits)") : 0;
-
 					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
-
 					let blob;
 					exportBtn2.disabled = true;
-
 					const fixEncodeTable = {32: 0.75, 16: 0.75, 8: 0.75};
 					const fixEncodeTable2 = {32: 2.177427725956358, 16: 3.0012627195702253, 128: 1.0891036274839623};
 					const fixEncodeTable3 = {128: 1.088449674954518};
 					const tttt = fixEncodeTable[kbps] || 1;
-
 					for (let i = 0; i < lossTimes; i++) {
 						let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
 						let altRate = buffer.sampleRate;
@@ -899,12 +876,9 @@
 							if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0), buffer.getChannelData(0)];
 						}
 						const mp3Encoder = new lamejs.Mp3Encoder(channels + shouldSplit, i === 0 ? sampleRate : altRate, kbps, qual);
-
 						let mp3Data = [];
 						let quantity = channels === 2 || shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1);
-
 						if (isJoint) quantity *= fixEncodeTable3[kbps] || 1;
-
 						let pcmData = [floatTo16BitPCM(buffer[0], quantity)];
 						const len = pcmData[0].length;
 						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], quantity)];
@@ -936,21 +910,17 @@
 						}
 						const len2 = len - 1152;
 						let xx;
-
 						for (let i = 0; i < len2; i += 1152) {
 							xx = i > len2 ? len : i + 1152;
 							const chunk = [pcmData[0].subarray(i, xx), pcmData[1].subarray(i, xx)];
-
 							// For mono input, pass chunk for both channels if needed
 							const mp3Chunk = mp3Encoder.encodeBuffer(chunk[0], chunk[1]);
 							mp3Data.push(mp3Chunk);
 						}
-
 						mp3Data.push(mp3Encoder.flush());
 						blob = new Blob(mp3Data, { type: "audio/mp3" });
 					}
 					exportBtn2.disabled = false;
-
 					downloadFile(blob, ".mp3");
 				}
 				const exportBtn3 = document.createElement("button");
@@ -960,34 +930,26 @@
 					exportBtn3.disabled = true;
 					try {
 						const vbr = Number(prompt("How high can the quality of the audio be? (-1.0 = worst quality, low sizes; 10.0 = best quality, higher sizes; 4.0 = balanced quality, minimal differences, medium sizes; -2.0 = absolute worst, lowest sizes)") ?? 4.0) ?? 4.0;
-
 						let blob;
 						const split = exporters.length !== 2 && !!confirm("Should the audio be split into two separate channels?");
-
 						const times = Math.ceil(Math.abs(Number(prompt("How many times would the audio be re-encoded?") || 1) || 1));
-
 						for (let i = 0; i < times; i++) {
 							const encoder = await WasmMediaEncoder.createOggEncoder();
-
 							let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
 							let altRate = buffer.sampleRate;
 							if (i > 0) {
 								if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0)];
 							}
-
 							encoder.configure({
 								sampleRate: i === 0 ? exporters[0].sampleRate : altRate,
 								channels: Math.min(2, buffer.length + split),
 								vbrQuality: vbr,
 							});
-							
 							const encodedData = encoder.encode(split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]]);
 							const encodedCopy = new Uint8Array(encodedData).buffer;
 							const finalData = encoder.finalize();
-
 							blob = new Blob([encodedCopy, finalData], { type: "audio/ogg" });
 						}
-
 						downloadFile(blob, ".ogg");
 					} catch (err) {
 						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
