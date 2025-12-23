@@ -75,12 +75,12 @@ const SUB = (function() {
 
 			let fakeUnits = [];
 			let parse = __parseDouble(data, pointer, len);
-			const timeStart = parse[1]/30;
+			const timeStart = parse[1]/25;
 			pointer = parse[0];
 			while (__sepLookup[data[pointer]]) pointer++; // Normally, timestamps are captured by curly braces { and }, but they can also seem to be the opposite
 
 			parse = __parseDouble(data, pointer, len);
-			const timeEnd = parse[1]/30;
+			const timeEnd = parse[1]/25;
 			pointer = parse[0];
 			while (__sepLookup[data[pointer]]) pointer++; // Normally, timestamps are captured by curly braces { and }, but they can also seem to be the opposite
 
@@ -108,10 +108,10 @@ const SUB = (function() {
 		const binaryData = [];
 		for (let i = 0; i < len; i++) {
 			const subtitle = subtitles[i];
-			const data = ["{",subtitle.start*30, "}{", subtitle.end*30, "}", subtitle.text].join("\n");
+			const data = ["{",subtitle.start*25, "}{", subtitle.end*25, "}", subtitle.text].join("");
 			binaryData.push(data);
 		}
-		return binaryData.join("\n\n");
+		return binaryData.join("\n");
 	}
 
 	return {
