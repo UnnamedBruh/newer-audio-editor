@@ -200,5 +200,22 @@ const effectsList = [
 		"trimsilence2",
 		[identifier, Number],
 		2
+	],
+	[
+		"Filter Silence",
+		"Filters in only the selected locations (specified by the dropdown) of the silent sections of audio, and keeps audible sections out.",
+		'Locations: <select id="trimsilence0"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select><br>Tolerance Level: <input id="trimsilence1" type="number" min="0" step="0.0060554543779289816" value="0.0060554543779289816" max="0.1" style="width: 100px">',
+		2,
+		"keepsilence",
+		[identifier, Number]
+	],
+	[
+		"Filter Silence (Stereo)",
+		"Filters in only the selected locations (specified by the dropdown) of the silent sections of audio, and keeps audible sections out, while also keeping sync of both channels.",
+		'Locations: <select id="trimsilence20"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select><br>Tolerance Level: <input id="trimsilence21" type="number" min="0" step="0.0060554543779289816" value="0.0060554543779289816" max="0.1" style="width: 100px">',
+		2,
+		"keepsilence2",
+		[identifier, Number],
+		2
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
