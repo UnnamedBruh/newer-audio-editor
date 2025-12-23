@@ -849,12 +849,32 @@ effects["tri"] = function(exporters, midiNote, volume) {
 
 	if (volume === 1) {
 		for (let i = 0; i < len; i++) {
-			pointer[i] += abs((i*f)%1 - 0.5)*2 - 1;
+			pointer[i] += abs((i*f)%1 - 0.5)*4 - 1;
 		}
 	} else {
-		const doubleVolume = volume*2;
+		const doubleVolume = volume*4;
 		for (let i = 0; i < len; i++) {
 			pointer[i] += (abs((i*f)%1 - 0.5)*doubleVolume - volume);
+		}
+	}
+}
+
+effects["squ"] = function(exporters, midiNote, volume) {
+	const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
+	const len = exporters.audioData.length;
+	const pointer = exporters.audioData;
+	volume *= 0.01;
+	const dt = 1 / exporters.sampleRate;
+	if (volume === 0 || len < 2) return;
+	const f = dt*freq;
+
+	if (volume === 1) {
+		for (let i = 0; i < len; i++) {
+			pointer[i] += sign((i*f)%1 - 0.5);
+		}
+	} else {
+		for (let i = 0; i < len; i++) {
+			pointer[i] += sign((i*f)%1 - 0.5)*volume;
 		}
 	}
 }
