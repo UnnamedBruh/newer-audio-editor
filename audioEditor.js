@@ -1150,3 +1150,162 @@ effects["trimsilence2"] = function(exporters, mode, tolerance = 0.00605545437792
 		exporters[1].audioData = pointer2.subarray(offset, offset2+1);
 	}
 }
+
+effects["keepsilence"] = function(exporters, mode, tolerance = 0.0060554543779289816) {
+	const len = exporters.audioData.length;
+	const pointer = exporters.audioData;
+	if (!len) return;
+	const ep = tolerance;
+	let offset = 0;
+	if (mode === "f") {
+		const start = pointer[0];
+		for (let i = 1; i < len; i++) {
+			if (abs(pointer[i] - start) <= ep) {offset = i;break;}
+		}
+		exporters.audioData = pointer.subarray(offset, len);
+	} else if (mode === "e") {
+		const end = pointer[len-1];
+		for (let i = len-2; i >= 0; i--) {
+			if (abs(pointer[i] - end) <= ep) {offset = i;break;}
+		}
+		exporters.audioData = pointer.subarray(0, offset+1);
+	} else if (mode === "all") {
+		const views = [];
+		let size = 0;
+		let i = 1;
+		let oldI = 0;
+		let silent = pointer[0];
+		const silentThreshold = 128; // ~2.666 ms for 48000 Hz audio
+		let count = 0;
+		while (i < len) {
+			if (abs(silent - pointer[i]) > ep) {
+				count++;
+				if (count >= silentThreshold) {
+					const view = pointer.subarray(oldI,i+1);
+					views.push(view);
+					size+=view.length;
+					i++;
+					while (i < len && abs(silent - pointer[i]) > ep) i++;
+					count = 0;
+					oldI = i;
+					silent = pointer[i];
+				}
+			} else {silent = pointer[i];count = 0;}
+			i++;
+		}
+		if (abs(oldI - len) > 1) {
+			const view = pointer.subarray(oldI,len);
+			views.push(view);
+			size+=view.length;
+		}
+		const newArray = new Float32Array(size);
+		size = 0;
+		const numOfViews = views.length;
+		for (let i = 0; i < numOfViews; i++) {
+			newArray.set(views[i], size);
+			size+=views[i].length;
+		}
+		exporters.audioData = newArray;
+	} else {
+		const start = pointer[0];
+		const end = pointer[len-1];
+		for (let i = 1; i < len; i++) {
+			if (abs(pointer[i] - start) <= ep) {offset = i;break;}
+		}
+		let offset2 = 0;
+		for (let i = len-2; i >= 0; i--) {
+			if (abs(pointer[i] - end) <= ep) {offset2 = i;break;}
+		}
+		exporters.audioData = pointer.subarray(offset, offset2+1);
+	}
+}
+
+effects["trimsilence2"] = function(exporters, mode, tolerance = 0.0060554543779289816) {
+	const len = exporters[0].audioData.length;
+	const pointer1 = exporters[0].audioData;
+	const pointer2 = exporters[1].audioData;
+	if (!len) return;
+	const ep = tolerance;
+	let offsetL = 0;
+	if (mode === "f") {
+		const start1 = pointer1[0];
+		const start2 = pointer2[0];
+		for (let i = 1; i < len; i++) {
+			if (abs(pointer1[i] - start1) <= ep && abs(pointer2[i] - start2) <= ep) {offset = i;break;}
+		}
+		exporters[0].audioData = pointer1.subarray(offset, len);
+		exporters[1].audioData = pointer2.subarray(offset, len);
+	} else if (mode === "e") {
+		const end1 = pointer1[len-1];
+		const end2 = pointer2[len-1];
+		for (let i = len-2; i >= 0; i--) {
+			if (abs(pointer1[i] - end1) <= ep && abs(pointer2[i] - end2) <= ep) {offset = i;break;}
+		}
+		exporters[0].audioData = pointer1.subarray(0, offset+1);
+		exporters[1].audioData = pointer2.subarray(0, offset+1);
+	} else if (mode === "all") {
+		const views = [];
+		let size = 0;
+		let i = 1;
+		let oldI = 0;
+		let silent1 = pointer1[0];
+		let silent2 = pointer2[0];
+		const silentThreshold = 128; // ~2.666 ms for 48000 Hz audio
+		let count = 0;
+		while (i < len) {
+			if (abs(silent1 - pointer1[i]) > ep && abs(silent2 - pointer2[i]) > ep) {
+				count++;
+				if (count >= silentThreshold) {
+					const view1 = pointer1.subarray(oldI,i+1);
+					const view2 = pointer2.subarray(oldI,i+1);
+					views.push([view1,view2]);
+					size+=view1.length;
+					i++;
+					while (i < len && abs(silent1 - pointer1[i]) > ep && abs(silent2 - pointer2[i]) > ep) i++;
+					count = 0;
+					oldI = i;
+					silent1 = pointer1[i];
+					silent2 = pointer2[i];
+				}
+			} else {silent1 = pointer1[i];silent2 = pointer2[i];count = 0;}
+			i++;
+		}
+		if (abs(oldI - len) > 1) {
+			const view1 = pointer1.subarray(oldI,len);
+			const view2 = pointer2.subarray(oldI,len);
+			views.push([view1,view2]);
+			size+=view1.length;
+		}
+		const newArray1 = new Float32Array(size);
+		const oldSize = size;
+		size = 0;
+		const numOfViews = views.length;
+		for (let i = 0; i < numOfViews; i++) {
+			newArray1.set(views[i][0], size);
+			size+=views[i][0].length;
+		}
+		exporters[0].audioData = newArray1;
+		const newArray2 = new Float32Array(oldSize);
+		size = 0;
+		for (let i = 0; i < numOfViews; i++) {
+			newArray2.set(views[i][1], size);
+			size+=views[i][1].length;
+		}
+		exporters[1].audioData = newArray2;
+	} else {
+		const start1 = pointer1[0];
+		const start2 = pointer2[0];
+		const end1 = pointer1[len-1];
+		const end2 = pointer2[len-1];
+		for (let i = 1; i < len; i++) {
+			if (abs(pointer1[i] - start1) <= ep && abs(pointer2[i] - start2) <= ep) {offset = i;break;}
+		}
+		let offset2 = 0;
+		for (let i = len-2; i >= 0; i--) {
+			if (abs(pointer1[i] - end1) <= ep && abs(pointer2[i] - end2) <= ep) {offset2 = i;break;}
+		}
+		exporters[0].audioData = pointer1.subarray(offset, offset2+1);
+		exporters[1].audioData = pointer2.subarray(offset, offset2+1);
+	}
+}
+
