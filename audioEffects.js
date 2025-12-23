@@ -191,5 +191,14 @@ const effectsList = [
 		1,
 		"trimsilence",
 		[identifier]
+	],
+	[
+		"Trim Silence (Stereo)",
+		"Trims out the selected locations (specified by the dropdown) of the silent sections of audio, while also keeping sync of both channels.",
+		'Locations: <select id="trimsilence20"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select>',
+		1,
+		"trimsilence2",
+		[identifier],
+		2
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
