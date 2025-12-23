@@ -993,11 +993,11 @@ effects["midside"] = function(exporters, mode) { // Mode
 	}
 }
 
-effects["trimsilence"] = function(exporters, mode) {
+effects["trimsilence"] = function(exporters, mode, tolerance = 0.0060554543779289816) {
 	const len = exporters.audioData.length;
 	const pointer = exporters.audioData;
 	if (!len) return;
-	const ep = 0.0060554543779289816;
+	const ep = tolerance;
 	let offset = 0;
 	if (mode === "f") {
 		const start = pointer[0];
@@ -1062,12 +1062,12 @@ effects["trimsilence"] = function(exporters, mode) {
 	}
 }
 
-effects["trimsilence2"] = function(exporters, mode) {
+effects["trimsilence2"] = function(exporters, mode, tolerance = 0.0060554543779289816) {
 	const len = exporters[0].audioData.length;
 	const pointer1 = exporters[0].audioData;
 	const pointer2 = exporters[1].audioData;
 	if (!len) return;
-	const ep = 0.0060554543779289816;
+	const ep = tolerance;
 	let offsetL = 0;
 	if (mode === "f") {
 		const start1 = pointer1[0];
