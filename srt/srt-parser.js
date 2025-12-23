@@ -69,7 +69,7 @@ const SRT = (function() {
 			// Skip the sequence number
 			let oldPointer = pointer;
 			pointer = __skipInt(data, pointer, len);
-			if (__sepLookup[data[pointer]]) // data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44
+			if (__sepLookup[data[pointer-1]]) // data[pointer] !== 58 && data[pointer] !== 59 && data[pointer] !== 46 && data[pointer] !== 44
 				pointer = oldPointer; // If there is no numerical sequence to skip, assume that it's part of a timeline
 
 			// Skip more "bad" data
