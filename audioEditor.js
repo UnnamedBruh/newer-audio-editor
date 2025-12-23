@@ -1002,13 +1002,13 @@ effects["trimsilence"] = function(exporters, mode) {
 	if (mode === "f") {
 		const start = pointer[0];
 		for (let i = 1; i < len; i++) {
-			if (abs(exporters[i] - start) > ep) {offset = i;break;}
+			if (abs(pointer[i] - start) > ep) {offset = i;break;}
 		}
 		exporters.audioData = pointer.subarray(offset, len);
 	} else if (mode === "e") {
 		const end = pointer[len-1];
 		for (let i = len-2; i >= 0; i--) {
-			if (abs(exporters[i] - end) > ep) {offset = i;break;}
+			if (abs(pointer[i] - end) > ep) {offset = i;break;}
 		}
 		exporters.audioData = pointer.subarray(0, offset+1);
 	} else if (mode === "all") {
@@ -1052,11 +1052,11 @@ effects["trimsilence"] = function(exporters, mode) {
 		const start = pointer[0];
 		const end = pointer[len-1];
 		for (let i = 1; i < len; i++) {
-			if (abs(exporters[i] - start) > ep) {offset = i;break;}
+			if (abs(pointer[i] - start) > ep) {offset = i;break;}
 		}
 		let offset2 = 0;
 		for (let i = len-2; i >= 0; i--) {
-			if (abs(exporters[i] - end) > ep) {offset2 = i;break;}
+			if (abs(pointer[i] - end) > ep) {offset2 = i;break;}
 		}
 		exporters.audioData = pointer.subarray(offset, offset2+1);
 	}
