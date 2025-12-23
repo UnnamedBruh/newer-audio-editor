@@ -168,6 +168,14 @@ const effectsList = [
 		[Number, Number]
 	],
 	[
+		"Note: Square Wave",
+		"Generates a square wave at a certain frequency and volume.",
+		'Pitch (in MIDI notes): <input id="squ0" type="number" min="0" step="1" value="60" max="127" style="width: 100px"><br>Volume: <input id="squ1" type="number" min="0" step="1" value="100" style="width: 100px">%',
+		2,
+		"squ",
+		[Number, Number]
+	],
+	[
 		"Blank",
 		"Prepends (inserts at the beginning) or appends (inserts at the end) silence to the audio track.",
 		'Seconds of Silence: <input id="blank0" type="number" min="0" step="0.1" value="1" style="width: 100px"><br>Direction: <select id="blank1"><option value="f">start of audio</option><option>end of audio</option></select>',
