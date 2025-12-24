@@ -1971,7 +1971,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 				loadDiv(exporters);
 			}
-			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null;
+			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null, mergedBuffers = false;
 			recordMicrophone.onclick = async function() { // All of the recording code was written by GPT-5.2 Mini to save some time.
 				isRecording = !isRecording;
 				if (isRecording) {
@@ -1994,6 +1994,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					}
 					source.connect(processor);
 					recordMicrophone.textContent = "Stop Recording";
+					recordMicrophone.disabled = false;
 				} else {
 					processor.disconnect();
 					source.disconnect();
@@ -2012,8 +2013,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 						return result;
 					}
-					const mergedBuffers = recordedBuffers.map(x => mergeBuffers(x));
-					let sharedBuffer = audioContext.createBuffer(recordedBuffers.length, mergedBuffers[0].length, audioContext.sampleRate);
+					mergedBuffers = recordedBuffers.map(x => mergeBuffers(x));
+					let sharedBuffer = audioContext.createBuffer(mergedBuffers.length, mergedBuffers[0].length, audioContext.sampleRate);
 					for (let i = 0; i < mergedBuffers.length; i++) {
 						sharedBuffer.copyToChannel(mergedBuffers[i], i);
 					}
