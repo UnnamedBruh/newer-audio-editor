@@ -597,9 +597,9 @@ effects["tvnormalize"] = function(exporter) {
 			if (pointer[j] === 0) {
 				j++;
 				if (pointer[j] === 0) {
-				j++;
-				if (!sum) sum = 1; // Non-zero the sum to minimize distortion
-			}
+					j++;
+					if (!sum) sum = 1; // Non-zero the sum to minimize distortion
+				}
 			}
 		}
 		sum *= sumDivisor;
@@ -920,6 +920,68 @@ effects["biquadfilter"] = async function(exporter, freq, res, type, dryGain2, we
 			const wetGain = offlineContext.createGain();
 			dryGain.gain.value = dryGain2;
 			wetGain.gain.value = wetGain2;
+
+			// Connect the graph
+			source.connect(dryGain);
+			dryGain.connect(offlineContext.destination);
+
+			source.connect(convolver);
+			convolver.connect(wetGain);
+			wetGain.connect(offlineContext.destination);
+
+			// Start source
+			source.start(0);
+			// Render
+			renderedBuffer = await offlineContext.startRendering();
+
+			exporter.audioData = renderedBuffer.getChannelData(0);
+		} catch (error) {
+			alert(`There is an error with the frequency filter rendering process.\n\n${error.stack}`);
+			console.error(error);
+		}
+	}
+
+	const bb = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
+	bb.copyToChannel(exporter.audioData, 0);
+
+	await renderWithFilter(bb);
+}
+
+effects["biquadfilterlineartween"] = async function(exporter, freqStart, freqEnd, resStart, resEnd, type, dryGain2Start, dryGain2End, wetGain2Start, wetGain2End) {
+	dryGain2 *= 0.01;
+	wetGain2 *= 0.01;
+	// Main render function, originally written by Claude Sonnet 4.5, but altered to support frequency filters
+	async function renderWithFilter(sourceBuffer) {
+		try {
+			const duration = sourceBuffer.duration;
+			const sampleRate = sourceBuffer.sampleRate;
+
+			// Create offline context
+			const offlineContext = new OfflineAudioContext(
+				1,
+				sampleRate * duration,
+				sampleRate
+			);
+
+			// Create source
+			const source = offlineContext.createBufferSource();
+			source.buffer = sourceBuffer;
+
+			// Create reverb
+			const convolver = offlineContext.createBiquadFilter();
+			convolver.type = type;
+			convolver.Q.setValueAtTime(resStart, 0);
+			convolver.frequency.setValueAtTime(freqStart, 0);
+			convolver.Q.linearRampToValueAtTime(resEnd, duration);
+			convolver.frequency.linearRampToValueAtTime(freqEnd, duration);
+
+			// Create dry and wet gains
+			const dryGain = offlineContext.createGain();
+			const wetGain = offlineContext.createGain();
+			dryGain.gain.setValueAtTime(dryGain2Start, 0);
+			dryGain.gain.linearRampToValueAtTime(dryGain2End, duration);
+			wetGain.gain.setValueAtTime(wetGain2Start, 0);
+			wetGain.gain.linearRampToValueAtTime(wetGain2End, duration);
 
 			// Connect the graph
 			source.connect(dryGain);
