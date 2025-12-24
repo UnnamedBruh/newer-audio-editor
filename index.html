@@ -420,6 +420,7 @@
 				importSubtitles.disabled = false;
 			}
 			function loadDiv(exp, blank = false) {
+				let sampleSkip = skipSample;
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -1941,7 +1942,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 						source.connect(processor);
 						silentNode = audioContext.createGain();
-						silentNode.gain.value = Number.EPSILON;
+						silentNode.gain.value = 0.1;
 						processor.connect(silentNode);
 						silentNode.connect(audioContext.destination); // To guarantee that the audio recording will be pushed
 						recordMicrophone.textContent = "Stop Recording";
@@ -1953,6 +1954,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					silentNode.disconnect();
 					processor.disconnect();
 					source.disconnect();
+					stream.getTracks().forEach(track => {
+						track.stop();
+					});
 					recordMicrophone.textContent = "Merging chunks...";
 					recordMicrophone.disabled = true;
 					silentNode = null;
@@ -1969,6 +1973,15 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 						return result;
 					}
+					exporters = null;
+					if (ed) {
+						ed.innerHTML = "";
+						ed.remove();
+						ed = null;
+					}
+					data = null;
+					sampleData = null;
+					sampleSkip = 480;
 					mergedBuffers = recordedBuffers.map(x => mergeBuffers(x));
 					sharedBuffer = audioContext.createBuffer(mergedBuffers.length, mergedBuffers[0].length, audioContext.sampleRate);
 					for (let i = 0; i < mergedBuffers.length; i++) {
