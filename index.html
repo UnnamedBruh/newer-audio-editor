@@ -1970,7 +1970,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						return result;
 					}
 					mergedBuffers = recordedBuffers.map(x => mergeBuffers(x));
-					let sharedBuffer = audioContext.createBuffer(mergedBuffers.length, mergedBuffers[0].length, audioContext.sampleRate);
+					sharedBuffer = audioContext.createBuffer(mergedBuffers.length, mergedBuffers[0].length, audioContext.sampleRate);
 					for (let i = 0; i < mergedBuffers.length; i++) {
 						sharedBuffer.copyToChannel(mergedBuffers[i], i);
 					}
