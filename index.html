@@ -13,20 +13,14 @@
 				background-color: rgb(30, 30, 30);
 			}
 			.red{color:red}.orange{color:orange}.yellow{color:yellow}.green{color:green}.blue{color:blue}.purple{color:purple}.white{color:white}.gray{color:gray}.grey{color:gray}.pink{color:pink}.magenta{color:magenta}
-			.title,.large,.big{font-size:28px;}.subtitle,.medium{font-size:21px;}.intro{color:yellow;font-weight:bold;}.highlight{background-color:yellow;}.huge,.mega,.larger,.largest,.bigger,.biggest,.colossal{font-size:36px;}.small{font-size:10px;}.tiny{font-size:6px;}
-			.emphasis{font-weight:bold}.warning{background-color:yellow;color:black}.thought{color:gray;font-style:italic}.aside{color:gray;font-size:10px;}.flashback{color:rgb(255,243,163);}
+			.title,.large,.big,.header,.h,.h1,.h2,.h3{font-size:28px;}.subtitle,.medium,.h4,.h5,.h6{font-size:21px;}.intro{color:yellow;font-weight:bold;}.highlight{background-color:yellow;}.huge,.mega,.larger,.largest,.bigger,.biggest,.colossal{font-size:36px;}.small{font-size:10px;}.tiny{font-size:6px;}.emphasis{font-weight:bold}.warning{background-color:yellow;color:black}.thought{color:gray;font-style:italic}.aside{color:gray;font-size:10px;}.flashback{color:rgb(255,243,163);}
 			.hidden,.nodisplay,.none,.invisible,.transparent,.noopaque{display:none}.left{text-align:left;width:50%}.right{text-align:right;width:50%}
-			.fadein{opacity:0;animation:fadeintransition 1s forwards;}@keyframes fadeintransition{to{opacity:1;}}
-			.fadeout{opacity:1;animation:fadeouttransition 2s forwards;}@keyframes fadeouttransition{to{opacity:0;}}
-			.slideinleft,.slideleftin,.slidefromleft{margin-right:130%;animation:slideleftin 1.5s forwards;}@keyframes slideleftin{to{margin-right:0%;}}
-			.slideinright,.sliderightin,.slidefromright{margin-left:130%;animation:sliderightin 1.5s forwards;}@keyframes sliderightin{to{margin-left:0%;}}
-			.grow,.growin,.growlarge,.growbig{font-size:0px;animation:growin 1s forwards;}@keyframes growin{to{font-size:14px;}}
-			.shrink,.shrinkout,.shrinkin,.shrinksmall,.shrinktiny{font-size:14px;animation:shrinkout 1.5s forwards;}@keyframes shrinkout{to{font-size:0px;}}
-			.blink,.wink,.switch{animation:blinkingtext 0.9s infinite;}@keyframes blinkingtext{0%{opacity:1;}70%{opacity:0;}100%{opacity:1;}}
-			.flicker{animation:flickeringtext 4.5s infinite;}@keyframes flickeringtext{0%{opacity:1;}7%{opacity:0;}12%{opacity:1;}18%{opacity:0;}20%{opacity:1;}23%{opacity:0;}29%{opacity:1;}35%{opacity:0;}44%{opacity:1;}50%{opacity:0;}51%{opacity:1;}54%{opacity:0;}55%{opacity:1;}61%{opacity:0;}68%{opacity:1;}69%{opacity:0;}73%{opacity:1;}83%{opacity:0;}88%{opacity:1;}91%{opacity:0;}93%{opacity:1;}96%{opacity:0;}100%{opacity:1;}}
+			.fadein{opacity:0;animation:fadeintransition 1s forwards;}@keyframes fadeintransition{to{opacity:1;}}.fadeout{opacity:1;animation:fadeouttransition 2s forwards;}@keyframes fadeouttransition{to{opacity:0;}}
+			.slideinleft,.slideleftin,.slidefromleft{margin-right:130%;animation:slideleftin 1.5s forwards;}@keyframes slideleftin{to{margin-right:0%;}}.slideinright,.sliderightin,.slidefromright{margin-left:130%;animation:sliderightin 1.5s forwards;}@keyframes sliderightin{to{margin-left:0%;}}
+			.grow,.growin,.growlarge,.growbig{font-size:0px;animation:growin 1s forwards;}@keyframes growin{to{font-size:14px;}}.shrink,.shrinkout,.shrinkin,.shrinksmall,.shrinktiny{font-size:14px;animation:shrinkout 1.5s forwards;}@keyframes shrinkout{to{font-size:0px;}}
+			.blink,.wink,.switch{animation:blinkingtext 0.9s infinite;}@keyframes blinkingtext{0%{opacity:1;}70%{opacity:0;}100%{opacity:1;}}.flicker{animation:flickeringtext 4.5s infinite;}@keyframes flickeringtext{0%{opacity:1;}7%{opacity:0;}12%{opacity:1;}18%{opacity:0;}20%{opacity:1;}23%{opacity:0;}29%{opacity:1;}35%{opacity:0;}44%{opacity:1;}50%{opacity:0;}51%{opacity:1;}54%{opacity:0;}55%{opacity:1;}61%{opacity:0;}68%{opacity:1;}69%{opacity:0;}73%{opacity:1;}83%{opacity:0;}88%{opacity:1;}91%{opacity:0;}93%{opacity:1;}96%{opacity:0;}100%{opacity:1;}}
 			.flash,.flashbang{background-color:rgba(255,255,255,1);color:rgb(255,255,255);animation:flashout 0.6s forwards;}@keyframes flashout{to{background-color:rgba(0,0,0,0);}}
-			.shadow,.silhouette{text-shadow:-5px -5px 5px 0px #636363;}
-			.rainbow,.colorwheel,.hue,.lgbtq{animation:rainbow 3.5s infinite;color:rgb(255,0,0);}@keyframes rainbow{0%{color:rgb(255,0,0);}10%{color:rgb(255,128,0);}25%{color:rgb(255,255,0);}40%{color:rgb(0,200,0);}55%{color:rgb(0,128,128);}70%{color:rgb(0,0,255);}85%{color:rgb(255,0,255);}}
+			.shadow,.silhouette{text-shadow:-5px -5px 5px 0px #636363;}.rainbow,.colorwheel,.hue,.lgbtq{animation:rainbow 3.5s infinite;color:rgb(255,0,0);}@keyframes rainbow{0%{color:rgb(255,0,0);}10%{color:rgb(255,128,0);}25%{color:rgb(255,255,0);}40%{color:rgb(0,200,0);}55%{color:rgb(0,128,128);}70%{color:rgb(0,0,255);}85%{color:rgb(255,0,255);}}
 		</style>
 	</head>
 	<body>
@@ -1625,6 +1619,26 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				}
 				return copy;
 			}
+			function loadSharedBuffer(sharedBuffer) {
+				const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
+				let channel = sharedBuffer.getChannelData(channelNum);
+				let isProcessed = false;
+				if (sharedBuffer.numberOfChannels > 2 && confirm("Do you wish to select only that channel?")) {
+					const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
+					newBuffer.copyToChannel(channel, 0);
+					sharedBuffer = newBuffer;
+				} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];}
+				const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
+				if (sharedBuffer.numberOfChannels > 1 && !stereo) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
+					for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
+						if (i === channelNum) continue;
+						const silentBuffer = sharedBuffer.getChannelData(i);
+						if (silentBuffer) silentBuffer.set(channel);
+					}
+				}
+				if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
+				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
+			}
 			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
 				let firstFile = eve.target.files[0];
@@ -1813,26 +1827,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								});
 							}
 							oldSharedBufferFor = copyBuffer(sharedBuffer);
-							const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
-							let channel = sharedBuffer.getChannelData(channelNum);
-							let isProcessed = false;
-							if (sharedBuffer.numberOfChannels > 2 && confirm("Do you wish to select only that channel?")) {
-								const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
-								newBuffer.copyToChannel(channel, 0);
-								sharedBuffer = newBuffer;
-							} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];}
-							const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
-							if (sharedBuffer.numberOfChannels > 1 && !stereo) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
-								for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
-									if (i === channelNum) continue;
-									const silentBuffer = sharedBuffer.getChannelData(i);
-									if (silentBuffer) silentBuffer.set(channel);
-								}
-							}
-							if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
-							else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 							filename = firstFile.name.split(".").slice(0, -1).join(".");
-							loadDiv(exporters);
+							loadSharedBuffer(sharedBuffer);
 							importSubtitles.disabled = false;
 							reimp.disabled = false;
 						} catch (err) {
@@ -1875,25 +1871,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				data = null;
 				sampleData = null;
 				sampleSkip = 480;
-				const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
-				let channel = sharedBuffer.getChannelData(channelNum);
-				let isProcessed = false;
-				if (sharedBuffer.numberOfChannels > 2 && confirm("Do you wish to select only that channel?")) {
-					const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
-					newBuffer.copyToChannel(channel, 0);
-					sharedBuffer = newBuffer;
-				} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];}
-				const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
-				if (sharedBuffer.numberOfChannels > 1 && !stereo) {
-					for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
-						if (i === channelNum) continue;
-						const silentBuffer = sharedBuffer.getChannelData(i);
-						if (silentBuffer) silentBuffer.set(channel);
-					}
-				}
-				if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
-				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
-				loadDiv(exporters);
+				loadSharedBuffer(sharedBuffer);
 			}
 			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null, mergedBuffers = false, silentNode = null;
 			recordMicrophone.onclick = async function() { // All of the recording code was written by GPT-5.2 Mini to save some time.
@@ -1915,7 +1893,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 						source.connect(processor);
 						silentNode = audioContext.createGain();
-						silentNode.gain.value = 0.1;
+						silentNode.gain.value = 0.04;
 						processor.connect(silentNode);
 						silentNode.connect(audioContext.destination); // To guarantee that the audio recording will be pushed
 						recordMicrophone.textContent = "Stop Recording";
@@ -1961,25 +1939,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						sharedBuffer.copyToChannel(mergedBuffers[i], i);
 					}
 					oldSharedBufferFor = copyBuffer(sharedBuffer);
-					const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
-					let channel = sharedBuffer.getChannelData(channelNum);
-					let isProcessed = false;
-					if (sharedBuffer.numberOfChannels > 2 && confirm("Do you wish to select only that channel?")) {
-						const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
-						newBuffer.copyToChannel(channel, 0);
-						sharedBuffer = newBuffer;
-					} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];}
-					const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
-					if (sharedBuffer.numberOfChannels > 1 && !stereo) {
-						for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
-							if (i === channelNum) continue;
-							const silentBuffer = sharedBuffer.getChannelData(i);
-							if (silentBuffer) silentBuffer.set(channel);
-						}
-					}
-					if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
-					else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
-					loadDiv(exporters);
+					loadSharedBuffer(sharedBuffer);
 					recordMicrophone.textContent = "Import Recording From Microphone";
 					recordMicrophone.disabled = false;
 					importSubtitles.disabled = false;
