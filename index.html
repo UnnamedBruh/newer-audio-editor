@@ -47,7 +47,7 @@
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select">
 		<h1>Audio Editor</h1>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff .lsac, .fbac" multiple><br>
-		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button>
+		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button> <button id="micrecord">Import Recording From Microphone</button>
 		<br>
 		<div id="frame" style="display: inline-block; width: max-content;"></div>
 		<hr>
@@ -64,7 +64,7 @@
 		<div id="subtitles" style="display: none; background-color: black; color: white; font-size: 14px; font-family: sans-serif; position: absolute; top: 70vh; left: 0px; width: 100%; height: min-content; text-align: center;"></div>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles");
+			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles"), recordMicrophone = document.getElementById("micrecord");
 			let exporters = null;
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, dataSecond = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
@@ -1971,7 +1971,75 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 				loadDiv(exporters);
 			}
-			tick();
+			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null;
+			recordMicrophone.onclick = async function() { // All of the recording code was written by GPT-5.2 Mini to save some time.
+				isRecording = !isRecording;
+				if (isRecording) {
+					recordMicrophone.textContent = "Asking Permission...";
+					recordMicrophone.disabled = true;
+					stream = await navigator.mediaDevices.getUserMedia({ audio: {channelCount: 2, sampleRate: audioContext.sampleRate} });
+					recordMicrophone.textContent = "Setting things up...";
+					source = audioContext.createMediaStreamSource(stream);
+					const bufferSize = 4096; // typical buffer size
+					processor = audioContext.createScriptProcessor(bufferSize, source.channelCount, source.channelCount);
+
+					recordedBuffers = Array.from({length: source.channelCount}, () => []);
+
+					processor.onaudioprocess = (event) => {
+						if (event.inputBuffer) {
+							for (let ch = 0; ch < source.channelCount; ch++) {
+								recordedBuffers[ch].push(new Float32Array(event.inputBuffer.getChannelData(ch)));
+							}
+						}
+					}
+					source.connect(processor);
+					recordMicrophone.textContent = "Stop Recording";
+				} else {
+					processor.disconnect();
+					source.disconnect();
+					recordMicrophone.textContent = "Merging chunks...";
+					recordMicrophone.disabled = true;
+					function mergeBuffers(buffers) {
+						let length = 0;
+						for (const buf of buffers) {
+							length += buf.length;
+						}
+						const result = new Float32Array(length);
+						let offset = 0;
+						for (const buf of buffers) {
+							result.set(buf, offset);
+							offset += buf.length;
+						}
+						return result;
+					}
+					const mergedBuffers = recordedBuffers.map(x => mergeBuffers(x));
+					let sharedBuffer = audioContext.createBuffer(recordedBuffers.length, mergedBuffers[0].length, audioContext.sampleRate);
+					for (let i = 0; i < mergedBuffers.length; i++) {
+						sharedBuffer.copyToChannel(mergedBuffers[i], i);
+					}
+					const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
+					let channel = sharedBuffer.getChannelData(channelNum);
+					let isProcessed = false;
+					if (sharedBuffer.numberOfChannels > 2 && confirm("Do you wish to select only that channel?")) {
+						const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
+						newBuffer.copyToChannel(channel, 0);
+						sharedBuffer = newBuffer;
+					} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];}
+					const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
+					if (sharedBuffer.numberOfChannels > 1 && !stereo) {
+						for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
+							if (i === channelNum) continue;
+							const silentBuffer = sharedBuffer.getChannelData(i);
+							if (silentBuffer) silentBuffer.set(channel);
+						}
+					}
+					if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
+					else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
+					loadDiv(exporters);
+					recordMicrophone.textContent = "Import Recording From Microphone";
+					recordMicrophone.disabled = false;
+				}
+			}
 		</script>
 	</body>
 </html>
