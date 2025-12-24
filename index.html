@@ -1311,24 +1311,16 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							VERIFY,
 							BLOCK_SIZE
 						);
-
 						// Initialize encoder with write callback
 						const initStatus = Flac.init_encoder_stream(
 							flac_encoder,
 							write_callback_fn
 						);
-
 						if (initStatus !== 0) {
 							throw new Error("FLAC encoder initialization failed");
 						}
-
-						// Convert Float32 to 24-bit integers (packed as Int32Array)
-						const audioData = exporters.map(i => timelineBeginAudio ? 
-							i.audioData.subarray(timelineBeginAudio, timelineEndAudio) :
-							i.audioData);
-
+						const audioData = exporters.map(i => timelineBeginAudio ? i.audioData.subarray(timelineBeginAudio, timelineEndAudio) : i.audioData);
 						let encodedStatus = false;
-
 						if (BPS === 24) {
 							const hh = audioData[0].length * audioData.length;
 							const int24Buffer = new Int32Array(Math.ceil(hh / 4096) * 4096); // FLAC encoders often expect 4096 for block sizes.
@@ -1345,7 +1337,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									int24Buffer[i] = (aa[i] * 8388607) | 0;
 								}
 							}
-
 							encodedStatus = Flac.FLAC__stream_encoder_process_interleaved(
 								flac_encoder,
 								int24Buffer,
@@ -1367,7 +1358,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									int8Buffer[i] = (aa[i] * 127) | 0;
 								}
 							}
-
 							encodedStatus = Flac.FLAC__stream_encoder_process_interleaved(
 								flac_encoder,
 								int8Buffer,
@@ -1409,29 +1399,20 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									}
 								}
 							}
-
 							encodedStatus = Flac.FLAC__stream_encoder_process_interleaved(
 								flac_encoder,
 								int16Buffer,
 								audioData[0].length
 							);
 						}
-
 						if (!encodedStatus) {
 							throw new Error("FLAC encoding failed");
 						}
-
-						// Finish encoding
 						const finishStatus = Flac.FLAC__stream_encoder_finish(flac_encoder);
-
 						if (!finishStatus) {
 							throw new Error("FLAC finalization failed");
 						}
-
-						// Clean up
 						Flac.FLAC__stream_encoder_delete(flac_encoder);
-
-						// Combine all encoded chunks
 						const totalLength = encBuffer.reduce((sum, chunk) => sum + chunk.length, 0);
 						const flacData = new Uint8Array(totalLength);
 						let offset = 0;
@@ -1439,7 +1420,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							flacData.set(chunk, offset);
 							offset += chunk.length;
 						}
-
 						// Download
 						const blob = new Blob([flacData], { type: "audio/flac" });
 						downloadFile(blob, ".flac");
@@ -1449,30 +1429,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					}
 					exportBtn5.disabled = false;
 				}
-				/*exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as LSAC (LoSsy Audio Codec)";
-				exportBtn.onclick = function() {
-					const blob = encodeLSAC(exporters[0].audioData, exporters[0].sampleRate);
-
-					const link = document.createElement("a");
-					link.download = "exportedAudio.lsac";
-					link.href = URL.createObjectURL(blob);
-					link.click();
-					link.remove();
-				}
-				exportBtn = document.createElement("button");
-				v.appendChild(exportBtn);
-				exportBtn.textContent = "Export as FBAC (Frame-Based Audio Codec)";
-				exportBtn.onclick = function() {
-					const blob = encodeFBAC(exporters[0].audioData, exporters[0].sampleRate);
-
-					const link = document.createElement("a");
-					link.download = "exportedAudio.fbac";
-					link.href = URL.createObjectURL(blob);
-					link.click();
-					link.remove();
-				}*/
 				window.onscroll = function() {
 					apply.style.marginLeft = window.scrollX + "px";
 					opt.style.marginLeft = apply.style.marginLeft;
@@ -1530,7 +1486,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				ed = v;
 				div = x;
 			}
-
 			effectsList.push([
 				"Trim",
 				"Removes all of the contents that is not selected by the blue selection box.",
@@ -1547,7 +1502,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				"trimout",
 				[]
 			]);
-
 			function processSharedBuff(channel, channelNum, isProcessed) {
 				if (sharedBuffer.numberOfChannels === 4) {
 					const which = confirm("Do you want the surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
@@ -1653,7 +1607,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					}
 					if (open) window.open('https://unnamedbruh.github.io/newer-audio-editor/surroundsoundconventions-81.html', '_blank');
 				}
-
 				if (sharedBuffer.numberOfChannels === 2) {
 					if (confirm("Should the current channel be subtracted by another? (If you want to only edit the selected channel, press Cancel/No)")) {
 						const channelOtherNum = sharedBuffer.numberOfChannels - channelNum - 1;
@@ -1690,9 +1643,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				}
 				return [channel,isProcessed];
 			}
-
 			let oldSharedBufferFor = null;
-
 			function copyBuffer(buff) {
 				const copy = audioContext.createBuffer(buff.numberOfChannels, buff.length, buff.sampleRate);
 				for (let i = 0; i < buff.numberOfChannels; i++) {
@@ -1700,7 +1651,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				}
 				return copy;
 			}
-
 			audioInput.oninput = async function(eve) {
 				if (eve.target.files.length === 0) return;
 				let firstFile = eve.target.files[0];
@@ -1971,33 +1921,41 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 				loadDiv(exporters);
 			}
-			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null, mergedBuffers = false;
+			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null, mergedBuffers = false, silentNode = null;
 			recordMicrophone.onclick = async function() { // All of the recording code was written by GPT-5.2 Mini to save some time.
 				isRecording = !isRecording;
 				if (isRecording) {
 					recordMicrophone.textContent = "Asking Permission...";
 					recordMicrophone.disabled = true;
-					stream = await navigator.mediaDevices.getUserMedia({ audio: {channelCount: 2, sampleRate: audioContext.sampleRate} });
-					recordMicrophone.textContent = "Setting things up...";
-					source = audioContext.createMediaStreamSource(stream);
-					const bufferSize = 4096; // typical buffer size
-					processor = audioContext.createScriptProcessor(bufferSize, source.channelCount, source.channelCount);
-
-					recordedBuffers = Array.from({length: source.channelCount}, () => []);
-
-					processor.onaudioprocess = (event) => {
-						console.log(event);
-						for (let ch = 0; ch < source.channelCount; ch++) {
-							recordedBuffers[ch].push(new Float32Array(event.inputBuffer.getChannelData(ch)));
+					try{
+						stream = await navigator.mediaDevices.getUserMedia({ audio: {channelCount: 2, sampleRate: audioContext.sampleRate} });
+						recordMicrophone.textContent = "Setting things up...";
+						source = audioContext.createMediaStreamSource(stream);
+						const bufferSize = 4096; // typical buffer size
+						processor = audioContext.createScriptProcessor(bufferSize, source.channelCount, source.channelCount);
+						recordedBuffers = Array.from({length: source.channelCount}, () => []);
+						processor.onaudioprocess = (event) => {
+							for (let ch = 0; ch < source.channelCount; ch++) {
+								recordedBuffers[ch].push(new Float32Array(event.inputBuffer.getChannelData(ch)));
+							}
 						}
+						source.connect(processor);
+						silentNode = audioContext.createGain();
+						silentNode.gain.value = Number.EPSILON;
+						processor.connect(silentNode);
+						silentNode.connect(audioContext.destination); // To guarantee that the audio recording will be pushed
+						recordMicrophone.textContent = "Stop Recording";
+						recordMicrophone.disabled = false;
+					}catch{
+						recordMicrophone.textContent = "Microphone cannot be accessed";
 					}
-					source.connect(processor);
-					recordMicrophone.textContent = "Stop Recording";
-					recordMicrophone.disabled = false;
 				} else {
+					silentNode.disconnect();
+					processor.disconnect();
 					source.disconnect();
 					recordMicrophone.textContent = "Merging chunks...";
 					recordMicrophone.disabled = true;
+					silentNode = null;
 					function mergeBuffers(buffers) {
 						let length = 0;
 						for (const buf of buffers) {
