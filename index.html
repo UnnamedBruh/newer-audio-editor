@@ -206,7 +206,7 @@
 			}
 			function tick() {
 				if (timeline && playing) {
-					progress = (Date.now() - whenPlayed) * 0.001;
+					progress = (Date.now() - whenPlayed) * 0.001 - audioContext.outputLatency;
 					timeline.setAttribute("x", progress * tickCache);
 					if (timelineEndNum && progress > timelineEndNumCache) {
 						playing = false;
@@ -559,6 +559,7 @@
 						n.setAttribute("d", data);
 						if (n2) n2.setAttribute("d", dataSecond);
 					}
+					tickCache = sharedBuffer.sampleRate / sampleSkip;
 				}
 				let count = 0;
 				let yu = exp[0].audioData.length;
@@ -729,7 +730,7 @@
 						effect = effectsList.find(x => x[4] === opt.value);
 						if (effect[6] && sharedBuffer.numberOfChannels < effect[6]) {
 							const d = ["mono", "stereo"];
-							alert("That effect doesn't support " + d[sharedBuffer.numberOfChannels + 1] + " audio! Tip: Gray effects mean that they support " + d[effect[6]] + " audio.");
+							alert("That effect doesn't support " + d[exporters.length - 1] + " audio! Tip: Gray effects mean that they support " + d[effect[6] - 1] + " audio.");
 							opt.selectedIndex = previous;
 							return;
 						}
