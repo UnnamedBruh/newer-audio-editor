@@ -1987,6 +1987,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					for (let i = 0; i < mergedBuffers.length; i++) {
 						sharedBuffer.copyToChannel(mergedBuffers[i], i);
 					}
+					oldSharedBufferFor = copyBuffer(sharedBuffer);
 					const channelNum = Math.max(1, Math.min(+prompt("Which channel should be imported for editing? Pick a channel from 1 to " + sharedBuffer.numberOfChannels + ". (Editing multiple channels at once is now officially an option due to the maintainer's goals! However, this only works on stereo audio, not surround-sound.)") || 1, sharedBuffer.numberOfChannels)) - 1;
 					let channel = sharedBuffer.getChannelData(channelNum);
 					let isProcessed = false;
@@ -2008,6 +2009,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					loadDiv(exporters);
 					recordMicrophone.textContent = "Import Recording From Microphone";
 					recordMicrophone.disabled = false;
+					importSubtitles.disabled = false;
+					reimp.disabled = false;
 				}
 			}
 		</script>
