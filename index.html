@@ -206,7 +206,7 @@
 			}
 			function tick() {
 				if (timeline && playing) {
-					progress = (Date.now() - whenPlayed) * 0.001 - audioContext.outputLatency;
+					progress = (Date.now() - whenPlayed) * 0.001 - audioContext.outputLatency - audioContext.baseLatency;
 					timeline.setAttribute("x", progress * tickCache);
 					if (timelineEndNum && progress > timelineEndNumCache) {
 						playing = false;
