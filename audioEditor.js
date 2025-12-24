@@ -948,8 +948,10 @@ effects["biquadfilter"] = async function(exporter, freq, res, type, dryGain2, we
 }
 
 effects["biquadfilterlineartween"] = async function(exporter, freqStart, freqEnd, resStart, resEnd, type, dryGain2Start, dryGain2End, wetGain2Start, wetGain2End) {
-	dryGain2 *= 0.01;
-	wetGain2 *= 0.01;
+	dryGain2Start *= 0.01;
+	wetGain2Start *= 0.01;
+	dryGain2End *= 0.01;
+	wetGain2End *= 0.01;
 	// Main render function, originally written by Claude Sonnet 4.5, but altered to support frequency filters
 	async function renderWithFilter(sourceBuffer) {
 		try {
