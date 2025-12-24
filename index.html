@@ -1026,7 +1026,6 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		vendor = "libopusjs-muxer",
 		debug = true
 	} = opts;
-
 	// --- Helper functions (unchanged) ---
 	const concatUint8 = (chunks) => {
 		const total = chunks.reduce((sum, c) => sum + c.length, 0);
@@ -1035,7 +1034,6 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		for (const c of chunks) { out.set(c, offset); offset += c.length; }
 		return out;
 	};
-
 	function write32LE(buf, offset, value) {
 		const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
 		dv.setUint32(offset, value >>> 0, true);
@@ -1046,7 +1044,6 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		dv.setUint32(offset, Number(v & 0xffffffffn), true);
 		dv.setUint32(offset + 4, Number((v >> 32n) & 0xffffffffn), true);
 	}
-
 	// CRC32 table (unchanged)
 	const CRC32 = (() => {
 		const table = new Uint32Array(256);
@@ -1063,7 +1060,6 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 			return (crc ^ 0xffffffff) >>> 0;
 		};
 	})();
-
 	// OpusHead (unchanged)
 	function createOpusHead() {
 		const buf = new Uint8Array(19);
@@ -1077,16 +1073,13 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		buf[18] = 0;			 // mapping family
 		return buf;
 	}
-
 	// OpusTags (unchanged)
 	function createOpusTags(vendorStr = vendor, comments = {}) {
 		const vendorBytes = new TextEncoder().encode(vendorStr);
 		const userComments = Object.entries(comments).map(([k,v]) => `${k}=${v}`);
 		const commentBytes = userComments.map(s => new TextEncoder().encode(s));
-
 		let totalLen = 8 + 4 + vendorBytes.length + 4;
 		for (const b of commentBytes) totalLen += 4 + b.length;
-
 		const buf = new Uint8Array(totalLen);
 		const dv = new DataView(buf.buffer);
 		let offset = 0;
@@ -1097,13 +1090,11 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		for (const b of commentBytes) { dv.setUint32(offset, b.length, true); offset += 4; buf.set(b, offset); offset += b.length; }
 		return buf;
 	}
-
 	// --- New robust page builder ---
 	const pages = [];
 	let pageSeq = 0;
 	let granule = 0n; // absolute samples (per-channel) up to last completed packet
 	const MAX_SEGMENTS = 255;
-
 	function buildAndPushPage(segmentTable, bodyParts, pageStartedWithContinuation, isBOS, isEOS) {
 		const header = new Uint8Array(27 + segmentTable.length);
 		header.set(new TextEncoder().encode("OggS"), 0);
@@ -1113,33 +1104,26 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		if (isBOS) flags |= 0x02;
 		if (isEOS) flags |= 0x04;
 		header[5] = flags;
-
 		// granule must be set before CRC calculation; pass the current granule (already updated for completed packets)
 		write64LE(header, 6, granule);
-
 		write32LE(header, 14, serial);
 		write32LE(header, 18, pageSeq++);
 		write32LE(header, 22, 0); // CRC placeholder
-
 		header[26] = segmentTable.length;
 		header.set(segmentTable, 27);
-
 		const pageBody = concatUint8(bodyParts);
 		// compute CRC over header(with CRC=0) + body, then write CRC into header and push
 		const fullPage = concatUint8([header, pageBody]);
 		const crc = CRC32(fullPage);
 		write32LE(header, 22, crc);
-
 		pages.push(concatUint8([header, pageBody]));
 	}
-
 	// --- Write BOS pages (OpusHead + OpusTags) ---
 	buildAndPushPage(
 		new Uint8Array([createOpusHead().length]), // temporary single-segment trick doesn't matter here because we put OpusHead as a single packet below
 		[createOpusHead()],
 		false, /*continued*/ true, /*BOS*/ false /*EOS*/
 	);
-
 	buildAndPushPage(
 		(function(){ // OpusTags may be larger than 255 segments but almost never; treat it as one full packet normally
 			const t = createOpusTags(vendor, {});
@@ -1151,7 +1135,6 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		[createOpusTags(vendor, {})],
 		false, /*continued*/ false /*BOS*/ , false /*EOS*/
 	);
-
 	// --- Audio packet to pages logic (robust) ---
 	let pktIndex = 0;
 	let pktOffset = 0; // byte offset inside current packet (for continuation)
@@ -1162,36 +1145,30 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 		let bodySize = 0;
 		const pageStartedWithContinuation = pktOffset !== 0;
 		let segmentsCount = 0;
-
 		// We'll remember whether any packet *completed* on this page so we can update granule accordingly.
 		// granule already contains samples up to the last completed packet before this page.
 		// When a packet completes on this page we add its samples to granule immediately so final granule reflects last-complete.
 		let anyCompletionOnThisPage = false;
-
 		while (segmentsCount < MAX_SEGMENTS && bodySize < pageSizeLimit && pktIndex < packets.length) {
 			const pkt = packets[pktIndex];
 			const remaining = pkt.length - pktOffset;
 			const toTake = Math.min(255, remaining);
-
 			// If adding this segment would exceed the pageSizeLimit, break.
 			if (bodySize + toTake > pageSizeLimit) {
 				// If bodySize is zero and toTake > pageSizeLimit, we still must put at least one segment (even if > limit) — but toTake <= 255 so okay.
 				break;
 			}
-
 			// append segment and body chunk
 			segs.push(toTake);
 			bodyParts.push(pkt.subarray(pktOffset, pktOffset + toTake));
 			bodySize += toTake;
 			segmentsCount += 1;
 			pktOffset += toTake;
-
 			if (pktOffset === pkt.length) {
 				// packet completed on this page — increment granule by its sample count
 				const samples = BigInt(getPacketSamples(pkt));
 				granule += samples;
 				anyCompletionOnThisPage = true;
-
 				// move to next packet
 				pktIndex += 1;
 				pktOffset = 0;
@@ -1231,9 +1208,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const voiceOpt = confirm("Should the audio encoder optimize for voices in the audio?");
 						let blob;
 						const split = exporters.length !== 2 && !!confirm("Should the audio be split into two separate channels?");
-
 						const times = Number(prompt("How many times would the audio be re-encoded?") || 1) || 1;
-
 						for (let i = 0; i < times; i++) {
 							let buffer = i === 0 ? exporters.map(exp => timelineBeginAudio ? exp.audioData.subarray(timelineBeginAudio, timelineEndAudio) : exp.audioData) : await audioContext.decodeAudioData(await blob.arrayBuffer());
 							let altRate = buffer.sampleRate;
@@ -1244,31 +1219,24 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 		// Prepare channels
 		const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
 		const channels = bufferF.length;
-
 							const sampleRate = altRate || exporters[0].sampleRate; // Except this line, I added this.
-
 		// Create encoder
 		const encoder = new Encoder(channels, sampleRate, vbr, 20, voiceOpt);
 		const arr = [];
-
 		// Frame-slice
 		const frameSize = sampleRate * 20 / 1000; // 20ms @ 48kHz | Except this line, this altered modified by me.
 		const totalSamples = bufferF[0].length;
-
 		for (let pos = 0; pos + frameSize <= totalSamples; pos += frameSize) {
 			const frame = bufferF.map(ch => ch.subarray(pos, pos + frameSize));
 			const pcm = floatTo16BitPCM(frame, channels);
 			encoder.input(pcm);
-
 			// Drain packets
 			let pkt;
 			while ((pkt = encoder.output()) != null) {
 									arr.push(pkt);
 								}
 							}
-
 							console.log("Packets:", arr);
-
 							// Mux into OGG
 							blob = muxOpusPacketsToOgg(arr, {
 								sampleRate,
@@ -1276,7 +1244,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							});
 							encoder.destroy();
 						}
-
 						downloadFile(blob, ".ogg");
 					} catch (err) {
 						alert("It seems like the OGG Opus codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
@@ -1292,14 +1259,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					try {
 						// Setup for collecting encoded data
 						const encBuffer = [];
-
 						// Callback to receive encoded FLAC data
 						function write_callback_fn(buffer) {
 							// Copy the buffer immediately (same issue as with OGG Vorbis!)
 							const copy = new Uint8Array(buffer);
 							encBuffer.push(copy);
 						}
-
 						// Create encoder
 						const CHANNELS = exporters.length;
 						const SAMPLERATE = exporters[0].sampleRate;
@@ -1307,9 +1272,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const COMPRESSION = Number(prompt("What is the quality of the audio? (In other terms, how aggressive is the lossless compression? 0 = fastest compression, largest file, 8 = slower compression, smaller file, 5 = balanced compression, balanced file)") ?? 5);
 						const VERIFY = false;
 						const BLOCK_SIZE = 0; // 0 = let encoder decide
-
 						const junkMode = (BPS !== 16 || confirm("Do you want your FLAC to not have any garbage data?")) ? 1 : 0;
-
 						const flac_encoder = Flac.create_libflac_encoder(
 							SAMPLERATE,
 							CHANNELS,
@@ -1444,6 +1407,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					selectLabel.style.marginLeft = apply.style.marginLeft;
 					metadataOfAudio.style.marginLeft = apply.style.marginLeft;
 					renameFile.style.marginLeft = apply.style.marginLeft;
+					exportBtn.style.marginLeft = apply.style.marginLeft;
+					bpm.style.marginLeft = apply.style.marginLeft;
+					play.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
 					subtitlesDiv.style.top = ["calc(70vh + ", window.scrollY, "px)"].join("");
