@@ -1898,6 +1898,15 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				sharedBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
 				oldSharedBufferFor = copyBuffer(sharedBuffer);
+				exporters = null;
+				if (ed) {
+					ed.innerHTML = "";
+					ed.remove();
+					ed = null;
+				}
+				data = null;
+				sampleData = null;
+				skipSample = 480;
 				loadSharedBuffer(sharedBuffer);
 
 				// Cleanup
