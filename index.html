@@ -154,7 +154,7 @@
 				let b = 0;
 				let m = 0;
 				for (let i = 0, j = 0; i < len; i = b, j++) {
-					b = i + sampleSkip;
+					b = i + skipSample;
 					if (Math.abs(prev - val) >= ep) {
 						if (m !== j-1) data2.push("L " + (j-1) + "," + Math.round(100 + prevVal * 100));
 						data2.push("L " + j + "," + Math.round(100 + val * 100));
@@ -164,7 +164,7 @@
 					prevVal = prev;
 					prev = y[i];
 				}
-				data2.push("L " + (len / sampleSkip) + ",100");
+				data2.push("L " + (len / skipSample) + ",100");
 				return data2.join(" ");
 			}
 			let filename = "";
@@ -415,14 +415,13 @@
 				importSubtitles.disabled = false;
 			}
 			function loadDiv(exp, blank = false) {
-				let sampleSkip = skipSample;
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 				frame.appendChild(v);
 				v.appendChild(x);
-				x.setAttribute("width", exp[0].audioData.length / sampleSkip);
-				v.style.width = (exp[0].audioData.length / sampleSkip) + "px";
+				x.setAttribute("width", exp[0].audioData.length / skipSample);
+				v.style.width = (exp[0].audioData.length / skipSample) + "px";
 				x.setAttribute("height", 200);
 				const n = document.createElementNS("http://www.w3.org/2000/svg", "path");
 				x.appendChild(n);
@@ -500,7 +499,7 @@
 								timelineBegin.setAttribute("x", clickX);
 								timelineBegin.setAttribute("fill", "#00AAFF");
 								timelineBeginNum = clickX;
-								timelineBeginAudio = timelineBeginNum * sampleSkip;
+								timelineBeginAudio = timelineBeginNum * skipSample;
 								break;
 							}
 							case 1: {
@@ -513,10 +512,10 @@
 									const temp = timelineEndNum;
 									timelineEndNum = timelineBeginNum;
 									timelineBeginNum = temp;
-									timelineBeginAudio = timelineBeginNum * sampleSkip;
+									timelineBeginAudio = timelineBeginNum * skipSample;
 								}
 								timelineEndNumCache = timelineEndNum / div.clientWidth * sharedBuffer.duration;
-								timelineEndAudio = timelineEndNum * sampleSkip;
+								timelineEndAudio = timelineEndNum * skipSample;
 								highlight.setAttribute("x", timelineBeginNum);
 								highlight.setAttribute("width", timelineEndNum - timelineBeginNum);
 								break;
@@ -538,9 +537,9 @@
 				selectStart.onclick = function() {
 					restartSelect();
 					timelineIter = 0;
-					timelineBegin.setAttribute("x", 0.1/sampleSkip);
+					timelineBegin.setAttribute("x", 0.1/skipSample);
 					timelineBegin.setAttribute("fill", "#00AAFF");
-					timelineBeginNum = 0.1/sampleSkip;
+					timelineBeginNum = 0.1/skipSample;
 					timelineBeginAudio = 0.1;
 				}
 				const label3 = document.createElement("a");
@@ -551,19 +550,19 @@
 				v.appendChild(co);
 				co.oninput = function() {
 					if (co.checked) {
-						sampleSkip = 1;
+						skipSample = 1;
 						x.setAttribute("width", exp[0].audioData.length);
 						v.style.width = exp[0].audioData.length + "px";
 					} else {
-						sampleSkip = 480;
+						skipSample = 480;
 						if (!data) data = generateWaveform(exp[0]);
-						x.setAttribute("width", exp[0].audioData.length / sampleSkip);
+						x.setAttribute("width", exp[0].audioData.length / skipSample);
 						x.style.marginLeft = "0px";
-						v.style.width = (exp[0].audioData.length / sampleSkip) + "px";
+						v.style.width = (exp[0].audioData.length / skipSample) + "px";
 						n.setAttribute("d", data);
 						if (n2) n2.setAttribute("d", dataSecond);
 					}
-					tickCache = sharedBuffer.sampleRate / sampleSkip;
+					tickCache = sharedBuffer.sampleRate / skipSample;
 				}
 				let count = 0;
 				let yu = exp[0].audioData.length;
@@ -710,8 +709,8 @@
 								const ref2 = sharedBuffer.getChannelData(1);
 								ref2.set(exp[1].audioData);
 							}
-							x.setAttribute("width", exp[0].audioData.length / sampleSkip);
-							v.style.width = (exp[0].audioData.length / sampleSkip) + "px";
+							x.setAttribute("width", exp[0].audioData.length / skipSample);
+							v.style.width = (exp[0].audioData.length / skipSample) + "px";
 							n.setAttribute("d", data);
 							if (n2) n2.setAttribute("d", dataSecond);
 							apply.disabled = false;
@@ -751,7 +750,7 @@
 						previous = opt.selectedIndex;
 					}
 				}
-				tickCache = sharedBuffer.sampleRate / sampleSkip;
+				tickCache = sharedBuffer.sampleRate / skipSample;
 				v.appendChild(document.createElement("br"));
 				let exportBtn = document.createElement("button");
 				v.appendChild(exportBtn);
@@ -1409,7 +1408,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					subtitlesDiv.style.top = ["calc(70vh + ", window.scrollY, "px)"].join("");
 					subtitlesDiv.style.left = [window.scrollX, "px"].join("");
 					if (window.scrollX > window.innerWidth - selectLabel.getBoundingClientRect().width) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
-					if (sampleSkip === 1) {
+					if (skipSample === 1) {
 						count++;
 						if (count < 4) return;
 						count = 0;
@@ -1427,7 +1426,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							}
 							val = y[i];
 						}
-						data2.push("L " + (len / sampleSkip) + ",100");
+						data2.push("L " + (len / skipSample) + ",100");
 						n.setAttribute("d", data2.join(" "));
 						if (n2) {
 							data2 = ["M 0,100 L 0,100"];
@@ -1440,7 +1439,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								}
 								val = y[i];
 							}
-							data2.push("L " + (len / sampleSkip) + ",100");
+							data2.push("L " + (len / skipSample) + ",100");
 							n2.setAttribute("d", data2.join(" "));
 						}
 					}
@@ -1667,7 +1666,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 						data = null;
 						sampleData = null;
-						sampleSkip = 480;
+						skipSample = 480;
 						let result = 0;
 						if (firstFile.name.endsWith(".lsac")) result = await decodeLSAC(firstFile); else result = await decodeFBAC(firstFile);
 						sharedBuffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
@@ -1695,7 +1694,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							}
 							data = null;
 							sampleData = null;
-							sampleSkip = 480;
+							skipSample = 480;
 							if (whichInterpret) {
 								const data = event.target.result;
 								const type = Number(prompt("How will the audio be interpreted? (0 = integers, 1 = floats)"));
@@ -1849,7 +1848,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				}
 				data = null;
 				sampleData = null;
-				sampleSkip = 480;
+				skipSample = 480;
 				sharedBuffer = audioContext.createBuffer(1 + confirm("Will the blank audio be mono (1 channel, select \"Cancel\") or stereo (2 channels, select \"OK\" or \"Yes\")?"), (Math.round(Math.abs(Number(prompt("How long is the blank audio (in seconds)?")))) || 1) * 48000, 48000);
 				const stereo = sharedBuffer.numberOfChannels === 2;
 				if (stereo) exporters = [new AudioExporter(sharedBuffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1), sharedBuffer.sampleRate, 1, 32)];
@@ -1871,7 +1870,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				}
 				data = null;
 				sampleData = null;
-				sampleSkip = 480;
+				skipSample = 480;
 				loadSharedBuffer(sharedBuffer);
 			}
 			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null, mergedBuffers = false, silentNode = null;
@@ -1974,7 +1973,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					}
 					data = null;
 					sampleData = null;
-					sampleSkip = 480;
+					skipSample = 480;
 					mergedBuffers = recordedBuffers.map(x => mergeBuffers(x));
 					sharedBuffer = audioContext.createBuffer(mergedBuffers.length, mergedBuffers[0].length, audioContext.sampleRate);
 					for (let i = 0; i < mergedBuffers.length; i++) {
