@@ -1875,9 +1875,49 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				loadSharedBuffer(sharedBuffer);
 			}
 			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null, mergedBuffers = false, silentNode = null;
-			recordMicrophone.onclick = async function() { // All of the recording code was written by GPT-5.2 Mini to save some time.
+			recordMicrophone.onclick = async function() {
 				isRecording = !isRecording;
-				if (isRecording) {
+				if (typeof MediaRecorder !== "undefined") { // All of this block was written by Grok's non-Premium model.
+					if (isRecording) {
+		try {
+			stream = await navigator.mediaDevices.getUserMedia({
+				audio: { channelCount: 2, sampleRate: audioContext.sampleRate }
+			});
+			mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' }); // Try for PCM if supported
+
+			recordedChunks = [];
+			mediaRecorder.ondataavailable = (e) => {
+				if (e.data.size > 0) recordedChunks.push(e.data);
+			};
+
+			mediaRecorder.onstop = async () => {
+				const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+				const arrayBuffer = await blob.arrayBuffer();
+				sharedBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+				oldSharedBufferFor = copyBuffer(sharedBuffer);
+				loadSharedBuffer(sharedBuffer);
+
+				// Cleanup
+				stream.getTracks().forEach(t => t.stop());
+				recordMicrophone.textContent = "Import Recording From Microphone";
+				recordMicrophone.disabled = false;
+				importSubtitles.disabled = false;
+				reimp.disabled = false;
+			};
+
+			mediaRecorder.start();
+			recordMicrophone.textContent = "Stop Recording";
+		} catch (err) {
+			console.error(err);
+			recordMicrophone.textContent = "Microphone cannot be accessed";
+		}
+	} else {
+		mediaRecorder.stop();
+		recordMicrophone.textContent = "Processing...";
+		recordMicrophone.disabled = true;
+	}
+				} else {if (isRecording) { // This block was written by GPT-5.2 Mini.
 					recordMicrophone.textContent = "Asking Permission...";
 					recordMicrophone.disabled = true;
 					try{
@@ -1946,7 +1986,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					recordMicrophone.disabled = false;
 					importSubtitles.disabled = false;
 					reimp.disabled = false;
-				}
+				}}
 			}
 		</script>
 	</body>
