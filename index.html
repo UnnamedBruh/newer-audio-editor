@@ -1894,7 +1894,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 						source.connect(processor);
 						silentNode = audioContext.createGain();
-						silentNode.gain.value = 0.04;
+						silentNode.gain.value = 0.1;
 						processor.connect(silentNode);
 						silentNode.connect(audioContext.destination); // To guarantee that the audio recording will be pushed
 						recordMicrophone.textContent = "Stop Recording";
