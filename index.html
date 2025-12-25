@@ -1878,11 +1878,14 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				isRecording = !isRecording;
 				if (typeof MediaRecorder !== "undefined") { // All of this block was written by Grok's non-Premium model.
 					if (isRecording) {
+						recordMicrophone.textContent = "Asking Permission...";
+					recordMicrophone.disabled = true;
 		try {
 			stream = await navigator.mediaDevices.getUserMedia({
 				audio: { channelCount: 2, sampleRate: audioContext.sampleRate }
 			});
-			mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' }); // Try for PCM if supported
+			if (MediaRecorder.isTypeSupported('audio/webm;codecs=pcm')) mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' }); // Try for PCM if supported
+			else if (MediaRecorder.isTypeSupported('audio/webm')) mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
 
 			recordedChunks = [];
 			mediaRecorder.ondataavailable = (e) => {
