@@ -1888,13 +1888,14 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						processor = audioContext.createScriptProcessor(bufferSize, source.channelCount, source.channelCount);
 						recordedBuffers = Array.from({length: source.channelCount}, () => []);
 						processor.onaudioprocess = (event) => {
+							console.log(event);
 							for (let ch = 0; ch < source.channelCount; ch++) {
 								recordedBuffers[ch].push(new Float32Array(event.inputBuffer.getChannelData(ch)));
 							}
 						}
 						source.connect(processor);
 						silentNode = audioContext.createGain();
-						silentNode.gain.value = 0.1;
+						silentNode.gain.value = 0.3;
 						processor.connect(silentNode);
 						silentNode.connect(audioContext.destination); // To guarantee that the audio recording will be pushed
 						recordMicrophone.textContent = "Stop Recording";
