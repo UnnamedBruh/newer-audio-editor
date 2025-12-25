@@ -1876,7 +1876,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null, mergedBuffers = false, silentNode = null;
 			recordMicrophone.onclick = async function() {
 				isRecording = !isRecording;
-				if (typeof MediaRecorder !== "undefined") { // All of this block was written by Grok's non-Premium model.
+				if (typeof MediaRecorder !== "undefined") { // All of this block was written by Grok's non-Premium model. I altered the code to add compatibility fallbacks, and tweaking how the button is handled
 					if (isRecording) {
 						recordMicrophone.textContent = "Asking Permission...";
 					recordMicrophone.disabled = true;
@@ -1910,8 +1910,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 
 			mediaRecorder.start();
 			recordMicrophone.textContent = "Stop Recording";
-		} catch (err) {
-			console.error(err);
+			recordMicrophone.disabled = false;
+		} catch {
 			recordMicrophone.textContent = "Microphone cannot be accessed";
 		}
 	} else {
