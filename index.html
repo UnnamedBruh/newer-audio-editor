@@ -882,7 +882,7 @@
 						if (i > 0) {
 							if (buffer.numberOfChannels === 2) buffer = [buffer.getChannelData(0), buffer.getChannelData(1)]; else buffer = [buffer.getChannelData(0), buffer.getChannelData(0)];
 						}
-						const mp3Encoder = new lamejs.Mp3Encoder(channels + shouldSplit, i === 0 ? sampleRate : altRate, kbps, qual);
+						const mp3Encoder = new lamejs.Mp3Encoder(channels + shouldSplit, i === 0 ? sampleRate : altRate, kbps, qual, !!isJoint);
 						let mp3Data = [];
 						let quantity = channels === 2 || shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1);
 						if (isJoint && isJoint != 0) quantity *= fixEncodeTable3[kbps] || 1;
