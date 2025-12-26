@@ -885,11 +885,11 @@
 						const mp3Encoder = new lamejs.Mp3Encoder(channels + shouldSplit, i === 0 ? sampleRate : altRate, kbps, qual);
 						let mp3Data = [];
 						let quantity = channels === 2 || shouldSplit ? ((2 / (kbps/64)) * tttt) : (fixEncodeTable2[kbps] || 1);
-						if (isJoint) quantity *= fixEncodeTable3[kbps] || 1;
+						if (isJoint && isJoint != 0) quantity *= fixEncodeTable3[kbps] || 1;
 						let pcmData = [floatTo16BitPCM(buffer[0], quantity)];
 						const len = pcmData[0].length;
 						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], quantity)];
-						if (isJoint) {
+						if (isJoint && isJoint != 0) {
 							if (isJoint == 1) {
 								let temp = 0, len = pcmData[0].length;
 								const left = pcmData[0], right = pcmData[1];
@@ -1308,7 +1308,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							);
 						} else if (BPS === 8) {
 							const hh = audioData[0].length * audioData.length;
-							const int8Buffer = new Int16Array(Math.ceil(hh / 4096) * 4096); // FLAC encoders often expect 4096 for block sizes.
+							const int8Buffer = new Int32Array(Math.ceil(hh / 4096) * 4096); // FLAC encoders often expect 4096 for block sizes.
 							if (audioData.length === 2) {
 								const aa = audioData[0];
 								const ab = audioData[1];
