@@ -1347,4 +1347,3 @@ effects["keepsilence2"] = function(exporters, mode, tolerance = 0.00605545437792
 		exporters[1].audioData = pointer2.subarray(offset, offset2+1);
 	}
 }
-
