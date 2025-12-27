@@ -868,7 +868,7 @@
 					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") ?? 3));
 					const channels = (exporters.length === 2) ? 2 : 1;
 					const shouldSplit = channels !== 2 && confirm("Should the same buffer be split into two channels? (If so, the audio may sound 2X lower-quality)");
-					const isJoint = (channels === 2 || shouldSplit) ? prompt("Should the encoder use Mid/Side encoding for more efficient audio compression? (0 = No, 1 = Yes, 2 = Yes; swap Mid/Side, 3 = Yes; move into the Side because the Side has the least amount of bits)") : 0;
+					const isJoint = (channels === 2 || shouldSplit) ? prompt("Should the encoder use Mid/Side analysis to decide the optimal # of channels? (0 = No, 1 = Yes, 2 = Yes; encode the audio into Mid/Side to catch LAME off-guard)") : 0;
 					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
 					let blob;
 					exportBtn2.disabled = true;
@@ -890,28 +890,13 @@
 						const len = pcmData[0].length;
 						if (channels === 1) pcmData = [pcmData[0], pcmData[0]]; else pcmData = [pcmData[0], floatTo16BitPCM(buffer[1], quantity)];
 						if (isJoint && isJoint != 0) {
-							if (isJoint == 1) {
+							if (isJoint == 2) {
 								let temp = 0, len = pcmData[0].length;
 								const left = pcmData[0], right = pcmData[1];
 								for (let i = 0; i < len; i++) {
 									temp = left[i];
 									left[i] = (left[i] + right[i]) * 0.5;
 									right[i] = (temp - right[i]) * 0.5;
-								}
-							} else if (isJoint == 2) {
-								let temp = 0, len = pcmData[0].length;
-								const left = pcmData[0], right = pcmData[1];
-								for (let i = 0; i < len; i++) {
-									temp = right[i];
-									right[i] = (left[i] + right[i]) * 0.5;
-									left[i] = (left[i] - temp) * 0.5;
-								}
-							} else {
-								let len = pcmData[0].length;
-								const left = pcmData[0], right = pcmData[1];
-								for (let i = 0; i < len; i++) {
-									right[i] = (left[i] + right[i]) * 0.5;
-									left[i] = 0;
 								}
 							}
 						}
