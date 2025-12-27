@@ -1565,7 +1565,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const len = channel.length;
 						const channelOther = sharedBuffer.getChannelData(channelOtherNum);
 						while (true) {
-							const choice = Number(prompt("Okay then! Which formula do you want to choose? (0 = channel" + channelNum + " - otherChannel | 1 = channel" + channelNum + " * 2 - otherChannel | 2 = channel" + channelNum + " - (otherChannel - channel" + channelNum + ") / 2 | 3 = 2 but otherChannel" + channelNum + " * 2 | 4 = channel" + channelNum + " + otherChannel | 5 = channel" + channelNum + " * -1)"));
+							const choice = Number(prompt("Okay then! Which formula do you want to choose? (-1 = exit this prompt | 0 = channel" + channelNum + " - otherChannel | 1 = channel" + channelNum + " * 2 - otherChannel | 2 = channel" + channelNum + " - (otherChannel - channel" + channelNum + ") / 2 | 3 = 2 but otherChannel" + channelNum + " * 2 | 4 = channel" + channelNum + " + otherChannel | 5 = channel" + channelNum + " * -1)"));
 							if (choice === 0) {
 								for (let i = 0; i < len; i++) {
 									channel[i] -= channelOther[i];
@@ -1595,7 +1595,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 									channel[i] = -channel[i];
 								}
 								continue;
-							}
+							} else if (choice === -1) break;
 							isProcessed = true;
 							break;
 						}
