@@ -14,21 +14,21 @@
 			}
 			.red{color:red}.orange{color:orange}.yellow{color:yellow}.green{color:green}.blue{color:blue}.purple{color:purple}.white{color:white}.gray{color:gray}.grey{color:gray}.pink{color:pink}.magenta{color:magenta}
 			.title,.large,.big,.header,.h,.h1,.h2,.h3{font-size:28px;}.subtitle,.medium,.h4,.h5,.h6{font-size:21px;}.intro{color:yellow;font-weight:bold;}.highlight{background-color:yellow;}.huge,.mega,.larger,.largest,.bigger,.biggest,.colossal{font-size:36px;}.small{font-size:10px;}.tiny{font-size:6px;}.emphasis{font-weight:bold}.warning{background-color:yellow;color:black}.thought{color:gray;font-style:italic}.aside{color:gray;font-size:10px;}.flashback{color:rgb(255,243,163);}
-			.hidden,.nodisplay,.none,.invisible,.transparent,.noopaque{display:none}.left{text-align:left;width:50%}.right{text-align:right;width:50%}
+			.hidden,.nodisplay,.none,.invisible,.noopaque{display:none}.left,.alignleft,.alignmentleft,.leftside{text-align:left;width:50%}.right,.alignright,.alignmentright,.rightside{text-align:right;width:50%}
 			.fadein{opacity:0;animation:fadeintransition 1s forwards;}@keyframes fadeintransition{to{opacity:1;}}.fadeout{opacity:1;animation:fadeouttransition 2s forwards;}@keyframes fadeouttransition{to{opacity:0;}}
 			.slideinleft,.slideleftin,.slidefromleft{margin-right:130%;animation:slideleftin 1.5s forwards;}@keyframes slideleftin{to{margin-right:0%;}}.slideinright,.sliderightin,.slidefromright{margin-left:130%;animation:sliderightin 1.5s forwards;}@keyframes sliderightin{to{margin-left:0%;}}
 			.grow,.growin,.growlarge,.growbig{font-size:0px;animation:growin 1s forwards;}@keyframes growin{to{font-size:14px;}}.shrink,.shrinkout,.shrinkin,.shrinksmall,.shrinktiny{font-size:14px;animation:shrinkout 1.5s forwards;}@keyframes shrinkout{to{font-size:0px;}}
-			.blink,.wink,.switch{animation:blinkingtext 0.9s infinite;}@keyframes blinkingtext{0%{opacity:1;}70%{opacity:0;}100%{opacity:1;}}.flicker{animation:flickeringtext 4.5s infinite;}@keyframes flickeringtext{0%{opacity:1;}7%{opacity:0;}12%{opacity:1;}18%{opacity:0;}20%{opacity:1;}23%{opacity:0;}29%{opacity:1;}35%{opacity:0;}44%{opacity:1;}50%{opacity:0;}51%{opacity:1;}54%{opacity:0;}55%{opacity:1;}61%{opacity:0;}68%{opacity:1;}69%{opacity:0;}73%{opacity:1;}83%{opacity:0;}88%{opacity:1;}91%{opacity:0;}93%{opacity:1;}96%{opacity:0;}100%{opacity:1;}}
-			.flash,.flashbang{background-color:rgba(255,255,255,1);color:rgb(255,255,255);animation:flashout 0.6s forwards;}@keyframes flashout{to{background-color:rgba(0,0,0,0);}}
-			.shadow,.silhouette{text-shadow:-5px -5px 5px 0px #636363;}.rainbow,.colorwheel,.hue,.lgbtq{animation:rainbow 3.5s infinite;color:rgb(255,0,0);}@keyframes rainbow{0%{color:rgb(255,0,0);}10%{color:rgb(255,128,0);}25%{color:rgb(255,255,0);}40%{color:rgb(0,200,0);}55%{color:rgb(0,128,128);}70%{color:rgb(0,0,255);}85%{color:rgb(255,0,255);}}
+			.blink,.wink,.switch,.onandoff,.onnoff,.onoff,.on-and-off{animation:blinkingtext 0.9s infinite;}@keyframes blinkingtext{0%{opacity:1;}70%{opacity:0;}100%{opacity:1;}}.flicker{animation:flickeringtext 4.5s infinite;}@keyframes flickeringtext{0%{opacity:1;}7%{opacity:0;}12%{opacity:1;}18%{opacity:0;}20%{opacity:1;}23%{opacity:0;}29%{opacity:1;}35%{opacity:0;}44%{opacity:1;}50%{opacity:0;}51%{opacity:1;}54%{opacity:0;}55%{opacity:1;}61%{opacity:0;}68%{opacity:1;}69%{opacity:0;}73%{opacity:1;}83%{opacity:0;}88%{opacity:1;}91%{opacity:0;}93%{opacity:1;}96%{opacity:0;}100%{opacity:1;}}
+			.flash,.flashbang,.lobotomy{background-color:rgba(255,255,255,1);color:rgb(255,255,255);animation:flashout 0.6s forwards;}@keyframes flashout{to{background-color:rgba(0,0,0,0);}}
+			.shadow,.silhouette,.absorb,.absorblight{text-shadow:-5px -5px 5px 0px #636363;}.rainbow,.colorwheel,.hue,.huerotate,.lgbtq{animation:rainbow 3.5s infinite;color:rgb(255,0,0);}@keyframes rainbow{0%{color:rgb(255,0,0);}10%{color:rgb(255,128,0);}25%{color:rgb(255,255,0);}40%{color:rgb(0,200,0);}55%{color:rgb(0,128,128);}70%{color:rgb(0,0,255);}85%{color:rgb(255,0,255);}}
+			.arial,.arialnormal,.normalarial,.fontarial,.arialfont{font-family:Arial,sans-serif}.arialblack,.blackarial,.fontarialblack,.arialblackfont{font-family:Arial Black,sans-serif}.helvetica,.helveticanormal,.normalhelvetica,.fonthelvetica,.helveticafont{font-family:Helvetica,sans-serif}.sans-serif,.sansserif,.fontsans-serif,.fontsansserif,.sans-seriffont,.sansseriffont{font-family:sans-serif}
+			.ghost,.ghast,.ghostly,.ghastly,.transparent,.translucent,.seethrough,.seebehind,.lowopaque,.lowopaqueness,.low-opaque,.low-opaqueness,.fog,.foggy{animation:ghost 1.7s forwards}@keyframes ghost{0%,100%{opacity:0.2},70%{opacity:0.3}}
 		</style>
 	</head>
 	<body>
 		<script src="audioEditor.js"></script>
 		<script src="audioExporter.js"></script>
 		<script src="audioEffects.js"></script>
-		<script src="audioLSAC.js"></script>
-		<script src="audioFBAC.js"></script>
 		<script src="lame.min.js"></script>
 		<script src="audioEncoders.unpkg.js"></script>
 		<script src="flacjs/libflac.min.js"></script>
@@ -1650,31 +1650,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					}
 				}
 				if (!whichInterpret && (firstFile.name.endsWith(".lsac") || firstFile.name.endsWith(".fbac"))) {
-					try {
-						exporters = null;
-						if (ed) {
-							ed.innerHTML = "";
-							ed.remove();
-							ed = null;
-						}
-						data = null;
-						sampleData = null;
-						skipSample = 480;
-						let result = 0;
-						if (firstFile.name.endsWith(".lsac")) result = await decodeLSAC(firstFile); else result = await decodeFBAC(firstFile);
-						sharedBuffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate);
-						const len = result.samples.length;
-						const bufferData = sharedBuffer.getChannelData(0);
-						const samples = result.samples;
-						for (let i = 0; i < len; i++) {
-							bufferData[i] = samples[i];
-						}
-						exporters = [new AudioExporter(result.samples, result.sampleRate, 1, 32)];
-						loadDiv(exporters[0]);
-					} catch (err) {
-						alert("The audio could not be properly loaded! Due to unhelpful strip-aways from viewing metadata, we cannot provide much info on what exactly failed.");
-						console.log(err.message + err.stack);
-					}
+					alert("LSAC and FBAC file loading is no longer supported by this audio editor, due to several issues with the original encoders and decoders, and lack of widespread support across many environments and plugins. We sincerely apologize for taking down our own audio format, but we hope to bring in a much better codec!");
 				} else {
 					const fileReader = new FileReader();
 					fileReader.onload = async function(event) {
