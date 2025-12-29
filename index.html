@@ -42,7 +42,7 @@
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button>
 		<h1>Audio Editor</h1>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac" multiple><br>
-		Load Audio File From URL: <input type="url" id="audurl"><br>
+		Load Audio File From URL: <input type="url" id="audurl" title="Add multiple URLs by separating them with commas ,"><br>
 		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button> <button id="micrecord">Import Recording From Microphone</button>
 		<br>
 		<div id="frame" style="display: inline-block; width: max-content;"></div>
@@ -1723,7 +1723,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								reimp.disabled = false;
 								return;
 							}
-							loadFromURL.style = "color: green";
+							loadFromURL.style.color = "green";
 							const oldURL = loadFromURL.value;
 							loadFromURL.value = "success!";
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
@@ -1807,12 +1807,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							reimp.disabled = false;
 							loadFromURL.disabled = false;
 							loadFromURL.value = oldURL;
-							loadFromURL.style = "";
+							loadFromURL.style.color = "";
 						} catch (err) {
 							alert("The audio could not be properly loaded! We couldn't gather any info on what exactly failed, so the best we can say is: try selecting another audio file, or using another browser.");
 							console.log(err.message + err.stack);
 							loadFromURL.disabled = false;
-							loadFromURL.style = "";
+							loadFromURL.style.color = "";
 						}
 					}
 					fileReader.readAsArrayBuffer(firstFile);
@@ -1866,17 +1866,13 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			});
 			if (MediaRecorder.isTypeSupported('audio/webm;codecs=pcm')) mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' }); // Try for PCM if supported
 			else if (MediaRecorder.isTypeSupported('audio/webm')) mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-
 			recordedChunks = [];
-			mediaRecorder.ondataavailable = (e) => {
-				if (e.data.size > 0) recordedChunks.push(e.data);
-			};
+			mediaRecorder.ondataavailable = (e) => {if (e.data.size > 0) recordedChunks.push(e.data);}
 
 			mediaRecorder.onstop = async () => {
 				const blob = new Blob(recordedChunks, { type: 'audio/webm' });
 				const arrayBuffer = await blob.arrayBuffer();
 				sharedBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
 				oldSharedBufferFor = copyBuffer(sharedBuffer);
 				exporters = null;
 				if (ed) {
@@ -1888,15 +1884,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				sampleData = null;
 				skipSample = 480;
 				loadSharedBuffer(sharedBuffer);
-
-				// Cleanup
 				stream.getTracks().forEach(t => t.stop());
 				recordMicrophone.textContent = "Import Recording From Microphone";
 				recordMicrophone.disabled = false;
 				importSubtitles.disabled = false;
 				reimp.disabled = false;
 			};
-
 			mediaRecorder.start();
 			recordMicrophone.textContent = "Stop Recording";
 			recordMicrophone.disabled = false;
@@ -1982,19 +1975,22 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			loadFromURL.onkeydown = async event => {
 				const obj = {};
 				obj.target = {files: []};
+				loadFromURL.style.width = (loadFromURL.value.length * 4) + "px";
 				if (event.key === "Enter") {
 					loadFromURL.disabled = true;
-					try {
-						const firstFile = await originalFetchFunction(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(loadFromURL.value)}`);
-						const arrbuff = await firstFile.arrayBuffer();
-						if (!arrbuff || !arrbuff.byteLength) {
-							loadFromURL.disabled = false;
-							return;
-						}
-						obj.target.files.push(new File([arrbuff], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
-						await loadAudioFiles(obj);
-					} catch {
-						obj.target.files = [];
+					const urls = loadFromURL.value.split(",");
+					for (let i = 0, url = urls[0]; i < urls.length; url = urls[++i]) {
+						try {
+							const firstFile = await originalFetchFunction(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url.trim())}`);
+							const arrbuff = await firstFile.arrayBuffer();
+							if (!arrbuff || !arrbuff.byteLength) {
+								loadFromURL.disabled = false;
+								alert("URL #" + (i+1) + " was unable to be fetched. This is not an error, but it's something important to keep in mind.");
+								continue;
+							}
+							obj.target.files.push(new File([arrbuff], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
+							await loadAudioFiles(obj);
+						} catch {}
 					}
 				}
 			}
