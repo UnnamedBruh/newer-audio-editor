@@ -1975,7 +1975,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			loadFromURL.onkeydown = async event => {
 				const obj = {};
 				obj.target = {files: []};
-				loadFromURL.style.width = (loadFromURL.value.length * 4) + "px";
+				requestAnimationFrame(()=>{loadFromURL.style.width = (loadFromURL.value.length * 8) + "px";});
 				if (event.key === "Enter") {
 					loadFromURL.disabled = true;
 					const urls = loadFromURL.value.split(",");
