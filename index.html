@@ -2001,7 +2001,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							const firstFile = await originalFetchFunction(encodeURI(loadFromURL.value), { "headers": { "cache-control": "no-cache", "pragma": "no-cache", "sec-fetch-mode": "no-cors", "sec-fetch-site": "none" }, "referrer": "https://example.com", "method": "GET", "body": null, "credentials": "omit" });
 							obj.target.files.push(new File([await firstFile.arrayBuffer()], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
 							if (!obj.target.files[0] || !obj.target.files[0].length) {
-								loadFromURL.disabled = false;
+								obj.target.files = [];
+								await failsafe2();
 								return;
 							}
 							await loadAudioFiles(obj);
@@ -2016,7 +2017,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const firstFile = await originalFetchFunction(loadFromURL.value, { "headers": { "accept": "*/*", "accept-language": localeList[Math.floor(Math.random()*localeList.length)], "cache-control": "no-cache", "pragma": "no-cache", "priority": "u=1, i", "sec-ch-ua": `"${chosenBrowser[0]}";v="${chosenVersion}", "${chosenBrowser[1]}";v="${chosenVersion}", "Not A(Brand";v="4"`, "sec-ch-ua-mobile": "?0", "sec-ch-ua-platform": `"${platforms[Math.floor(Math.random() * platforms.length)]}"`, "sec-fetch-dest": "empty", "sec-fetch-mode": "no-cors", "sec-fetch-site": "none" }, "referrer": "https://example.com", "body": null, "method": "GET", "mode": "no-cors", "credentials": "omit" });
 						obj.target.files.push(new File([await firstFile.arrayBuffer()], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
 						if (!obj.target.files[0] || !obj.target.files[0].length) {
-							loadFromURL.disabled = false;
+							obj.target.files = [];
+							await failsafe();
 							return;
 						}
 						await loadAudioFiles(obj);
