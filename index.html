@@ -1981,7 +1981,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					const chosenBrowser = browserList[Math.floor(Math.random() * browserList.length)];
 					const chosenVersion = Math.round(interpolate(chosenBrowser[2], chosenBrowser[3], Math.random()));
 					const platforms = ["Apple", "Windows", "Android", "ChromeOS", "macOS", "HarmonyOS", "Linux", "iOS"];
-					function failsafe() {
+					async function failsafe() {
 						alert("Fetch failed; trying again.");
 						const firstFile = await fetch(loadFromURL.value, { "headers": { "cache-control": "no-cache", "pragma": "no-cache", "sec-fetch-mode": "no-cors", "sec-fetch-site": "none" }, "referrer": "https://example.com", "method": "GET", "body": null, "mode": "no-cors", "credentials": "omit" });
 						obj.target.files.push(await firstFile.arrayBuffer());
@@ -1994,9 +1994,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						await loadAudioFiles(obj);
 						loadFromURL.disabled = false;
 					} catch {
-						failsafe();
+						await failsafe();
 					}
-					if (!ed) failsafe();
+					if (!ed) await failsafe();
 				}
 			}
 		</script>
