@@ -1978,7 +1978,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					loadFromURL.disabled = true;
 					try {
 						const firstFile = await originalFetchFunction(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(loadFromURL.value)}`);
-						obj.target.files.push(new File([await firstFile.arrayBuffer()], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));=
+						const arrbuff = await firstFile.arrayBuffer();
+						if (!arrbuff || !arrbuff.byteLength) {
+							loadFromURL.disabled = false;
+							return;
+						}
+						obj.target.files.push(new File([arrbuff], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
 						await loadAudioFiles(obj);
 						loadFromURL.disabled = false;
 					} catch {
