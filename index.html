@@ -1246,7 +1246,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						// Create encoder
 						const CHANNELS = exporters.length;
 						const SAMPLERATE = exporters[0].sampleRate;
-						const BPS = Number(prompt("What is the bits per sample of the FLAC audio? (Although 8-bit and 4-bit is nonstandard, it is supported across most systems.)") ?? 24)>>2<<2; // 24-, 16-, 8- or 4-bit encoding
+						const BPS = Number(prompt("What is the bits per sample of the FLAC audio? (Although 8-bit is nonstandard, it is supported across most systems.)") ?? 24)>>3<<3; // 24-, 16-, or 8-bit encoding
 						const COMPRESSION = Number(prompt("What is the quality of the audio? (In other terms, how aggressive is the lossless compression? 0 = fastest compression, largest file, 8 = slower compression, smaller file, 5 = balanced compression, balanced file)") ?? 5);
 						const VERIFY = false;
 						const BLOCK_SIZE = 0; // 0 = let encoder decide
@@ -1291,27 +1291,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								int24Buffer,
 								audioData[0].length
 							);
-						} else if (BPS === 32) {
-							const hh = audioData[0].length * audioData.length;
-							const int32Buffer = new Int32Array(Math.ceil(hh / 4096) * 4096); // FLAC encoders often expect 4096 for block sizes.
-							if (audioData.length === 2) {
-								const aa = audioData[0];
-								const ab = audioData[1];
-								for (let i = 0, j = 0; i < hh; i += 2, j++) {
-									int32Buffer[i] = (aa[j] * 2147483647) | 0;
-									int32Buffer[i + 1] = (ab[j] * 2147483647) | 0;
-								}
-							} else {
-								const aa = audioData[0];
-								for (let i = 0; i < aa.length; i++) {
-									int32Buffer[i] = (aa[i] * 2147483647) | 0;
-								}
-							}
-							encodedStatus = Flac.FLAC__stream_encoder_process_interleaved(
-								flac_encoder,
-								int32Buffer,
-								audioData[0].length
-							);
 						} else if (BPS === 8) {
 							const hh = audioData[0].length * audioData.length;
 							const int8Buffer = new Int32Array(Math.ceil(hh / 4096) * 4096); // FLAC encoders often expect 4096 for block sizes.
@@ -1326,27 +1305,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								const aa = audioData[0];
 								for (let i = 0; i < aa.length; i++) {
 									int8Buffer[i] = (aa[i] * 127) | 0;
-								}
-							}
-							encodedStatus = Flac.FLAC__stream_encoder_process_interleaved(
-								flac_encoder,
-								int8Buffer,
-								audioData[0].length
-							);
-						} else if (BPS === 4) {
-							const hh = audioData[0].length * audioData.length;
-							const int8Buffer = new Int32Array(Math.ceil(hh / 4096) * 4096); // FLAC encoders often expect 4096 for block sizes.
-							if (audioData.length === 2) {
-								const aa = audioData[0];
-								const ab = audioData[1];
-								for (let i = 0, j = 0; i < hh; i += 2, j++) {
-									int8Buffer[i] = (aa[j] * 7) | 0;
-									int8Buffer[i + 1] = (ab[j] * 7) | 0;
-								}
-							} else {
-								const aa = audioData[0];
-								for (let i = 0; i < aa.length; i++) {
-									int8Buffer[i] = (aa[i] * 7) | 0;
 								}
 							}
 							encodedStatus = Flac.FLAC__stream_encoder_process_interleaved(
