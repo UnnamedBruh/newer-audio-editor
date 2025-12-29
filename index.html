@@ -1989,9 +1989,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								continue;
 							}
 							obj.target.files.push(new File([arrbuff], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
-							await loadAudioFiles(obj);
 						} catch {}
 					}
+					await loadAudioFiles(obj);
 				}
 			}
 		</script>
