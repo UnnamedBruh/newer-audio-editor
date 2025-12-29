@@ -41,6 +41,7 @@
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button>
 		<h1>Audio Editor</h1>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac" multiple><br>
+		Load Audio File From URL: <input type="url" id="audurl"><br>
 		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button> <button id="micrecord">Import Recording From Microphone</button>
 		<br>
 		<div id="frame" style="display: inline-block; width: max-content;"></div>
@@ -58,7 +59,7 @@
 		<div id="subtitles" style="display: none; background-color: black; color: white; font-size: 14px; font-family: sans-serif; position: absolute; top: 70vh; left: 0px; width: 100%; height: min-content; text-align: center;"></div>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles"), recordMicrophone = document.getElementById("micrecord"), selectStart = document.getElementById("startsel");
+			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles"), recordMicrophone = document.getElementById("micrecord"), selectStart = document.getElementById("startsel"), loadFromURL = document.getElementById("audurl");
 			let exporters = null;
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, dataSecond = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
@@ -1632,7 +1633,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 				loadDiv(exporters);
 			}
-			audioInput.oninput = async function(eve) {
+			async function loadAudioFiles(eve) {
 				if (eve.target.files.length === 0) return;
 				let firstFile = eve.target.files[0];
 				let secondFile = eve.target.files[1];
@@ -1808,6 +1809,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					fileReader.readAsArrayBuffer(firstFile);
 				}
 			}
+			audioInput.oninput = async event => loadAudioFiles(event);
 			loadBlank.onclick = function() {
 				exporters = null;
 				if (ed) {
@@ -1967,6 +1969,35 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					importSubtitles.disabled = false;
 					reimp.disabled = false;
 				}}
+			}
+			const localeList = ["af_ZA","ar_AE","ar_BH","ar_DZ","ar_EG","ar_IQ","ar_JO","ar_KW","ar_LB","ar_LY","ar_MA","ar_OM","ar_QA","ar_SA","ar_SY","ar_TN","ar_YE","az_AZ","be_BY","bg_BG","bn_IN","bs_BA","ca_ES","cs_CZ","cy_GB","da_DK","de_AT","de_CH","de_DE","de_LI","de_LU","el_GR","en_AU","en_BZ","en_CA","en_GB","en_IE","en_JM","en_NZ","en_PH","en_TT","en_US","en_VI","en_ZA","en_ZW","es_AR","es_BO","es_CL","es_CO","es_CR","es_DO","es_EC","es_ES","es_GT","es_HN","es_MX","es_NI","es_PA","es_PE","es_PR","es_PY","es_SV","es_UY","es_VE","et_EE","eu_ES","fa_IR","fi_FI","fo_FO","fr_BE","fr_CA","fr_CH","fr_FR","fr_LU","fr_MC","gl_ES","gu_IN","he_IL","hi_IN","hr_HR","hu_HU","hy_AM","id_ID","is_IS","it_CH","it_IT","ja_JP","ka_GE","kk_KZ","kn_IN","ko_KR","kok_IN","lt_LT","lv_LV","mk_MK","ml_IN","mn_MN","mr_IN","ms_BN","ms_MY","mt_MT","nb_NO","nl_BE","nl_NL","nn_NO","pa_IN","pl_PL","pt_BR","pt_PT","ro_RO","ru_RU","se_NO","sk_SK","sl_SI","sq_AL","sr_BA","sr_CS","sv_FI","sv_SE","sw_KE","syr_SY","ta_IN","te_IN","th_TH","tn_ZA","tr_TR","uk_UA","uz_UZ","vi_VN","xh_ZA","zh_CN","zh_HK","zh_MO","zh_SG","zh_TW","zu_ZA"];
+			// https://help.sap.com/docs/SAP_BUSINESSOBJECTS_BUSINESS_INTELLIGENCE_PLATFORM/09382741061c40a989fae01e61d54202/46758c5e6e041014910aba7db0e91070.html
+			loadFromURL.onkeydown = async event => {
+				const obj = {};
+				obj.target = {files: []};
+				if (event.key === "Enter") {
+					loadFromURL.disabled = true;
+					const browserList = [["Google Chrome", "Chromium", 16, 143], ["Microsoft Edge", "Edge", 16, 143]];
+					const chosenBrowser = browserList[Math.floor(Math.random() * browserList.length)];
+					const chosenVersion = Math.round(interpolate(chosenBrowser[2], chosenBrowser[3], Math.random()));
+					const platforms = ["Apple", "Windows", "Android", "ChromeOS", "macOS", "HarmonyOS", "Linux", "iOS"];
+					function failsafe() {
+						alert("Fetch failed; trying again.");
+						const firstFile = await fetch(loadFromURL.value, { "headers": { "cache-control": "no-cache", "pragma": "no-cache", "sec-fetch-mode": "no-cors", "sec-fetch-site": "none" }, "referrer": "https://example.com", "method": "GET", "body": null, "mode": "no-cors", "credentials": "omit" });
+						obj.target.files.push(await firstFile.arrayBuffer());
+						await loadAudioFiles(obj);
+						loadFromURL.disabled = false;
+					}
+					try {
+						const firstFile = await fetch(loadFromURL.value, { "headers": { "accept": "*/*", "accept-language": localeList[Math.floor(Math.random()*localeList.length)], "cache-control": "no-cache", "pragma": "no-cache", "priority": "u=1, i", "sec-ch-ua": `"${chosenBrowser[0]}";v="${chosenVersion}", "${chosenBrowser[1]}";v="${chosenVersion}", "Not A(Brand";v="4"`, "sec-ch-ua-mobile": "?0", "sec-ch-ua-platform": `"${platforms[Math.floor(Math.random() * platforms.length)]}"`, "sec-fetch-dest": "empty", "sec-fetch-mode": "no-cors", "sec-fetch-site": "none" }, "referrer": "https://example.com", "body": null, "method": "GET", "mode": "no-cors", "credentials": "omit" });
+						obj.target.files.push(await firstFile.arrayBuffer());
+						await loadAudioFiles(obj);
+						loadFromURL.disabled = false;
+					} catch {
+						failsafe();
+					}
+					if (!ed) failsafe();
+				}
 			}
 		</script>
 	</body>
