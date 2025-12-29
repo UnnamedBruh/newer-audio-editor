@@ -1723,10 +1723,10 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								reimp.disabled = false;
 								return;
 							}
-							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
 							loadFromURL.style = "color: green";
-							const olderURL = loadFromURL.value;
+							const oldURL = loadFromURL.value;
 							loadFromURL.value = "success!";
+							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
 							if (isCorrect) {
 								alert("The first audio file was decoded.");
 								const fileReader2 = new FileReader();
