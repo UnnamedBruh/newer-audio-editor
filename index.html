@@ -1724,6 +1724,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								return;
 							}
 							sharedBuffer = await audioContext.decodeAudioData(event.target.result);
+							loadFromURL.style = "color: green";
+							const olderURL = loadFromURL.value;
+							loadFromURL.value = "success!";
 							if (isCorrect) {
 								alert("The first audio file was decoded.");
 								const fileReader2 = new FileReader();
@@ -1802,9 +1805,14 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							loadSharedBuffer(sharedBuffer);
 							importSubtitles.disabled = false;
 							reimp.disabled = false;
+							loadFromURL.disabled = false;
+							loadFromURL.value = oldURL;
+							loadFromURL.style = "";
 						} catch (err) {
 							alert("The audio could not be properly loaded! We couldn't gather any info on what exactly failed, so the best we can say is: try selecting another audio file, or using another browser.");
 							console.log(err.message + err.stack);
+							loadFromURL.disabled = false;
+							loadFromURL.style = "";
 						}
 					}
 					fileReader.readAsArrayBuffer(firstFile);
@@ -1985,10 +1993,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 						obj.target.files.push(new File([arrbuff], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
 						await loadAudioFiles(obj);
-						loadFromURL.disabled = false;
 					} catch {
 						obj.target.files = [];
-						loadFromURL.disabled = false;
 					}
 				}
 			}
