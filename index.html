@@ -67,6 +67,7 @@
 			const interpretFiles = document.getElementById("which");
 			const loadBlank = document.getElementById("loadblank");
 			let whichInterpret = false;
+			let canUseSpaceKey = true;
 			selectBox.oninput = function() {
 				isPressingShift = selectBox.checked;
 				selectStart.disabled = !selectBox.checked;
@@ -580,7 +581,7 @@
 				let count = 0;
 				let yu = exp[0].audioData.length;
 				window.onkeydown = function(key) {
-					if (key.key === " ") {
+					if (canUseSpaceKey && key.key === " ") {
 						key.preventDefault();
 						startAt = 0;
 						bbb = 0;
@@ -1430,6 +1431,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							n2.setAttribute("d", data2.join(" "));
 						}
 					}
+				}
+				document.body.onclick = function(event) {
+					canUseSpaceKey = event.target !== loadFromURL;
 				}
 				effects["trim"] = function(ex) {
 					if (timelineBeginAudio) ex.audioData = ex.audioData.subarray(timelineBeginAudio, timelineEndAudio); else alert("You have not selected any portion of the audio yet.");
