@@ -201,13 +201,14 @@
 					return subtitlesToDisplay.subtitles.length;
 				}
 			}
-			function tick() {
+			function tick(play) {
 				if (timeline && playing) {
 					progress = (Date.now() - whenPlayed) * 0.001;
 					timeline.setAttribute("x", progress * tickCache);
 					if (timelineEndNum && progress > timelineEndNumCache) {
 						playing = false;
-						src.stop();
+						try{src.stop();}catch{}
+						play.textContent = "Play Sound";
 					}
 					if (readyToDisplaySubtitles&&(subtitleType===0?subtitlesToDisplay.length:subtitlesToDisplay.subtitles.length)) {
 						if (!currentSubtitleS) {
@@ -319,7 +320,7 @@
 							}
 						}
 					}
-					requestAnimationFrame(() => tick());
+					requestAnimationFrame(() => tick(play));
 				}
 			}
 			let whenDate = 0;
@@ -344,8 +345,8 @@
 				subtitlesText = [];
 				numberOfSubtitles = 0;
 			}
-			function playSound() {
-				if (!sharedBuffer) return;
+			function stopSound() {
+				if (!sharedBuffer) return true;
 				if (src) {
 					src.onended = function() {};
 					if (playing) {
@@ -354,6 +355,10 @@
 						} catch {};
 					}
 				}
+				return false;
+			}
+			function playSound(play) {
+				if (stopSound()) return;
 				src = audioContext.createBufferSource();
 				src.buffer = sharedBuffer;
 				src.connect(gainNode);
@@ -488,9 +493,14 @@
 					timelineEndAudio = 0;
 				}
 				play.onclick = () => {
-					startAt = 0;
-					bbb = 0;
-					playSound();
+					if (playing) {
+						stopSound();
+					} else {
+						startAt = 0;
+						bbb = 0;
+						playSound(play);
+						play.textContent = "Stop Sound";
+					}
 				}
 				function playWithTimeline(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
@@ -531,7 +541,6 @@
 					}
 					const relativeX = clickX / x.clientWidth;
 					startAt = relativeX * sharedBuffer.duration; // Time in seconds
-
 					if (timelineBeginNum) startAt = 0;
 					playSound();
 				}
@@ -1381,19 +1390,20 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					exportBtn5.disabled = false;
 				}
 				window.onscroll = function() {
-					apply.style.marginLeft = window.scrollX + "px";
+					const scrx = window.scrollX;
+					apply.style.marginLeft = scrx + "px";
 					opt.style.marginLeft = apply.style.marginLeft;
 					params.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.marginLeft = apply.style.marginLeft;
 					metadataOfAudio.style.marginLeft = apply.style.marginLeft;
 					renameFile.style.marginLeft = apply.style.marginLeft;
 					exportBtn.style.marginLeft = apply.style.marginLeft;
-					bpm.style.marginLeft = apply.style.marginLeft;
+					bpm.style.marginLeft = (Math.floor(scrx / 200) * 200 + 100) + "px";
 					play.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
 					subtitlesDiv.style.top = ["calc(70vh + ", window.scrollY, "px)"].join("");
-					subtitlesDiv.style.left = [window.scrollX, "px"].join("");
+					subtitlesDiv.style.left = [srcx, "px"].join("");
 					if (window.scrollX > window.innerWidth - selectLabel.getBoundingClientRect().width) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
 					if (skipSample === 1) {
 						count++;
@@ -1504,8 +1514,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						channel = sharedBuffer.getChannelData(0);
 					}
 				} else if (sharedBuffer.numberOfChannels === 8) {
-					const open = confirm("The editor will assume that this surround sound audio follows specific conventions. This may not be important, but it will play a role in rendering audio into stereo. You may view the page in another tab if you press OK or Yes.");
-					const which = confirm("Do you want the 7.1 (or 8.1) surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
+					const open = !confirm("The editor will assume that this surround sound audio follows specific conventions. This may not be important, but it will play a role in rendering audio into stereo. You may view the page in another tab if you press No or Cancel.");
+					const which = confirm("Do you want the 7.1 surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
 					if (which) {
 						const newBuffer = audioContext.createBuffer(2, sharedBuffer.length, sharedBuffer.sampleRate);
 						const lenBuffer = sharedBuffer.length;
