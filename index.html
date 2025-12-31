@@ -543,7 +543,8 @@
 					const relativeX = clickX / x.clientWidth;
 					startAt = relativeX * sharedBuffer.duration; // Time in seconds
 					if (timelineBeginNum) startAt = 0;
-					playSound();
+					playSound(play);
+					play.textContent = "Stop Sound";
 				}
 				x.onclick = playWithTimeline;
 				selectStart.onclick = function() {
