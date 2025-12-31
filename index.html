@@ -495,6 +495,7 @@
 				play.onclick = () => {
 					if (playing) {
 						stopSound();
+						playing = false;
 					} else {
 						startAt = 0;
 						bbb = 0;
@@ -1209,24 +1210,19 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 		const bufferF = split || buffer.length === 2 ? [buffer[0], buffer[1] || buffer[0]] : [buffer[0]];
 		const channels = bufferF.length;
 							const sampleRate = altRate || exporters[0].sampleRate; // Except this line, I added this.
-		// Create encoder
 		const encoder = new Encoder(channels, sampleRate, vbr, 20, voiceOpt);
 		const arr = [];
-		// Frame-slice
 		const frameSize = sampleRate * 20 / 1000; // 20ms @ 48kHz | Except this line, this altered modified by me.
 		const totalSamples = bufferF[0].length;
 		for (let pos = 0; pos + frameSize <= totalSamples; pos += frameSize) {
 			const frame = bufferF.map(ch => ch.subarray(pos, pos + frameSize));
 			const pcm = floatTo16BitPCM(frame, channels);
 			encoder.input(pcm);
-			// Drain packets
 			let pkt;
 			while ((pkt = encoder.output()) != null) {
 									arr.push(pkt);
 								}
 							}
-							console.log("Packets:", arr);
-							// Mux into OGG
 							blob = muxOpusPacketsToOgg(arr, {
 								sampleRate,
 								channels
@@ -1246,15 +1242,11 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				exportBtn5.onclick = async function() { // This function was written entirely by Claude Sonnet 4.5. I made some modifications to the original code.
 					exportBtn5.disabled = true;
 					try {
-						// Setup for collecting encoded data
 						const encBuffer = [];
-						// Callback to receive encoded FLAC data
 						function write_callback_fn(buffer) {
-							// Copy the buffer immediately (same issue as with OGG Vorbis!)
 							const copy = new Uint8Array(buffer);
 							encBuffer.push(copy);
 						}
-						// Create encoder
 						const CHANNELS = exporters.length;
 						const SAMPLERATE = exporters[0].sampleRate;
 						const BPS = Number(prompt("What is the bits per sample of the FLAC audio? (Although 8-bit is nonstandard, it is supported across most systems.)") ?? 24)>>3<<3; // 24-, 16-, or 8-bit encoding
@@ -1271,7 +1263,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							VERIFY,
 							BLOCK_SIZE
 						);
-						// Initialize encoder with write callback
 						const initStatus = Flac.init_encoder_stream(
 							flac_encoder,
 							write_callback_fn
@@ -1380,7 +1371,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							flacData.set(chunk, offset);
 							offset += chunk.length;
 						}
-						// Download
 						const blob = new Blob([flacData], { type: "audio/flac" });
 						downloadFile(blob, ".flac");
 					} catch (err) {
@@ -1397,13 +1387,13 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					selectLabel.style.marginLeft = apply.style.marginLeft;
 					metadataOfAudio.style.marginLeft = apply.style.marginLeft;
 					renameFile.style.marginLeft = apply.style.marginLeft;
-					exportBtn.style.marginLeft = apply.style.marginLeft;
-					bpm.style.marginLeft = (Math.floor(scrx / 200) * 200 + 100) + "px";
+					bpm.style.marginLeft = apply.style.marginLeft;
+					exportBtn.style.marginLeft = (Math.floor(scrx / 200) * 200 + 100) + "px";
 					play.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
 					subtitlesDiv.style.top = ["calc(70vh + ", window.scrollY, "px)"].join("");
-					subtitlesDiv.style.left = [srcx, "px"].join("");
+					subtitlesDiv.style.left = [scrx, "px"].join("");
 					if (window.scrollX > window.innerWidth - selectLabel.getBoundingClientRect().width) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
 					if (skipSample === 1) {
 						count++;
