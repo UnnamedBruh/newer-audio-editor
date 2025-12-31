@@ -319,6 +319,7 @@
 					requestAnimationFrame(() => tick(play));
 				} else {
 					play.textContent = "Play Sound";
+					timeline.setAttribute("fill", "none");
 				}
 			}
 			let whenDate = 0;
@@ -493,6 +494,7 @@
 				play.onclick = () => {
 					if (playing) {
 						stopSound();
+						timeline.setAttribute("fill", "none");
 						playing = false;
 					} else {
 						startAt = 0;
@@ -1489,13 +1491,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const channel4S = sharedBuffer.getChannelData(3);
 						const leftorright = confirm("Okay! Do you want to store the left and right sides (Cancel/No), or all sides including the left, right, front and back sides (OK/Yes)?");
 						if (leftorright) {
-							for (let i = 0; i < lenBuffer; i++) {
-								channel1[i] = (channel1S[i] + channel2S[i] + channel3S[i] + channel4S[i]) * 0.25;
-							}
+							for (let i = 0; i < lenBuffer; i++) channel1[i] = (channel1S[i] + channel2S[i] + channel3S[i] + channel4S[i]) * 0.25;
 								} else {
-							for (let i = 0; i < lenBuffer; i++) {
-								channel1[i] = (channel1S[i] + channel2S[i]) * 0.5;
-							}
+							for (let i = 0; i < lenBuffer; i++) channel1[i] = (channel1S[i] + channel2S[i]) * 0.5;
 						}
 						sharedBuffer = newBuffer;
 						channel = sharedBuffer.getChannelData(0);
@@ -1545,13 +1543,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const channel8S = sharedBuffer.getChannelData(7);
 						const leftorright = confirm("Okay! Do you want to keep all the centered channels (OK/Yes), or do you want to discard them (Cancel/No)?");
 						if (leftorright) {
-							for (let i = 0; i < lenBuffer; i++) {
-								channel1[i] = (channel1S[i] + channel2S[i] + channel3S[i]*2 + channel4S[i]*2 + channel5S[i] + channel6S[i] + channel7S[i] + channel8S[i]) * 0.1;
-							}
+							for (let i = 0; i < lenBuffer; i++) channel1[i] = (channel1S[i] + channel2S[i] + channel3S[i]*2 + channel4S[i]*2 + channel5S[i] + channel6S[i] + channel7S[i] + channel8S[i]) * 0.1;
 						} else {
-							for (let i = 0; i < lenBuffer; i++) {
-								channel1[i] = (channel1S[i] + channel2S[i] + channel5S[i] + channel6S[i] + channel7S[i] + channel8S[i]) * 0.16666666666666666666;
-							}
+							for (let i = 0; i < lenBuffer; i++) channel1[i] = (channel1S[i] + channel2S[i] + channel5S[i] + channel6S[i] + channel7S[i] + channel8S[i]) * 0.16666666666666666666;
 						}
 						sharedBuffer = newBuffer;
 						channel = sharedBuffer.getChannelData(0);
@@ -1566,33 +1560,19 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						while (true) {
 							const choice = Number(prompt("Okay then! Which formula do you want to choose? (-1 = exit this prompt | 0 = channel" + channelNum + " - otherChannel | 1 = channel" + channelNum + " * 2 - otherChannel | 2 = channel" + channelNum + " - (otherChannel - channel" + channelNum + ") / 2 | 3 = 2 but otherChannel" + channelNum + " * 2 | 4 = channel" + channelNum + " + otherChannel | 5 = channel" + channelNum + " * -1)"));
 							if (choice === 0) {
-								for (let i = 0; i < len; i++) {
-									channel[i] -= channelOther[i];
-								}
+								for (let i = 0; i < len; i++) channel[i] -= channelOther[i];
 							} else if (choice === 1) {
-								for (let i = 0; i < len; i++) {
-									channel[i] = channelOther[i] - channel[i];
-								}
+								for (let i = 0; i < len; i++) channel[i] = channelOther[i] - channel[i];
 							} else if (choice === 2) {
-								for (let i = 0; i < len; i++) {
-									channel[i] -= Math.abs(channelOther[i] - channel[i]);
-								}
+								for (let i = 0; i < len; i++) channel[i] -= Math.abs(channelOther[i] - channel[i]);
 							} else if (choice === 3) {
-								for (let i = 0; i < len; i++) {
-									channel[i] -= channelOther[i] * 2 - channel[i];
-								}
+								for (let i = 0; i < len; i++) channel[i] -= channelOther[i] * 2 - channel[i];
 							} else if (choice === 3.5) {
-								for (let i = 0; i < len; i++) {
-									channel[i] -= channelOther[i] - channel[i] * 2;
-								}
+								for (let i = 0; i < len; i++) channel[i] -= channelOther[i] - channel[i] * 2;
 							} else if (choice === 4) {
-								for (let i = 0; i < len; i++) {
-									channel[i] = (channel[i] + channelOther[i]) * 0.5;
-								}
+								for (let i = 0; i < len; i++) channel[i] = (channel[i] + channelOther[i]) * 0.5;
 							} else if (choice === 5) {
-								for (let i = 0; i < len; i++) {
-									channel[i] = -channel[i];
-								}
+								for (let i = 0; i < len; i++) channel[i] = -channel[i];
 								continue;
 							} else if (choice === -1) break;
 							isProcessed = true;
