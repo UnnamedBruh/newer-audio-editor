@@ -294,9 +294,7 @@
 												text.style.whiteSpace = "pre-wrap";
 												prevType = node.type;
 												if (classes.length) {
-													for (const className of classes) {
-														if (className) text.classList.add(className);
-													}
+													for (const className of classes) if (className) text.classList.add(className);
 												}
 												elements.push(text);
 											}
@@ -304,9 +302,7 @@
 											numberOfSubtitles++;
 											subtitlesText.push([elements,0]);
 											subtitlesText[index][1] = setTimeout(function() {
-												for (const e of elements) {
-													e.remove();
-												}
+												for (const e of elements) e.remove();
 												numberOfSubtitles--;
 												subtitlesText[index] = null;
 												if (!numberOfSubtitles) {subtitlesDiv.style.display = "none";subtitlesText = [];}
@@ -321,6 +317,8 @@
 						}
 					}
 					requestAnimationFrame(() => tick(play));
+				} else {
+					play.textContent = "Play Sound";
 				}
 			}
 			let whenDate = 0;
@@ -379,7 +377,7 @@
 				}
 				readyToDisplaySubtitles = true;
 				clearSubtitles();
-				if (!playing) requestAnimationFrame(() => tick());
+				if (!playing) requestAnimationFrame(() => tick(play));
 				playing = true;
 			}
 			importSubtitles.onclick = async function() {
@@ -1004,7 +1002,6 @@
 //
 // This is intentionally minimal; production muxers do additional checks and
 // better packing heuristics.
-
 // Full browser-ready Ogg-Opus muxer (minimal, RFC-compliant) — corrected paging logic
 function muxOpusPacketsToOgg(packets, opts = {}) {
 	const {
@@ -1868,7 +1865,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			else if (MediaRecorder.isTypeSupported('audio/webm')) mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
 			recordedChunks = [];
 			mediaRecorder.ondataavailable = (e) => {if (e.data.size > 0) recordedChunks.push(e.data);}
-
 			mediaRecorder.onstop = async () => {
 				const blob = new Blob(recordedChunks, { type: 'audio/webm' });
 				const arrayBuffer = await blob.arrayBuffer();
@@ -1913,9 +1909,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						recordedBuffers = Array.from({length: source.channelCount}, () => []);
 						processor.onaudioprocess = (event) => {
 							console.log(event);
-							for (let ch = 0; ch < source.channelCount; ch++) {
-								recordedBuffers[ch].push(new Float32Array(event.inputBuffer.getChannelData(ch)));
-							}
+							for (let ch = 0; ch < source.channelCount; ch++) recordedBuffers[ch].push(new Float32Array(event.inputBuffer.getChannelData(ch)));
 						}
 						source.connect(processor);
 						silentNode = audioContext.createGain();
