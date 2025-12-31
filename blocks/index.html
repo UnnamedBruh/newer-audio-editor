@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<style>
+			body {
+				background-color: black;
+				color: white;
+				font-family: Arial, sans-serif;
+				min-width: 100vw;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="toolbox" style="position: absolute; top: 0px; left: 0px;">
+		</div>
+		<div style="width: calc(100vw - 200px); position: absolute; top: 0px; left: 200px;">
+		<h1>Blocks</h1>
+		<p>You can add whichever blocks you'd like to this sample program. (This project isn't finished yet. expect some informal text. Dont like it? get used to it)</p>
+		<div id="blocks"></div>
+		<pre id="output"></pre>
+		</div>
+		<script>
+			const blocksDisplay = document.getElementById("blocks"), toolbox = document.getElementById("toolbox");
+			const BLOCK_UNCAPPED = 0, BLOCK_CAPPED = 1, BLOCK_BRANCH = 2, BLOCK_MULTIBRANCH = 3, BLOCK_REPORTER = 4, BLOCK_BOOLEAN = 5;
+			class TextNode {
+				constructor(text) {
+					const t = document.createElement("a");
+					this.element = t;
+					t.textContent = text;
+				}
+				destroy() {
+					this.element.remove();
+					this.element = null;
+				}
+			}
+			class TextFieldNode {
+				constructor(defaultValue) {
+					const t = document.createElement("input");
+					this.element = t;
+					t.value = defaultValue;
+					t.type = "text";
+					this.value = defaultValue;
+					const temporaryThis = this;
+					t.oninput = function() {
+						temporaryThis.value = t.value;
+					}
+				}
+				destroy() {
+					this.element.oninput = null;
+					this.element.remove();
+					this.element = null;
+				}
+			}
+			class AvailableBlock {
+				constructor(type, nodes) {
+					this.type = type;
+					this.nodes = nodes || [];
+				}
+			}
+		</script>
+	</body>
+</html>
