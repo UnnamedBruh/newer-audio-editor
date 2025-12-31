@@ -702,12 +702,14 @@
 								}
 							}
 						}
+						return le;
 					}
 					async function applyEffect() {
 						if (currentSelected) {
 							apply.disabled = true;
+							const lens = new Array(exporters.length);
 							for (let i = 0; i < exporters.length; i++) {
-								await applyEffectOnExporter(i);
+								lens[i] = await applyEffectOnExporter(i);
 							}
 							if (exporters[1] && exporters[1].audioData.length !== exporters[0].audioData.length) {
 								const index = (!exporters[1] || exporters[0].audioData.length > exporters[1].audioData.length) ? 0 : 1;
@@ -716,7 +718,7 @@
 							}
 							data = generateWaveform(exp[0]);
 							if (n2) dataSecond = generateWaveform(exp[1]);
-							sharedBuffer = audioContext.createBuffer(exp.length, exp[0].audioData.length, exp[0].sampleRate);
+							if (exporters[0].audioData.length !== lens[0] || exporters[1].audioData.length === lens[1]) sharedBuffer = audioContext.createBuffer(exp.length, exp[0].audioData.length, exp[0].sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
 							ref.set(exp[0].audioData);
 							if (exp.length >= 2) {
