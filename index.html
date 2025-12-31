@@ -718,7 +718,7 @@
 							}
 							data = generateWaveform(exp[0]);
 							if (n2) dataSecond = generateWaveform(exp[1]);
-							if (exporters[0].audioData.length !== lens[0] || exporters[1].audioData.length === lens[1]) sharedBuffer = audioContext.createBuffer(exp.length, exp[0].audioData.length, exp[0].sampleRate);
+							if (exporters[0].audioData.length !== lens[0] || (exporters[1] && exporters[1].audioData.length === lens[1])) sharedBuffer = audioContext.createBuffer(exp.length, exp[0].audioData.length, exp[0].sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
 							ref.set(exp[0].audioData);
 							if (exp.length >= 2) {
