@@ -158,10 +158,10 @@
 				val = prevVal = y[0];
 				let b = 0;
 				let m = 0;
-				for (let i = 0, j = 0; i < len; i = b, j++) {
+				for (let i = 0, j = 0, jm = -1; i < len; i = b, j++, jm++) {
 					b = i + skipSample;
 					if (Math.abs(prev - val) >= ep) {
-						if (m !== j-1) data2.push("L " + (j-1) + "," + Math.round(100 + prevVal * 100));
+						if (m !== jm) data2.push("L " + jm + "," + Math.round(100 + prevVal * 100));
 						data2.push("L " + j + "," + Math.round(100 + val * 100));
 						val = y[b] || 0;
 						m = j;
@@ -1627,19 +1627,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const channelOther = sharedBuffer.getChannelData(channelOtherNum);
 						while (true) {
 							const choice = Number(prompt("Okay then! Which formula do you want to choose? (-1 = exit this prompt | 0 = channel" + channelNum + " - otherChannel | 1 = channel" + channelNum + " * 2 - otherChannel | 2 = channel" + channelNum + " - (otherChannel - channel" + channelNum + ") / 2 | 3 = 2 but otherChannel" + channelNum + " * 2 | 4 = channel" + channelNum + " + otherChannel | 5 = channel" + channelNum + " * -1)"));
-							if (choice === 0) {
-								for (let i = 0; i < len; i++) channel[i] -= channelOther[i];
-							} else if (choice === 1) {
-								for (let i = 0; i < len; i++) channel[i] = channelOther[i] - channel[i];
-							} else if (choice === 2) {
-								for (let i = 0; i < len; i++) channel[i] -= Math.abs(channelOther[i] - channel[i]);
-							} else if (choice === 3) {
-								for (let i = 0; i < len; i++) channel[i] -= channelOther[i] * 2 - channel[i];
-							} else if (choice === 3.5) {
-								for (let i = 0; i < len; i++) channel[i] -= channelOther[i] - channel[i] * 2;
-							} else if (choice === 4) {
-								for (let i = 0; i < len; i++) channel[i] = (channel[i] + channelOther[i]) * 0.5;
-							} else if (choice === 5) {
+							if (choice === 0) for (let i = 0; i < len; i++) channel[i] -= channelOther[i];
+							else if (choice === 1) for (let i = 0; i < len; i++) channel[i] = channelOther[i] - channel[i];
+							else if (choice === 2) for (let i = 0; i < len; i++) channel[i] -= Math.abs(channelOther[i] - channel[i]); else if (choice === 3) for (let i = 0; i < len; i++) channel[i] -= channelOther[i] * 2 - channel[i];
+							else if (choice === 3.5) for (let i = 0; i < len; i++) channel[i] -= channelOther[i] - channel[i] * 2;
+							else if (choice === 4) for (let i = 0; i < len; i++) channel[i] = (channel[i] + channelOther[i]) * 0.5;
+							else if (choice === 5) {
 								for (let i = 0; i < len; i++) channel[i] = -channel[i];
 								continue;
 							} else if (choice === -1) break;
@@ -1653,9 +1646,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			let oldSharedBufferFor = null;
 			function copyBuffer(buff) {
 				const copy = audioContext.createBuffer(buff.numberOfChannels, buff.length, buff.sampleRate);
-				for (let i = 0; i < buff.numberOfChannels; i++) {
-					copy.copyToChannel(buff.getChannelData(i), i);
-				}
+				for (let i = 0; i < buff.numberOfChannels; i++) copy.copyToChannel(buff.getChannelData(i), i);
 				return copy;
 			}
 			function loadSharedBuffer(sharedBuffer) {
@@ -1680,21 +1671,12 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				loadDiv(exporters);
 			}
 			async function loadAudioFiles(eve) {
-				if (eve.target.files.length === 0) return;
-				let firstFile = eve.target.files[0];
-				let secondFile = eve.target.files[1];
-				let isCorrect;
-				function swapFiles() {
-					const temp = secondFile;
-					secondFile = firstFile;
-					firstFile = temp;
-				}
+				if (!eve || !eve.target || !eve.target.files || !eve.target.files.length) return;let firstFile = eve.target.files[0], secondFile = eve.target.files[1], isCorrect;
+				function swapFiles() {const temp = secondFile;secondFile = firstFile;firstFile = temp;}
 				if (secondFile) {
 					isCorrect = confirm("It seems like you selected two audio files. Is this correct?");
 					if (isCorrect) alert("*This editor cannot interpret the second file as raw audio because the maintainer of this editor has not implemented this feature... yet." + (whichInterpret ? " Not that the audio won't be decoded." : ""));
-					if (!confirm("Which file is the one you want to edit?\nOK = " + firstFile.name.trim() + "\nCancel (or X) = " + secondFile.name.trim())) {
-						swapFiles();
-					}
+					if (!confirm("Which file is the one you want to edit?\nOK = " + firstFile.name.trim() + "\nCancel (or X) = " + secondFile.name.trim())) swapFiles();
 				}
 				if (!whichInterpret && (firstFile.name.endsWith(".lsac") || firstFile.name.endsWith(".fbac"))) {
 					alert("LSAC and FBAC file loading is no longer supported by this audio editor, due to several issues with the original encoders and decoders, and lack of widespread support across many environments and plugins. We sincerely apologize for taking down our own audio format, but we hope to bring in a much better codec!");
@@ -1715,28 +1697,20 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 								const data = event.target.result;
 								const type = Number(prompt("How will the audio be interpreted? (0 = integers, 1 = floats)"));
 								const bits = Math.max(prompt("What is the bits per sample of the audio?") >> 3, 1);
-								sharedBuffer = audioContext.createBuffer(1, data.byteLength / (bits*2), prompt("What is the samplerate of the audio?") || 48000);
+								sharedBuffer = audioContext.createBuffer(1, data.byteLength / bits, prompt("What is the samplerate of the audio?") || 48000);
 								const channel = sharedBuffer.getChannelData(0);
 								const len = sharedBuffer.length;
 								const buffer = new Uint8Array(data);
 								if (type === 0) {
 									if (bits === 1) {
 										const bufferInt = new Int8Array(data);
-										for (let i = 0; i < len; i++) {
-											channel[i] = bufferInt[i] / 0x80;
-										}
+										for (let i = 0; i < len; i++) channel[i] = bufferInt[i] / 0x80;
 									} else if (bits === 2) {
-										for (let i = 0, j = 0; i < len; i += bits, j++) {
-											channel[j] = ((buffer[i + 1] << 8) | buffer[i]) / 0x8000 - 0.5;
-										}
+										for (let i = 0, j = 0; i < len; i += bits, j++) channel[j] = ((buffer[i + 1] << 8) | buffer[i]) / 0x8000 - 0.5;
 									} else if (bits === 3) {
-										for (let i = 0, j = 0; i < len; i += bits, j++) {
-											channel[j] = ((buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x800000 - 0.5;
-										}
+										for (let i = 0, j = 0; i < len; i += bits, j++) channel[j] = ((buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x800000 - 0.5;
 									} else if (bits === 4) {
-										for (let i = 0, j = 0; i < len; i += bits, j++) {
-											channel[j] = ((buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x80000000 - 0.5;
-										}
+										for (let i = 0, j = 0; i < len; i += bits, j++) channel[j] = ((buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i]) / 0x80000000 - 0.5;
 									}
 								} else if (type === 1) {
 									const s = Math.sign;
@@ -1746,8 +1720,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 										let x;
 										for (let i = 0; i < lenF; i++) {
 											x = f[i];
-											channel[i] = (x === Infinity ? 1 : (x === -Infinity ? -1 : (isNaN(x) ? 0 : x))) || 0;
-											channel[i] = channel[i] > 1 ? 1 : (channel[i] < -1 ? -1 : channel[i]);
+											channel[i] = (x === Infinity ? 1 : (x === -Infinity ? -1 : (isNaN(x) ? 0 : x))) || 0;channel[i] = channel[i] > 1 ? 1 : (channel[i] < -1 ? -1 : channel[i]);
 										}
 									} else if (bits === 8) {
 										const f = new Float64Array(data.slice(0, data.byteLength >> 3 << 3));
@@ -1755,8 +1728,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 										let x;
 										for (let i = 0; i < lenF; i++) {
 											x = f[i];
-											channel[i] = (x === Infinity ? 1 : (x === -Infinity ? -1 : (isNaN(x) ? 0 : x))) || 0;
-											channel[i] = channel[i] > 1 ? 1 : (channel[i] < -1 ? -1 : channel[i]);
+											channel[i] = (x === Infinity ? 1 : (x === -Infinity ? -1 : (isNaN(x) ? 0 : x))) || 0;channel[i] = channel[i] > 1 ? 1 : (channel[i] < -1 ? -1 : channel[i]);
 										}
 									}
 								}
@@ -1790,32 +1762,24 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 													let len;
 													if (sharedBuffer.length < secondSharedBuffer.length) {
 														len = secondSharedBuffer.length;
-														const oldShared = sharedBuffer;
-														sharedBuffer = audioContext.createBuffer(oldShared.numberOfChannels, len, oldShared.sampleRate);
-														sharedBuffer.copyToChannel(oldShared.getChannelData(0), 0);
+														const oldShared = sharedBuffer;sharedBuffer = audioContext.createBuffer(oldShared.numberOfChannels, len, oldShared.sampleRate);sharedBuffer.copyToChannel(oldShared.getChannelData(0), 0);
 														if (sharedBuffer.numberOfChannels >= 2) sharedBuffer.copyToChannel(oldShared.getChannelData(1), 1);
 													} else if (secondSharedBuffer.length < sharedBuffer.length) {
 														len = sharedBuffer.length;
-														const oldShared = secondSharedBuffer;
-														secondSharedBuffer = audioContext.createBuffer(oldShared.numberOfChannels, len, oldShared.sampleRate);
-														secondSharedBuffer.copyToChannel(oldShared.getChannelData(0), 0);
+														const oldShared = secondSharedBuffer;secondSharedBuffer = audioContext.createBuffer(oldShared.numberOfChannels, len, oldShared.sampleRate);secondSharedBuffer.copyToChannel(oldShared.getChannelData(0), 0);
 														if (sharedBuffer.numberOfChannels >= 2) secondSharedBuffer.copyToChannel(oldShared.getChannelData(1), 1);
 													} else len = sharedBuffer.length;
 													if (inway === 0) {
 														for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
 															const pointer1 = sharedBuffer.getChannelData(i);
 															const pointer2 = secondSharedBuffer.getChannelData(i);
-															for (let j = 0; j < len; j++) {
-																pointer1[j] += pointer2[j];
-															}
+															for (let j = 0; j < len; j++) pointer1[j] += pointer2[j];
 														}
 													} else if (inway === 1 || inway === 2 || inway === 3 || inway === 4) {
 														if (inway === 3 || inway === 4) {
 															for (let i = 0; i < secondSharedBuffer.numberOfChannels; i++) {
 																const pointer = (inway === 3 ? sharedBuffer.getChannelData(i) : secondSharedBuffer.getChannelData(i));
-																for (let j = 0; j < len; j++) {
-																	pointer[j] *= 0.5;
-																}
+																for (let j = 0; j < len; j++) pointer[j] *= 0.5;
 															}
 															inway -= 2;
 														}
@@ -1829,9 +1793,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 																pointer2 = sharedBuffer.getChannelData(i);
 																pointer1 = secondSharedBuffer.getChannelData(i);
 															}
-															for (let j = 0; j < len; j++) {
-																pointer1[j] -= pointer2[j];
-															}
+															for (let j = 0; j < len; j++) pointer1[j] -= pointer2[j];
 														}
 													}
 												} else alert("Looks like the audio files' metadata doesn't exactly match each other well! You can still edit the main audio, though.");
@@ -1880,7 +1842,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				else exporters = [new AudioExporter(sharedBuffer.getChannelData(0), sharedBuffer.sampleRate, 1, 32)];
 				filename = "My Blank Audio";
 				loadDiv(exporters, true);
-				reimp.disabled = true;
+				reimp.disabled = false;
+				reimp.textContent = "Re-import Audio Before This Blank Audio";
 				importSubtitles.disabled = false;
 			}
 			reimp.onclick = function() {
