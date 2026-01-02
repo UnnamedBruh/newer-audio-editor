@@ -1414,7 +1414,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							}
 						}
 						const encoded = encoder.Encode(int16Buffer, SAMPLERATE, CHANNELS, 4800, 0);
-						const blob = new Blob([finalData], { type: "audio/serena" });
+						const blob = new Blob([encoded], { type: "audio/serena" });
 						downloadFile(blob, ".asaf");
 					} catch (err) {
 						alert("The ASAF encoding failed: " + err.message);
