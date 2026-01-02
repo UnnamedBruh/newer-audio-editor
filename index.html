@@ -1391,7 +1391,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				exportBtn6.onclick = async function() {
 					exportBtn6.disabled = true;
 					try {
-						alert("Thank you for using our original custom audio format!\n\nThis new audio codec is meant to compete with our older, slower bloated ones, LSAC and FBAC. ASAF does this by dynamically choosing the compression algorithms that best fit the audio. We estimate that ASAF would produce files that are 40% to 98% smaller than LSAC and FBAC. Plus, ASAF audio sounds much better!");
+						alert("Thank you for using our original custom audio format!\n\nThis new audio codec is meant to compete with our older, slower bloated ones, LSAC and FBAC. ASAF does this by dynamically choosing the compression algorithms that best fit the audio. We estimate that ASAF would produce files that are 40% to 98% smaller than LSAC and FBAC. Plus, ASAF audio has much less static and supports stereo audio!");
 						const encoder = await ASAFCodecModule();
 						encoder.init();
 						const CHANNELS = exporters.length;
