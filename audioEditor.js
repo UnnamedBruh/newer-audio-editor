@@ -704,7 +704,7 @@ effects["reverb"] = async function(exporter, reverbTime, reverbDecay, dryGain2, 
 				data[i] = lastSample;
 			}
 		} else if (whichSystem === "realspike") { // This part was written by ChatGPT 5.0 Mini, but it is slightly altered by me. (I simulated spikes.)
-			function y(y) {return y * (y / (y * Math.log(y))) * Math.log10(y * 2);}
+			function y(y) {return y * Math.log(y) * Math.log10(y * 2);}
 			let lastSample = 0;
 			const estimatedEndOfSpike = y(length);
 			const dampBegin = damp;
