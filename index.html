@@ -40,7 +40,7 @@
 		<script src="asaf_codec.min.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
-		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button>
+		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button> <button id="endsel" disabled>Select End Of Audio</button>
 		<h1>Audio Editor</h1>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac" multiple><br>
 		Load Audio File From URL: <input type="url" id="audurl" title="Add multiple URLs by separating them with commas ,"><br>
@@ -61,7 +61,7 @@
 		<div id="subtitles" style="display: none; background-color: black; color: white; font-size: 14px; font-family: sans-serif; position: absolute; top: 70vh; left: 0px; width: 100%; height: min-content; text-align: center;"></div>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles"), recordMicrophone = document.getElementById("micrecord"), selectStart = document.getElementById("startsel"), loadFromURL = document.getElementById("audurl");
+			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles"), recordMicrophone = document.getElementById("micrecord"), selectStart = document.getElementById("startsel"), selectEnd = document.getElementById("endsel"), loadFromURL = document.getElementById("audurl");
 			let exporters = null;
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, dataSecond = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
@@ -72,6 +72,7 @@
 			selectBox.oninput = function() {
 				isPressingShift = selectBox.checked;
 				selectStart.disabled = !selectBox.checked;
+				selectEnd.disabled = selectStart.disabled;
 			}
 			interpretFiles.onclick = function() {
 				whichInterpret = !whichInterpret;
@@ -557,6 +558,14 @@
 					timelineBeginNum = 0.1/skipSample;
 					timelineBeginAudio = 0.1;
 				}
+				selectEnd.onclick = function() {
+					restartSelect();
+					timelineIter = 0;
+					timelineBegin.setAttribute("x", exporters[0].audioData.length/skipSample);
+					timelineBegin.setAttribute("fill", "#00AAFF");
+					timelineBeginNum = exporters[0].audioData.length/skipSample;
+					timelineBeginAudio = exporters[0].audioData.length;
+				}
 				const label3 = document.createElement("a");
 				const co = document.createElement("input");
 				label3.textContent = "View at Sample-Level";
@@ -962,7 +971,7 @@
 						}
 						downloadFile(blob, ".ogg");
 					} catch (err) {
-						alert("It seems like the OGG Vorbis codec is supported, but not yet available. READ BELOW:\n\nA network is required to export your audio into the OGG format. The encoder itself is stored in an online module server (UNPKG.com), then loaded into this audio editor. (This means your audio track or other invaluable information isn't tracked, or sent to any server; just encoded directly in your browser!)");
+						alert("It seems like the OGG Vorbis codec is supported, but not yet available. A network is required to export your audio into the OGG format.");
 						console.log(err.message, err.stack);
 					}
 					exportBtn3.disabled = false;
@@ -1437,9 +1446,19 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					play.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
+					volume.style.marginLeft = apply.style.marginLeft;
+					volume2.style.marginLeft = apply.style.marginLeft;
 					subtitlesDiv.style.top = ["calc(70vh + ", window.scrollY, "px)"].join("");
 					subtitlesDiv.style.left = [scrx, "px"].join("");
-					if (window.scrollX > window.innerWidth - selectLabel.getBoundingClientRect().width) selectBox.style.marginLeft = apply.style.marginLeft; else selectBox.style.marginLeft = "";
+					if (window.scrollX > window.innerWidth - (selectLabel.getBoundingClientRect().width + selectStart.getBoundingClientRect().width + selectEnd.getBoundingClientRect().width + 14)) {
+						selectBox.style.marginLeft = apply.style.marginLeft;
+						selectStart.style.marginLeft = apply.style.marginLeft;
+						selectEnd.style.marginLeft = apply.style.marginLeft;
+					} else {
+						selectBox.style.marginLeft = "";
+						selectStart.style.marginLeft = "";
+						selectEnd.style.marginLeft = "";
+					}
 					if (skipSample === 1) {
 						count++;
 						if (count < 4) return;
