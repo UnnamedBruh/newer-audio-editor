@@ -932,9 +932,10 @@
 					exportBtn2.disabled = false;
 					downloadFile(blob, ".mp3");
 				}
+				v.appendChild(document.createElement("br"));
 				const exportBtn3 = document.createElement("button");
 				v.appendChild(exportBtn3);
-				exportBtn3.textContent = "Export as OGG (Vorbis format, wasm-media-encoders)";
+				exportBtn3.textContent = "Export as OGG (Vorbis, wasm-media-encoders)";
 				exportBtn3.onclick = async function() {
 					exportBtn3.disabled = true;
 					try {
@@ -968,7 +969,7 @@
 				}
 				const exportBtn4 = document.createElement("button");
 				v.appendChild(exportBtn4);
-				exportBtn4.textContent = "Export as OGG (Opus format, libopusjs)";
+				exportBtn4.textContent = "Export as OGG (Opus, libopusjs)";
 				exportBtn4.onclick = async function() {
 					exportBtn4.disabled = true;
 					function floatTo16BitPCM(float32Array, channels) {
@@ -1383,6 +1384,44 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					}
 					exportBtn5.disabled = false;
 				}
+				v.appendChild(document.createElement("br"));
+				const exportBtn6 = document.createElement("button");
+				v.appendChild(exportBtn6);
+				exportBtn6.textContent = "Export as ASAF (Serena, Original Library)";
+				exportBtn6.onclick = async function() {
+					exportBtn6.disabled = true;
+					try {
+						alert("Thank you for using our original custom audio format!\n\nThis new audio codec is meant to compete with our older, slower bloated ones, LSAC and FBAC. ASAF does this by dynamically choosing the compression algorithms that best fit the audio. We estimate that ASAF would produce files that are 40% to 98% smaller than LSAC and FBAC. Plus, ASAF audio sounds much better!");
+						const encoder = await ASAFCodecModule();
+						encoder.init();
+						const CHANNELS = exporters.length;
+						const SAMPLERATE = exporters[0].sampleRate;
+						const CHUNKS = Number(prompt("What is the number of chunks the encoder would use during audio analysis & encoding? (1200 = bad, 2400 = okay, 2800 = good, 3200 = recommended, 4800 = good, 7200 = okay") ?? 3200);
+						const audioData = exporters.map(i => timelineBeginAudio ? i.audioData.subarray(timelineBeginAudio, timelineEndAudio) : i.audioData);
+						const len = audioData[0].length * audioData.length;
+						let int16Buffer = new Int16Array(len);
+						if (audioData.length === 2) {
+							const aa = audioData[0];
+							const ab = audioData[1];
+							for (let i = 0, j = 0; i < int16Buffer.length; i += 2, j++) {
+								int16Buffer[i] = (aa[j] * 32767) | 0;
+								int16Buffer[i + 1] = (ab[j] * 32767) | 0;
+							}
+						} else {
+							const aa = audioData[0];
+							for (let i = 0; i < aa.length; i++) {
+								int16Buffer[i] = (aa[i] * 32767) | 0;
+							}
+						}
+						const encoded = encoder.Encode(int16Buffer, SAMPLERATE, CHANNELS, 4800, 0);
+						const blob = new Blob([finalData], { type: "audio/serena" });
+						downloadFile(blob, ".asaf");
+					} catch (err) {
+						alert("The ASAF encoding failed: " + err.message);
+						console.error(err);
+					}
+					exportBtn5.disabled = false;
+				}
 				window.onscroll = function() {
 					const scrx = window.scrollX;
 					apply.style.marginLeft = scrx + "px";
@@ -1392,7 +1431,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					metadataOfAudio.style.marginLeft = apply.style.marginLeft;
 					renameFile.style.marginLeft = apply.style.marginLeft;
 					bpm.style.marginLeft = apply.style.marginLeft;
-					exportBtn.style.marginLeft = (Math.floor(scrx / 200) * 200 + 100) + "px";
+					exportBtn.style.marginLeft = apply.style.marginLeft;
+					exportBtn3.style.marginLeft = apply.style.marginLeft;
+					exportBtn6.style.marginLeft = apply.style.marginLeft;
 					play.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.wordWrap = "keep-all";
 					selectLabel.style.whiteSpace = "nowrap";
