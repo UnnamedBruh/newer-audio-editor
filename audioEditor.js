@@ -355,6 +355,14 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 				j = p;
 			}
 		}
+	} else if (noiseType === "bn") {
+		volume *= 0.125;
+		let p = 0, j = 0;
+		for (let i = 0; i < len; i++) {
+			p = rand() - 0.5;
+			data[i] += ((p - j) + p) * volume;
+			j = p;
+		}
 	}
 	if (isAlgorithmistic) {
 		if (noiseType === "bn") { // GPT-5.0 Mini wrote this implementation, but I adapted it to this function's standards.
