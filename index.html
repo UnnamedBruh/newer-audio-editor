@@ -81,7 +81,7 @@
 			}
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
-			function volumeHandle(volume, label) {
+			function volumeHandle(volume, volume2, label) {
 				if (volumeWarning) {
 					volumeWarning = false;
 					alert("Moving the knob to the right can cause incredibly loud results! Please use the volume sliders responsibly and ethically, as these are very experimental features.");
@@ -89,6 +89,7 @@
 				}
 				let x = +volume.value;
 				if (x > 0.9 && x < 1.1) x = volume.value = 1;
+				if (x < 0.001) volume.max = 1;
 				label.textContent = Math.round(x * 100);
 				label.textContent = label.textContent;
 				gainNode.gain.value = x * +volume2.value;
@@ -97,15 +98,16 @@
 					volume.disabled = true;
 					document.onmouseup = function() {
 						volume.disabled = false;
+						volume2.disabled = false;
 						document.onmouseup = null;
 					}
 				}
 			}
 			volume.oninput = function() {
-				volumeHandle(volume, label);
+				volumeHandle(volume, volume2, label);
 			}
 			volume2.oninput = function() {
-				volumeHandle(volume2, label2);
+				volumeHandle(volume2, volume, label2);
 			}
 			function __(s,m) {
 				if (!s) return ""; else return m||":";
