@@ -339,6 +339,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			}
 		}
 	} else if (noiseType === "vn") {
+		volume *= 0.5;
 		if (volume === 1) {
 			let p = 0, j = 0;
 			for (let i = 0; i < len; i++) {
