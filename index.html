@@ -89,7 +89,7 @@
 				}
 				let x = +volume.value;
 				if (x > 0.9 && x < 1.1) x = volume.value = 1;
-				if (x < 0.001) volume.max = 1;
+				if (x < 0.001) volume.max = 10;
 				label.textContent = Math.round(x * 100);
 				label.textContent = label.textContent;
 				gainNode.gain.value = x * +volume2.value;
