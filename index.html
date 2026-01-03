@@ -581,9 +581,9 @@
 						skipSample = 480;
 						if (!data) data = generateWaveform(exp[0]);
 						const width = exp[0].audioData.length / skipSample;
-						x.setAttribute("width", );
+						x.setAttribute("width", width);
 						x.style.marginLeft = "0px";
-						v.style.width = (exp[0].audioData.length / skipSample) + "px";
+						v.style.width = width + "px";
 						n.setAttribute("d", data);
 						if (n2) n2.setAttribute("d", dataSecond);
 						if (window.scrollX > width) window.scrollTo(width, window.scrollY);
