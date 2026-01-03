@@ -339,7 +339,6 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			}
 		}
 	} else if (noiseType === "vn") {
-		volume *= 0.5;
 		if (volume === 1) {
 			let p = 0, j = 0;
 			for (let i = 0; i < len; i++) {
@@ -355,8 +354,8 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 				j = p;
 			}
 		}
-	} else if (noiseType === "bn") {
-		volume *= 0.125;
+	} else if (noiseType === "bln") {
+		volume *= 0.25;
 		let p = 0, j = 0;
 		for (let i = 0; i < len; i++) {
 			p = rand() - 0.5;
