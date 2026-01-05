@@ -482,8 +482,10 @@ function noise(p) {
 }
 		const duration_seconds = len/buffer.sampleRate;
 		const sampling_rate_hz = buffer.sampleRate;
-		const freq = whenToJumpInSamples; // In Hz
-		const freq2 = jumpValue; // also in Hz
+		function fil(d) {return 255 - d;}
+		const freq = fil(whenToJumpInSamples); // In Midinotes
+		const freq2 = fil(jumpValue); // also in Midinotes
+		freq3 = fil(freq3);
 if (volume === 1) {for (let sample_idx = 0; sample_idx < len; ++sample_idx) {
     let x1 = sample_idx / freq;
     let x2 = sample_idx / freq2;
