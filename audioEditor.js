@@ -426,9 +426,9 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 	}
 }
 
-effects["experimentalnoise"] = function(buffer, noiseType, volume, jumpValue, whenToJumpInSamples, freq3) {
+effects["experimentalnoise"] = function(buffer, noiseType, volume, whenToJumpInSamples, jumpValue, freq3) {
 	if (volume === 0) return;
-	volume = volume * 0.02;
+	volume = volume * 0.01;
 	const len = buffer.audioData.length, data = buffer.audioData;
 	if (noiseType === "sah") { // Varied 8-bit static. Code below matches sample-and-hold noise, GPT-5.2 claims.
 		// Very much inspired by https://www.youtube.com/watch?v=07y0PJlR4P8&t=78s
@@ -483,8 +483,8 @@ function noise(p) {
 }
 		const duration_seconds = len/buffer.sampleRate;
 		const sampling_rate_hz = buffer.sampleRate;
-		const freq = jumpValue; // In Hz
-		const freq2 = whenToJumpInSamples; // also in Hz
+		const freq = whenToJumpInSamples; // In Hz
+		const freq2 = jumpValue; // also in Hz
 if (volume === 1) {for (let sample_idx = 0; sample_idx < len; ++sample_idx) {
     let x1 = sample_idx / sampling_rate_hz / freq;
     let x2 = sample_idx / sampling_rate_hz / freq2;
