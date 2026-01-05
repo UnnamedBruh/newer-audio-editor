@@ -432,6 +432,7 @@ effects["experimentalnoise"] = function(buffer, noiseType, volume, whenToJumpInS
 	const len = buffer.audioData.length, data = buffer.audioData;
 	if (noiseType === "sah") { // Varied 8-bit static. Code below matches sample-and-hold noise, GPT-5.2 claims.
 		// Very much inspired by https://www.youtube.com/watch?v=07y0PJlR4P8&t=78s
+		volume *= 0.125;
 		if (volume === 1) {
 			for (let i = 0; i < len; i += whenToJumpInSamples) {
 				const when = i + whenToJumpInSamples;
