@@ -482,7 +482,7 @@ function noise(p) {
 }
 		const duration_seconds = len/buffer.sampleRate;
 		const sampling_rate_hz = buffer.sampleRate;
-		function fil(d) {return 255 - d;}
+		function fil(d) {return 127 - d*0.5;}
 		const freq = fil(whenToJumpInSamples); // In Midinotes
 		const freq2 = fil(jumpValue); // also in Midinotes
 		freq3 = fil(freq3);
