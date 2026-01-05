@@ -339,6 +339,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			}
 		}
 	} else if (noiseType === "vn") {
+		volume *= 0.5;
 		if (volume === 1) {
 			let p = 0, j = 0;
 			for (let i = 0; i < len; i++) {
@@ -376,7 +377,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			}
 		} else if (noiseType === "pn") {
 			// https://whoisryosuke.com/blog/2025/generating-pink-noise-for-audio-worklets (algorithm is directly copied-and-pasted, then implemented here. I do NOT write, or claim to have written the marked section.)
-			volume *= 0.055;
+			volume *= 0.11;
 			let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0, pink=0, white=0;
 			if (volume === 1) {
 				for (let i = 0; i < len; i++) {
@@ -423,6 +424,87 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			}
 		}
 	}
+}
+
+effects["experimentalnoise"] = function(buffer, noiseType, volume, jumpValue, whenToJumpInSamples, freq3) {
+	if (volume === 0) return;
+	volume = volume * 0.02;
+	const len = buffer.audioData.length, data = buffer.audioData;
+	if (noiseType === "sah") { // Varied 8-bit static. Code below matches sample-and-hold noise, GPT-5.2 claims.
+		// Very much inspired by https://www.youtube.com/watch?v=07y0PJlR4P8&t=78s
+		if (volume === 1) {
+			for (let i = 0; i < len; i += whenToJumpInSamples) {
+				const when = i + whenToJumpInSamples;
+				const r = rand() - 0.5 - (jumpValue*0.5);
+				for (let j = i; j < when; j++) {
+					data[i] += r + rand() * jumpValue;
+				}
+			}
+		} else {
+			jumpValue *= volume;
+			for (let i = 0; i < len; i += whenToJumpInSamples) {
+				const when = i + whenToJumpInSamples;
+				const r = ((rand() - 0.5)*volume) - (jumpValue*0.5);
+				for (let j = i; j < when; j++) {
+					data[i] += r + rand() * jumpValue;
+				}
+			}
+		}
+	} else if (noiseType === "triper") { // Triple-frequency "Perlin" static, the code ripped the "freq1", "freq2" and "freq3" code from https://gpfault.net/posts/perlin-sound.txt.html. I do not claim to have written the original code posted on that website.
+		// I can only say that I altered the code to support volume adjustments, and work with float32 values instead of signed 16-bit integers.
+function fade(t) {
+	return t*t*t*(t*(t*6.0 - 15.0) + 10.0);
+}
+
+function grad(p) {
+	let rand_noise = new Float32Array(1024); // Changed size from 44100 to 1024 to save memory.
+	let have_noise = false;
+	if (!have_noise) {
+		for (let i = 0; i < rand_noise.length; ++i) {
+			rand_noise[i] = rand();
+		}
+		have_noise = true;
+	}
+	let v = rand_noise[floor(p) % rand_noise.length];
+	return v > 0.5 ? 1.0 : -1.0;
+}
+
+function noise(p) {
+	let p0 = floor(p);
+	let p1 = p0 + 1.0;
+
+	let t = p - p0;
+	let fade_t = fade(t);
+
+	let g0 = grad(p0);
+	let g1 = grad(p1);
+
+	return (1.0 - fade_t)*g0*(p - p0) + fade_t*g1*(p - p1);
+}
+		const duration_seconds = len/buffer.sampleRate;
+		const sampling_rate_hz = buffer.sampleRate;
+		const freq = jumpValue; // In Hz
+		const freq2 = whenToJumpInSamples; // also in Hz
+if (volume === 1) {for (let sample_idx = 0; sample_idx < len; ++sample_idx) {
+    let x1 = sample_idx / sampling_rate_hz / freq;
+    let x2 = sample_idx / sampling_rate_hz / freq2;
+    let x3 = sample_idx / sampling_rate_hz / freq3;
+    let n = noise(x1);
+    let n2 = noise(x2);
+    let n3 = noise(x3);
+	let s = 0.5 * n + 0.3 * n2 + 0.2 * n3;
+	data[sample_idx] += s;
+}} else {for (let sample_idx = 0; sample_idx < len; ++sample_idx) {
+    let x1 = sample_idx / sampling_rate_hz / freq;
+    let x2 = sample_idx / sampling_rate_hz / freq2;
+    let x3 = sample_idx / sampling_rate_hz / freq3;
+    let n = noise(x1);
+    let n2 = noise(x2);
+    let n3 = noise(x3);
+	let s = 0.5 * n + 0.3 * n2 + 0.2 * n3;
+	data[sample_idx] += s*volume;
+}}
+}
 }
 
 effects["reverse"] = function(buffer) {
