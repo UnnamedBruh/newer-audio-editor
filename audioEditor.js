@@ -485,18 +485,18 @@ function noise(p) {
 		const freq = whenToJumpInSamples; // In Hz
 		const freq2 = jumpValue; // also in Hz
 if (volume === 1) {for (let sample_idx = 0; sample_idx < len; ++sample_idx) {
-    let x1 = sample_idx / sampling_rate_hz / freq;
-    let x2 = sample_idx / sampling_rate_hz / freq2;
-    let x3 = sample_idx / sampling_rate_hz / freq3;
+    let x1 = sample_idx / freq;
+    let x2 = sample_idx / freq2;
+    let x3 = sample_idx / freq3;
     let n = noise(x1);
     let n2 = noise(x2);
     let n3 = noise(x3);
 	let s = 0.5 * n + 0.3 * n2 + 0.2 * n3;
 	data[sample_idx] += s;
 }} else {for (let sample_idx = 0; sample_idx < len; ++sample_idx) {
-    let x1 = sample_idx / sampling_rate_hz / freq;
-    let x2 = sample_idx / sampling_rate_hz / freq2;
-    let x3 = sample_idx / sampling_rate_hz / freq3;
+    let x1 = sample_idx / freq;
+    let x2 = sample_idx / freq2;
+    let x3 = sample_idx / freq3;
     let n = noise(x1);
     let n2 = noise(x2);
     let n3 = noise(x3);
