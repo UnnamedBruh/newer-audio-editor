@@ -455,10 +455,9 @@ effects["experimentalnoise"] = function(buffer, noiseType, volume, whenToJumpInS
 function fade(t) {
 	return t*t*t*(t*(t*6.0 - 15.0) + 10.0);
 }
-
+			let rand_noise = new Float32Array(44100);
+let have_noise = false;
 function grad(p) {
-	let rand_noise = new Float32Array(1024); // Changed size from 44100 to 1024 to save memory.
-	let have_noise = false;
 	if (!have_noise) {
 		for (let i = 0; i < rand_noise.length; ++i) {
 			rand_noise[i] = rand();
