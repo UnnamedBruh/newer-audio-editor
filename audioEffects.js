@@ -76,7 +76,7 @@ const effectsList = [
 	[
 		"Note: Noise (Static)",
 		"Adds static to the audio.",
-		'Noise Type: <select id="noise0"><option value="wn">white noise</option><option value="bln">blue noise</option><option value="vn">violet noise</option><option value="pn">pink noise</option><option value="bn">brown noise</option></select><br>Volume: <input id="noise1" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the static is.">%<br>Is "Algorithmistic": <input id="noise2" type="checkbox" checked title="Determines whether their noise\'s implementations adhere to faithful algorithms, or default to generic or approximate programs.">',
+		'Noise Type: <select id="noise0"><option value="wn">white noise</option><option value="bln">blue noise</option><option value="vn">violet noise</option><option value="pn">pink noise (Voss-McCartney)</option><option value="pnacc">pink noise (accumulator-based)</option><option value="bn">brown noise</option></select><br>Volume: <input id="noise1" type="number" min="0" max="100" step="1" value="50" placeholder="Hover for info" style="width: 100px" title="How loud the static is.">%<br>Is "Algorithmistic": <input id="noise2" type="checkbox" checked title="Determines whether their noise\'s implementations adhere to faithful algorithms, or default to generic or approximate programs.">',
 		3,
 		"noise",
 		[identifier, Number, identifier]
