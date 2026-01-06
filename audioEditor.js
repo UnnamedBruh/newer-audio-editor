@@ -364,7 +364,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			j = p;
 		}
 	}
-	if (isAlgorithmistic || noiseType === "gr") {
+	if (isAlgorithmistic || noiseType === "gr" || noiseType === "green") {
 		if (noiseType === "bn" || noiseType === "pnacc" || noiseType === "orn") { // GPT-5.0 Mini wrote this implementation, but I adapted it to this function's standards.
 			volume *= 0.5;
 			// Algorithmistic brown: cumulative sum of small white noise steps
@@ -388,6 +388,32 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 				p = rand() - 0.5;
 				data[i] += ((p - j) + p) * vol2;
 				j = p;
+			}
+		} else if (noiseType === "green") { // My own spin on this: green noise
+			if (volume === 1) {
+				let p = data[0] = rand();
+				for (let i = 1; i < len; i++) {
+					let l = rand();
+					let e = abs(p - l);
+					while (e < 0.2 || e > 0.6) { // The difference can't be small, but it also can't be large either.
+						l = rand();
+						e = abs(p - l);
+					}
+					data[i] += l - 0.5;
+					p = l;
+				}
+			} else {
+				let p = data[0] = rand();
+				for (let i = 1; i < len; i++) {
+					let l = rand();
+					let e = abs(p - l);
+					while (e < 0.3 || e > 0.6) { // The difference can't be small, but it also can't be large either.
+						l = rand();
+						e = abs(p - l);
+					}
+					data[i] += (l - 0.5) * volume;
+					p = l;
+				}
 			}
 		} else if (noiseType === "pn") {
 			// https://whoisryosuke.com/blog/2025/generating-pink-noise-for-audio-worklets (algorithm is directly copied-and-pasted, then implemented here. I do NOT write, or claim to have written the marked section.)
