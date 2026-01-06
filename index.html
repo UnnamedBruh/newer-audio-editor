@@ -738,6 +738,11 @@
 							if (exp.length >= 2) {
 								const ref2 = sharedBuffer.getChannelData(1);
 								ref2.set(exp[1].audioData);
+							} else {
+								if (sharedBuffer.numberOfChannels > 1) {
+									const ref2 = sharedBuffer.getChannelData(1);
+									ref2.set(exp[0].audioData);
+								}
 							}
 							x.setAttribute("width", exp[0].audioData.length / skipSample);
 							v.style.width = (exp[0].audioData.length / skipSample) + "px";
@@ -749,9 +754,7 @@
 							updateMetadata();
 						}
 					}
-					apply.onclick = async function() {
-						await applyEffect();
-					}
+					apply.onclick = async function() {await applyEffect();}
 					applyToSpecific.onclick = async function() {
 						const numberIndexes = ["first", "second", "third", "fourth"];
 						await applyEffectOnExporter((prompt("Which channel do you want to apply the effect to? (" + (exporters.map((x, i) => {return (i+1) + " = " + numberIndexes[i] + " channel";}).join(", ")) + ")") ?? 1) - 1);
@@ -769,13 +772,8 @@
 						if (effect) {
 							params.innerHTML = effect[1] + "<br>" + effect[2];
 							paramElements = new Array(effect[3]);
-							for (let i = 0; i < paramElements.length; i++) {
-								paramElements[i] = document.getElementById(effect[4] + i);
-							}
-						} else {
-							params.innerHTML = "";
-							paramElements = null;
-						}
+							for (let i = 0; i < paramElements.length; i++) paramElements[i] = document.getElementById(effect[4] + i);
+						} else {params.innerHTML = "";paramElements = null;}
 						params.style.width = "100vw";
 						previous = opt.selectedIndex;
 					}
