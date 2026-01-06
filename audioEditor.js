@@ -395,7 +395,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 				for (let i = 1; i < len; i++) {
 					let l = rand();
 					let e = abs(p - l);
-					while (e < 0.2 || e > 0.6) { // The difference can't be small, but it also can't be large either.
+					while (e < 0.05 || e > 0.2) { // The difference can't be small, but it also can't be large either.
 						l = rand();
 						e = abs(p - l);
 					}
