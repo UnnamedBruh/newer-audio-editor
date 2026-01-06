@@ -365,11 +365,11 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 		}
 	}
 	if (isAlgorithmistic) {
-		if (noiseType === "bn") { // GPT-5.0 Mini wrote this implementation, but I adapted it to this function's standards.
+		if (noiseType === "bn" || noiseType === "pnacc") { // GPT-5.0 Mini wrote this implementation, but I adapted it to this function's standards.
 			volume *= 0.5;
 			// Algorithmistic brown: cumulative sum of small white noise steps
 			let last = 0;
-			const step = 0.2;
+			const step = (noiseType === "bn") ? 0.2 : 0.34;
 			for (let i = 0; i < len; i++) {
 				last += (rand() - 0.5) * step;
 				last = last < -1 ? -1 : last > 1 ? 1 : last; // clamp
@@ -408,8 +408,8 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			}
 		}
 	} else {
-		if (noiseType === "bn" || noiseType === "pn") {
-			const multiplier = (noiseType === "pn" ? 3 : 10) * 2;
+		if (noiseType === "bn" || noiseType === "pn" || noiseType === "pnacc") {
+			const multiplier = (noiseType === "pn" || noiseType === "pnacc" ? 3 : 10) * 2;
 			let max = (rand() * multiplier) | 0, currentRandom = rand() - 0.5;
 			if (volume === 1) {
 				for (let i = 0; i < len; i++) {
