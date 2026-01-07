@@ -328,6 +328,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 	if (volume === 0) return;
 	volume = volume * 0.02;
 	const len = buffer.audioData.length, data = buffer.audioData;
+	const rate = buffer.sampleRate;
 	if (noiseType === "wn") {
 		if (volume === 1) {
 			for (let i = 0; i < len; i++) {
@@ -362,6 +363,29 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			p = rand() - 0.5;
 			data[i] += ((p - j) + p) * volume;
 			j = p;
+		}
+	} else if (noiseType === "black") { // My creative spin on black noise!
+		let last = 0;
+		let step = 0.0006;
+		let inc = 0;
+		let burst = rand()*rate*39; // Maximum time before burst of energy is 39 seconds
+		for (let i = 0; i < len; i++) {
+			inc += (rand() - 0.5) * step;
+			inc = inc > 0.005 ? 0.005 : inc < -0.005 < -0.005 : inc;
+			last += inc;
+			if (last>1) {
+				last = 1;
+				inc = 0;
+			} else if (last<-1) {
+				last = -1;
+				inc = 0;
+			}
+			data[i] += last * volume;
+			if (burst < i) {
+				burst += rand()*rate*39;
+				step += rand() * 0.02;
+			}
+			if (step > 0.0006) step -= 1/rate * 0.000279; else if (step < 0.0006) step = 0.0006;
 		}
 	}
 	if (isAlgorithmistic || noiseType === "gr" || noiseType === "green") {
