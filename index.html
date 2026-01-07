@@ -2006,7 +2006,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			const line = document.getElementById("b");
 			function changeYPositionOfLine() {
 				const bounds = line.getBoundingClientRect();
-				line.style.marginTop = window.innerHeight - bounds.top;
+				line.style.marginTop = (window.innerHeight - bounds.top) + "px";
 			}
 			setTimeout(function() {
 				const header = document.getElementById("disappearheader");
