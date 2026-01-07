@@ -24,6 +24,7 @@
 			.arial,.arialnormal,.normalarial,.fontarial,.arialfont{font-family:Arial,sans-serif}.arialblack,.blackarial,.fontarialblack,.arialblackfont{font-family:Arial Black,sans-serif}.helvetica,.helveticanormal,.normalhelvetica,.fonthelvetica,.helveticafont{font-family:Helvetica,sans-serif}.sans-serif,.sansserif,.fontsans-serif,.fontsansserif,.sans-seriffont,.sansseriffont{font-family:sans-serif}
 			.ghost,.ghast,.ghostly,.ghastly,.transparent,.translucent,.seethrough,.seebehind,.lowopaque,.lowopaqueness,.low-opaque,.low-opaqueness,.fog,.foggy{animation:ghost 1.7s forwards}@keyframes ghost{0%,100%{opacity:0.2},70%{opacity:0.3}}
 		</style>
+		<title>Newer Audio Editor (Searadare)</title>
 	</head>
 	<body>
 		<script>const originalFetchFunction = fetch;</script>
@@ -41,13 +42,13 @@
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button> <button id="endsel" disabled>Select End Of Audio</button>
-		<h1>Audio Editor</h1>
+		<h1 id="disappearheader">Searadare (Newer Audio Editor)</h1>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac" multiple><br>
 		Load Audio File From URL: <input type="url" id="audurl" title="Add multiple URLs by separating them with commas ,"><br>
 		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button> <button id="micrecord">Import Recording From Microphone</button>
 		<br>
 		<div id="frame" style="display: inline-block; width: max-content;"></div>
-		<hr>
+		<hr id="b">
 		<h1>Legal Information</h1>
 		<h2>License Information</h2>
 		<a>This audio editor is licensed under the MIT License. You can see the license</a> <a href="https://github.com/UnnamedBruh/newer-audio-editor/blob/main/LICENSE">here</a><a>. The MIT License disclaims <i>no warranty</i>, which means that you do not have to replace a copy of this software. The license also disclaims <i>no liability</i>, which means that the copyright holders of this software ("we" or "us") are not responsible for any claims or damages, in spite of any contract or agreement <i>regarding this software</i> stating otherwise.</a><br><br>
@@ -1986,7 +1987,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				requestAnimationFrame(()=>{loadFromURL.style.width = (loadFromURL.value.length * 8) + "px";});
 				if (event.key === "Enter") {
 					loadFromURL.disabled = true;
-					const urls = loadFromURL.value.split(",");
+					const urls = new Set(loadFromURL.value.split(",")).values().toArray();
 					for (let i = 0, url = urls[0]; i < urls.length; url = urls[++i]) {
 						try {
 							const firstFile = await originalFetchFunction(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url.trim())}`);
@@ -2002,6 +2003,22 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					await loadAudioFiles(obj);
 				}
 			}
+			const line = document.getElementById("b");
+			function changeYPositionOfLine() {
+				const bounds = line.getBoundingClientRect();
+				line.style.marginTop = window.innerHeight - bounds.top;
+			}
+			setTimeout(function() {
+				const header = document.getElementById("disappearheader");
+				header.classList.add("shrink");
+				let ccc = true;
+				function keep() {changeYPositionOfLine();if(ccc)requestAnimationFrame(()=>keep());}
+				setTimeout(function() {
+					header.remove();
+					ccc = false;
+				}, 1500)
+			}, 3000);
+			changeYPositionOfLine();
 		</script>
 	</body>
 </html>
