@@ -371,7 +371,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 		let burst = rand()*rate*39; // Maximum time before burst of energy is 39 seconds
 		for (let i = 0; i < len; i++) {
 			inc += (rand() - 0.5) * step;
-			inc = inc > 0.005 ? 0.005 : inc < -0.005 < -0.005 : inc;
+			inc = inc > 0.005 ? 0.005 : inc < -0.005 ? -0.005 : inc;
 			last += inc;
 			if (last>1) {
 				last = 1;
