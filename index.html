@@ -23,6 +23,7 @@
 			.shadow,.silhouette,.absorb,.absorblight{text-shadow:-5px -5px 5px 0px #636363;}.rainbow,.colorwheel,.hue,.huerotate,.lgbtq{animation:rainbow 3.5s infinite;color:rgb(255,0,0);}@keyframes rainbow{0%{color:rgb(255,0,0);}10%{color:rgb(255,128,0);}25%{color:rgb(255,255,0);}40%{color:rgb(0,200,0);}55%{color:rgb(0,128,128);}70%{color:rgb(0,0,255);}85%{color:rgb(255,0,255);}}
 			.arial,.arialnormal,.normalarial,.fontarial,.arialfont{font-family:Arial,sans-serif}.arialblack,.blackarial,.fontarialblack,.arialblackfont{font-family:Arial Black,sans-serif}.helvetica,.helveticanormal,.normalhelvetica,.fonthelvetica,.helveticafont{font-family:Helvetica,sans-serif}.sans-serif,.sansserif,.fontsans-serif,.fontsansserif,.sans-seriffont,.sansseriffont{font-family:sans-serif}
 			.ghost,.ghast,.ghostly,.ghastly,.transparent,.translucent,.seethrough,.seebehind,.lowopaque,.lowopaqueness,.low-opaque,.low-opaqueness,.fog,.foggy{animation:ghost 1.7s forwards}@keyframes ghost{0%,100%{opacity:0.2},70%{opacity:0.3}}
+			.shrinkheader{animation:shrinkout 1.5s forwards;}
 		</style>
 		<title>Newer Audio Editor (Searadare)</title>
 	</head>
@@ -2004,17 +2005,18 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				}
 			}
 			const line = document.getElementById("b");
+			const header = document.getElementById("disappearheader");
 			function changeYPositionOfLine() {
 				const bounds = line.getBoundingClientRect();
-				line.style.marginTop = (window.innerHeight - bounds.top) + "px";
+				line.style.marginTop = (window.innerHeight - header.getBoundingClientRect().height) + "px";
 			}
 			setTimeout(function() {
-				const header = document.getElementById("disappearheader");
-				header.classList.add("shrink");
+				header.classList.add("shrinkheader");
 				let ccc = true;
 				function keep() {changeYPositionOfLine();if(ccc)requestAnimationFrame(()=>keep());}
+				keep();
 				setTimeout(function() {
-					header.remove();
+					header.outerHTML = "<br>";
 					ccc = false;
 				}, 1500)
 			}, 3000);
