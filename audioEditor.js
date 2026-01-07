@@ -324,6 +324,21 @@ effects["echo_arbr"] = function(buffer, volume, delay) {
 	}
 }
 
+let blackNoiseTable = new Float64Array();
+let timesNeededForRefresh = 1;
+
+function generateTablesBlackNoise() {
+	timesNeededForRefresh = exporters.length;
+	let array = [];
+	let noise = 0;
+	const l = exporters[0].audioData.length;
+	const rate = exporters[0].sampleRate;
+	for (let i = 0; i < l; i += noise) {
+		array.push((noise = rand()*39*rate));
+	}
+	blackNoiseTable = new Float64Array(array);
+}
+
 effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 	if (volume === 0) return;
 	volume = volume * 0.02;
@@ -365,10 +380,17 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			j = p;
 		}
 	} else if (noiseType === "black") { // My creative spin on black noise!
+		volume *= 0.5;
 		let last = 0;
 		let step = 0.0006;
 		let inc = 0;
-		let burst = rand()*rate*39; // Maximum time before burst of energy is 39 seconds
+		timesNeededForRefresh--;
+		if (timesNeededForRefresh === 0) {
+			generateTablesBlackNoise();
+		}
+		//let burst = rand()*rate*39; // Maximum time before burst of energy is 39 seconds
+		let burst = blackNoiseTable[0];
+		let burstIndex = 0;
 		for (let i = 0; i < len; i++) {
 			inc += (rand() - 0.5) * step;
 			inc = inc > 0.005 ? 0.005 : inc < -0.005 ? -0.005 : inc;
@@ -382,10 +404,11 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			}
 			data[i] += last * volume;
 			if (burst < i) {
-				burst += rand()*rate*39;
-				step += rand() * 0.02;
+				//burst += rand()*rate*39;
+				burst += blackNoiseTable[++burstIndex];
+				step += rand() * 0.01;
 			}
-			if (step > 0.0006) step -= 1/rate * 0.000279; else if (step < 0.0006) step = 0.0006;
+			if (step > 0.0006) step -= 1/rate * 0.00279; else if (step < 0.0006) step = 0.0006;
 		}
 	}
 	if (isAlgorithmistic || noiseType === "gr" || noiseType === "green") {
