@@ -406,7 +406,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			if (burst < i) {
 				//burst += rand()*rate*39;
 				burst += blackNoiseTable[++burstIndex];
-				step += rand() * 0.003;
+				if (step < 0.006) step += rand() * 0.003;
 			}
 			if (step > 0.0006) step -= 1/rate * 0.000579; else if (step < 0.0006) step = 0.0006;
 		}
