@@ -702,7 +702,7 @@
 						if (effect[6] > 1) values[0] = exporters;
 						if (timelineBeginAudio !== 0 && effect[4] !== "trim") values[0] = {audioData: expor.audioData.subarray(Math.floor(timelineBeginAudio), timelineEndAudio), sampleRate: expor.sampleRate};
 						const le = (effect[6] > 1 ? values[0][0] : values[0]).audioData.length;
-						const exporterT = (effect[6] > 1 ? values[0][0] : values[0]);
+						const exporterT = (effect[6] > 1 ? values[0][i] : values[0]);
 						await effects[effect[4]](...values);
 						if (timelineBeginAudio !== 0) {
 							if (exporterT.audioData.buffer !== expor.audioData.buffer) {
