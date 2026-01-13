@@ -411,7 +411,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 			if (step > 0.0006) step -= 1/rate * 0.000579; else if (step < 0.0006) step = 0.0006;
 		}
 	}
-	if (isAlgorithmistic || noiseType === "gr" || noiseType === "green") {
+	if (isAlgorithmistic || noiseType === "gr" || noiseType === "green" || noiseType === "yello") {
 		if (noiseType === "bn" || noiseType === "pnacc" || noiseType === "orn") { // GPT-5.0 Mini wrote this implementation, but I adapted it to this function's standards.
 			volume *= 0.5;
 			// Algorithmistic brown: cumulative sum of small white noise steps
@@ -436,13 +436,14 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 				data[i] += ((p - j) + p) * vol2;
 				j = p;
 			}
-		} else if (noiseType === "green") { // My own spin on this: green noise
+		} else if (noiseType === "green" || noiseType === "yello") { // My own spin on this: green/yellow noise
+			const upperlimit = noiseType === "green" ? 0.13 : 0.18;
 			if (volume === 1) {
 				let p = data[0] = rand();
 				for (let i = 1; i < len; i++) {
 					let l = rand();
 					let e = abs(p - l);
-					while (e < 0.05 || e > 0.13) { // The difference can't be small, but it also can't be large either.
+					while (e < 0.05 || e > upperlimit) { // The difference can't be small, but it also can't be large either.
 						l = rand();
 						e = abs(p - l);
 					}
@@ -454,7 +455,7 @@ effects["noise"] = function(buffer, noiseType, volume, isAlgorithmistic) {
 				for (let i = 1; i < len; i++) {
 					let l = rand();
 					let e = abs(p - l);
-					while (e < 0.05 || e > 0.13) { // The difference can't be small, but it also can't be large either.
+					while (e < 0.05 || e > upperlimit) { // The difference can't be small, but it also can't be large either.
 						l = rand();
 						e = abs(p - l);
 					}
