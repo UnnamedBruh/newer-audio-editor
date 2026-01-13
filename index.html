@@ -737,18 +737,18 @@
 								const indexInverse = 1 - index;
 								effects["blank"](exporters[indexInverse], (exporters[index].audioData.length - exporters[indexInverse].audioData.length) / exporters[index].sampleRate, confirm("It looks like the channels have unique lengths, which would cause unexpected bugs during exporting. Do you want to pad silence at the beginning (Yes/OK) or end (Cancel/No)?") ? "f" : "");
 							}
-							data = generateWaveform(exp[0]);
-							if (n2) dataSecond = generateWaveform(exp[1]);
-							if (exporters[0].audioData.length !== lens[0] || (exporters[1] && exporters[1].audioData.length === lens[1])) sharedBuffer = audioContext.createBuffer(exp.length, exp[0].audioData.length, exp[0].sampleRate);
+							data = generateWaveform(exporters[0]);
+							if (n2 && exporters[1]) dataSecond = generateWaveform(exporters[1]);
+							if (exporters[0].audioData.length !== lens[0] || (exporters[1] && exporters[1].audioData.length === lens[1])) sharedBuffer = audioContext.createBuffer(exporters.length, exporters[0].audioData.length, exporters[0].sampleRate);
 							const ref = sharedBuffer.getChannelData(0);
-							ref.set(exp[0].audioData);
-							if (exp.length >= 2) {
+							ref.set(exporters[0].audioData);
+							if (exporters.length >= 2) {
 								const ref2 = sharedBuffer.getChannelData(1);
-								ref2.set(exp[1].audioData);
+								ref2.set(exporters[1].audioData);
 							} else {
 								if (sharedBuffer.numberOfChannels > 1) {
 									const ref2 = sharedBuffer.getChannelData(1);
-									ref2.set(exp[0].audioData);
+									ref2.set(exporters[0].audioData);
 								}
 							}
 							x.setAttribute("width", exp[0].audioData.length / skipSample);
