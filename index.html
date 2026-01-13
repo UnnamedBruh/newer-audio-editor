@@ -558,6 +558,7 @@
 					const relativeX = clickX / x.clientWidth;
 					startAt = relativeX * sharedBuffer.duration; // Time in seconds
 					clickedAtWhere = startAt;
+					updateMetadata();
 					if (timelineBeginNum) startAt = 0;
 					playSound(play);
 					play.textContent = "Stop Sound";
