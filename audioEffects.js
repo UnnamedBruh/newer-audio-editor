@@ -140,10 +140,10 @@ const effectsList = [
 	[
 		"Fade",
 		"Fades the audio in a specified direction.",
-		'Direction: <select id="fade0"><option>in</option><option>out</option></select><br>Tween: <select id="fade1"><option value="l">linear</option><option value="ein">ease in</option><option value="eout">ease out</option><option value="cub">cubic</option></select>',
-		2,
+		'Direction: <select id="fade0"><option>in</option><option>out</option></select><br>Tween: <select id="fade1"><option value="l">linear</option><option value="ein">ease in</option><option value="eout">ease out</option><option value="cub">cubic</option></select><br>In Volume: <input id="fade3" type="number" min="0" step="1" value="100" style="width: 100px">%<br>Out Volume: <input id="fade2" type="number" min="0" step="1" value="0" style="width: 100px">%',
+		4,
 		"fade",
-		[identifier, identifier]
+		[identifier, identifier, percent, percent]
 	],
 	[
 		"Reverb (Convol)",
