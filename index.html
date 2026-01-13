@@ -510,6 +510,14 @@
 						play.textContent = "Stop Sound";
 					}
 				}
+				let clickedAtWhere = 0;
+				const metadataOfAudio = document.createElement("pre");
+				function updateMetadata() {
+					let meta = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate) + "\nSamplerate: " + exporters[0].sampleRate + "\nFilename: " + filename;
+					if (clickedAtWhere) meta += "\nStarted Audio At: " + formatTime(clickedAtWhere);
+					metadataOfAudio.textContent = meta;
+				}
+				updateMetadata();
 				function playWithTimeline(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
 					if (isPressingShift) {
@@ -549,6 +557,7 @@
 					}
 					const relativeX = clickX / x.clientWidth;
 					startAt = relativeX * sharedBuffer.duration; // Time in seconds
+					clickedAtWhere = startAt;
 					if (timelineBeginNum) startAt = 0;
 					playSound(play);
 					play.textContent = "Stop Sound";
@@ -653,11 +662,6 @@
 					}
 				}
 				v.appendChild(document.createElement("br"));
-				const metadataOfAudio = document.createElement("pre");
-				function updateMetadata() {
-					metadataOfAudio.textContent = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate) + "\nSamplerate: " + exporters[0].sampleRate + "\nFilename: " + filename;
-				}
-				updateMetadata();
 				const renameFile = document.createElement("button");
 				v.appendChild(renameFile);
 				renameFile.textContent = "Rename Audio";
