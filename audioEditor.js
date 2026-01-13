@@ -761,6 +761,7 @@ effects["normalize"] = function(exporter) {
 		if (n > max) max = n;
 	}
 	max = (1 / max) * 0.9;
+	if (isNaN(max)) max = 0.9;
 	for (let i = 0; i < len; i++) {
 		pointer[i] *= max;
 	}
@@ -817,53 +818,99 @@ effects["tvnormalize"] = function(exporter) {
 	}
 }
 
-effects["fade"] = function(exporter, direction = "in", easing = "l") {
+effects["fade"] = function(exporter, direction = "in", easing = "l", tovol = 0, fromvol = 1) {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
 
 	const invLen = 1 / len;
 
-	if (easing === "l") { // linear
-		if (direction === "in") {
-			for (let i = 0; i < len; i++) {
-				pointer[i] *= i * invLen;
+	if (!tovol && fromvol === 1) {
+		if (easing === "l") { // linear
+			if (direction === "in") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= i * invLen;
+				}
+			} else if (direction === "out") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= (len - i) * invLen;
+				}
 			}
-		} else if (direction === "out") {
-			for (let i = 0; i < len; i++) {
-				pointer[i] *= (len - i) * invLen;
+		} else if (easing === "eout") { // ease out
+			const pi2 = Math.PI / 2 / len;
+			if (direction === "in") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= sin(i * pi2);
+				}
+			} else if (direction === "out") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= 1 - sin(i * pi2);
+				}
+			}
+		} else if (easing === "ein") { // ease in
+			const pi2 = Math.PI / 2 / len;
+			if (direction === "in") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= 1 - cos(i * pi2);
+				}
+			} else if (direction === "out") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= cos(i * pi2);
+				}
+			}
+		} else if (easing === "cub") { // cubic
+			if (direction === "in") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= pow(i * invLen, 3)
+				}
+			} else if (direction === "out") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= 1 - pow(i * invLen, 3);
+				}
 			}
 		}
-	} else if (easing === "eout") { // ease out
-		const pi2 = Math.PI / 2 / len;
-		if (direction === "in") {
-			for (let i = 0; i < len; i++) {
-				pointer[i] *= sin(i * pi2);
+	} else {
+		if (easing === "l") { // linear
+			if (direction === "in") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= interpolate(fromvol, tovol, i * invLen);
+				}
+			} else if (direction === "out") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= interpolate(tovol, fromvol, i * invLen);
+				}
 			}
-		} else if (direction === "out") {
-			for (let i = 0; i < len; i++) {
-				pointer[i] *= 1 - sin(i * pi2);
+		} else if (easing === "eout") { // ease out
+			const pi2 = Math.PI / 2 / len;
+			if (direction === "in") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= interpolate(tovol, fromvol, sin(i * pi2));
+				}
+			} else if (direction === "out") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= interpolate(fromvol, tovol, sin(i * pi2));
+				}
 			}
-		}
-	} else if (easing === "ein") { // ease in
-		const pi2 = Math.PI / 2 / len;
-		if (direction === "in") {
-			for (let i = 0; i < len; i++) {
-				pointer[i] *= 1 - cos(i * pi2);
+		} else if (easing === "ein") { // ease in
+			const pi2 = Math.PI / 2 / len;
+			if (direction === "in") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= interpolate(tovol, fromvol, cos(i * pi2));
+				}
+			} else if (direction === "out") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= interpolate(fromvol, tovol, cos(i * pi2));
+				}
 			}
-		} else if (direction === "out") {
-			for (let i = 0; i < len; i++) {
-				pointer[i] *= cos(i * pi2);
-			}
-		}
-	} else if (easing === "cub") { // cubic
-		if (direction === "in") {
-			for (let i = 0; i < len; i++) {
-				pointer[i] *= pow(i * invLen, 3)
-			}
-		} else if (direction === "out") {
-			for (let i = 0; i < len; i++) {
-				pointer[i] *= 1 - pow(i * invLen, 3);
+		} else if (easing === "cub") { // cubic
+			if (direction === "in") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= interpolate(fromvol, tovol, pow(i * invLen, 3));
+				}
+			} else if (direction === "out") {
+				for (let i = 0; i < len; i++) {
+					pointer[i] *= interpolate(tovol, fromvol, pow(i * invLen, 3));
+				}
 			}
 		}
 	}
