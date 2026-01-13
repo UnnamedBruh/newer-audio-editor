@@ -1009,7 +1009,7 @@
 						}
 						return buffer;
 					}
-// Simple Ogg-Opus muxer (browser compatible) (I DID NOT WRITE ANY OF THE OGG MUXING LOGIC!!! GPT-5.0 Non-mini/Mini, and Claude Sonnet 4.5 DID THIS!)
+// Simple Ogg-Opus muxer (browser compatible) (UNNAMEDBRUH DID NOT WRITE ANY OF THE OGG MUXING LOGIC!!! GPT-5.0 Non-mini/Mini, and Claude Sonnet 4.5 DID THIS!)
 // - Expects: packets = Array<Uint8Array> (raw Opus packets, in order)
 // - Options:
 //		sampleRate: number (default 48000)
@@ -1020,7 +1020,6 @@
 //			 If not provided, default assumes frames of 20ms (960 samples @48kHz) and
 //			 parses simple TOC frame-count rules (good if your encoder uses 20ms frames).
 // Returns: Blob (type 'audio/ogg')
-//
 // References:
 //	- Ogg framing: RFC 3533 / xiph.org docs.
 //	- Opus in Ogg: RFC 7845.
@@ -1146,7 +1145,7 @@ function muxOpusPacketsToOgg(packets, opts = {}) {
 			return new Uint8Array(segs);
 		})(),
 		[createOpusTags(vendor, {})],
-		false, /*continued*/ false /*BOS*/ , false /*EOS*/
+		true, /*continued*/ false /*BOS*/ , false /*EOS*/
 	);
 	// --- Audio packet to pages logic (robust) ---
 	let pktIndex = 0;
@@ -1216,6 +1215,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 		return frames * frameSamples;
 	};
 }
+// Granule calculating is correct, but issues might be packet or CRT calculation
 					try {
 						const vbr = Number(prompt("How high can the bitrate of the audio be? (6.0 = worst quality, big differences, low sizes; 512.0 = best quality, nearly-neglible differences, higher sizes; 256.0 = balanced quality, minimal differences, medium sizes)") ?? 256.0) ?? 256.0;
 						const voiceOpt = confirm("Should the audio encoder optimize for voices in the audio?");
