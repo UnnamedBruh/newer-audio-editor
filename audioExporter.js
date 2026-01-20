@@ -293,7 +293,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 	// audioFormat: 1 = PCM integer, 2 = ADPCM or DPCM, 3 = IEEE float, 7 = μ-law
 	let audioFormat = 1;
 	if (this.encoding.startsWith("pcmf")) audioFormat = 3;
-	else if (this.encoding === "ulaw") audioFormat = 7;
+	else if (this.encoding === "mulaw") audioFormat = 7;
 	else if (this.encoding === "alaw") audioFormat = 6; // https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 	else if (this.encoding === "nesdpcm") audioFormat = 2; // https://billposer.org/Linguistics/Computation/LectureNotes/WAVEFormatCodes.html
 	else if (this.encoding === "xandpcm") audioFormat = 22858; // https://wiki.multimedia.cx/index.php/Xan_DPCM
@@ -340,7 +340,7 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 				}
 			}
 		}
-	} else if (this.encoding === "ulaw") {
+	} else if (this.encoding === "mulaw") {
 		// convert to mu-law bytes
 		if (numOfChannels === 2) {
 			for (let i = 0; i < len; i++) {
