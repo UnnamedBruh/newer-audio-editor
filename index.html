@@ -705,7 +705,7 @@
 							}
 						})];
 						if (effect[6] > 1) values[0] = exporters;
-						if (timelineBeginAudio !== 0 && effect[4] !== "trim") values[0] = {audioData: expor.audioData.subarray(Math.floor(timelineBeginAudio), timelineEndAudio), sampleRate: expor.sampleRate};
+						if (timelineBeginAudio !== 0 && effect[4] !== "trim" && effect[4] !== "trimout") values[0] = {audioData: expor.audioData.subarray(Math.floor(timelineBeginAudio), timelineEndAudio), sampleRate: expor.sampleRate};
 						const le = (effect[6] > 1 ? values[0][0] : values[0]).audioData.length;
 						const exporterT = (effect[6] > 1 ? values[0][i] : values[0]);
 						await effects[effect[4]](...values);
