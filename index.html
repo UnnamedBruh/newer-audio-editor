@@ -1656,7 +1656,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 					}
 				}
-				channel = sharedBuffer.getChannelData(Math.min(channelNum & 1, sharedBuffer.numberOfChannels));
+				channel = sharedBuffer.getChannelData(Math.min(channelNum & 1, sharedBuffer.numberOfChannels-1));
 				return [channel,isProcessed,sharedBuffer];
 			}
 			let oldSharedBufferFor = null;
@@ -1674,7 +1674,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 					newBuffer.copyToChannel(channel, 0);
 					sharedBuffer = newBuffer;
 					channel = sharedBuffer.getChannelData(0);
-				} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];}
+				} else {const x = processSharedBuff(channel, channelNum, isProcessed);isProcessed = x[1];channel = x[0];sharedBuffer = x[2];}
 				const stereo = sharedBuffer.numberOfChannels >= 2 && !isProcessed && confirm("Do you want the final audio to be stereo?");
 				if (sharedBuffer.numberOfChannels >= 2 && !stereo) { // Normalize playback, since only one channel is being loaded. If other channels are playing while one is selected, it can suddenly sound "mono" if an effect is applied, which confuses the user
 					for (let i = 0; i < sharedBuffer.numberOfChannels; i++) {
@@ -1686,6 +1686,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				if (stereo) exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32), new AudioExporter(sharedBuffer.getChannelData(1 - channelNum), sharedBuffer.sampleRate, 1, 32)];
 				else exporters = [new AudioExporter(channel, sharedBuffer.sampleRate, 1, 32)];
 				loadDiv(exporters);
+				return sharedBuffer;
 			}
 			async function loadAudioFiles(eve) {
 				if (!eve || !eve.target || !eve.target.files || !eve.target.files.length) return;let firstFile = eve.target.files[0], secondFile = eve.target.files[1], isCorrect;
@@ -1826,7 +1827,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							}
 							oldSharedBufferFor = copyBuffer(sharedBuffer);
 							filename = firstFile.name.split(".").slice(0, -1).join(".");
-							loadSharedBuffer(sharedBuffer);
+							sharedBuffer = loadSharedBuffer(sharedBuffer);
 							importSubtitles.disabled = false;
 							reimp.disabled = false;
 							loadFromURL.disabled = false;
@@ -1876,7 +1877,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				data = null;
 				sampleData = null;
 				skipSample = 480;
-				loadSharedBuffer(sharedBuffer);
+				sharedBuffer = loadSharedBuffer(sharedBuffer);
 			}
 			let isRecording = false, recordedBuffers = null, stream = null, processor = null, source = null, mergedBuffers = false, silentNode = null;
 			recordMicrophone.onclick = async function() {
@@ -1907,7 +1908,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				data = null;
 				sampleData = null;
 				skipSample = 480;
-				loadSharedBuffer(sharedBuffer);
+				sharedBuffer = loadSharedBuffer(sharedBuffer);
 				stream.getTracks().forEach(t => t.stop());
 				recordMicrophone.textContent = "Import Recording From Microphone";
 				recordMicrophone.disabled = false;
