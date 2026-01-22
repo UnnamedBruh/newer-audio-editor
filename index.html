@@ -1575,7 +1575,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const leftorright = confirm("Okay! Do you want to store the left and right sides (Cancel/No), or all sides including the left, right, front and back sides (OK/Yes)?");
 						if (leftorright) {
 							for (let i = 0; i < lenBuffer; i++) channel1[i] = (channel1S[i] + channel2S[i] + channel3S[i] + channel4S[i]) * 0.25;
-								} else {
+						} else {
 							for (let i = 0; i < lenBuffer; i++) channel1[i] = (channel1S[i] + channel2S[i]) * 0.5;
 						}
 						sharedBuffer = newBuffer;
@@ -1656,7 +1656,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						}
 					}
 				}
-				return [channel,isProcessed];
+				channel = sharedBuffer.getChannelData(Math.min(channelNum & 1, sharedBuffer.numberOfChannels));
+				return [channel,isProcessed,sharedBuffer];
 			}
 			let oldSharedBufferFor = null;
 			function copyBuffer(buff) {
