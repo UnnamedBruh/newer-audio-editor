@@ -851,7 +851,7 @@
 							exporters2.encoding = "xandpcm";
 						}
 					}
-					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? exporters[1].audioData : undefined, isCompatible);
+					const blob = exporters2.convertToWav(metadata, exporters.length > 1 ? (timelineBeginAudio ? exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio) : exporters[1].audioData) : undefined, isCompatible);
 					exporters2.bits = encodeBits;
 					downloadFile(blob, ".wav");
 				}
