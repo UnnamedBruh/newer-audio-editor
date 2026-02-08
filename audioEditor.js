@@ -1589,3 +1589,37 @@ effects["keepsilence2"] = function(exporters, mode, tolerance = 0.00605545437792
 		exporters[1].audioData = pointer2.subarray(offset, offset2+1);
 	}
 }
+
+effects["fftartifacts"] = function(exporter, size = 1024, normalize = true) {
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = floor(len / size);
+
+	const outputArr = new Float32Array(floor(len / size) * size);
+	const fft = new FFT(size);
+
+	let input;
+	const output = fft.createComplexArray();
+	const timeDomain = fft.createComplexArray();
+
+	for (let i = 0; i < lenR; i++) {
+		input = pointer.subarray(i * size, (i + 1) * size);
+
+		fft.realTransform(output, input);
+		fft.completeSpectrum(output);
+
+		fft.inverseTransform(timeDomain, output);
+		const a = fft.fromComplexArray(timeDomain, input);
+
+		if (normalize) {
+			for (let j = 0; j < a.length; j++) {
+				a[j] /= size;
+			}
+		}
+
+		outputArr.set(new Float32Array(a), i * size);
+	}
+	exporter.audioData = outputArr;
+}
