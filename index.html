@@ -904,7 +904,7 @@
 						return buffer;
 					}
 					let sampleRate = exporters[0].sampleRate;
-					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 8, 16, 32, 64, 80, 96, 128, 168, 192, 256, 320)")) / 4) * 4;
+					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 8, 16, 32, 64, 80, 96, 128, 168, 192, 256, 320, OR EVEN 4 KBPS!)")) / 4) * 4;
 					if (kbps === 0 || isNaN(kbps) || kbps === undefined || kbps === null) return;
 					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") ?? 3));
 					const channels = (exporters.length === 2) ? 2 : 1;
@@ -913,7 +913,7 @@
 					const lossTimes = Number(prompt("How many times should the same audio be re-encoded? (for glitch-art audio)") || 1);
 					let blob;
 					exportBtn2.disabled = true;
-					const fixEncodeTable = {32: 0.75, 16: 0.75, 8: 0.375, 168: 1.312637701347876, 256: 2, 320: 2.495};
+					const fixEncodeTable = {32: 0.75, 16: 0.75, 8: 0.375, 4, 0.1878918918918919, 168: 1.312637701347876, 256: 2, 320: 2.495};
 					const fixEncodeTable2 = {32: 2.177427725956358, 16: 3.0012627195702253, 128: 1.0891036274839623};
 					const fixEncodeTable3 = {128: 1.088449674954518};
 					const tttt = fixEncodeTable[kbps] || 1;
