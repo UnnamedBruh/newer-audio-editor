@@ -1660,12 +1660,6 @@ effects["fftquantizemagnitude"] = function(exporter, size = 1024, steps = 32) {
 		fft.inverseTransform(timeDomain, output);
 		const a = fft.fromComplexArray(timeDomain, input);
 
-		if (!normalize) {
-			for (let j = 0; j < a.length; j++) {
-				a[j] /= size;
-			}
-		}
-
 		outputArr.set(new Float32Array(a), i * size);
 	}
 	exporter.audioData = outputArr;
