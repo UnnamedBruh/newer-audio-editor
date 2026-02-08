@@ -1,5 +1,6 @@
 const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round, tru = Math.trunc, rand = Math.random, sin = Math.sin, cos = Math.cos;
 
+
 const muLawCache = Object.create(null);
 
 function muLawCompress(a,t=255){return sign(a)*log1p(t*abs(a))/log1p(t)}function muLawExpand(a,t=255){return sign(a)*(1/t)*(pow(1+t,abs(a))-1)}function muLawQuantize(a,t=256,n=255){const x=muLawCache[a];if(x!==undefined)return x;const u=muLawCompress(a,n);const r=muLawExpand(floor((u+1)/2*(t-1))/(t-1)*2-1,n);muLawCache[a]=r;return r}
