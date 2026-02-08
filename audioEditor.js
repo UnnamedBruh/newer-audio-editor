@@ -1591,7 +1591,7 @@ effects["keepsilence2"] = function(exporters, mode, tolerance = 0.00605545437792
 	}
 }
 
-effects["fftartifacts"] = function(exporter, size = 1024, normalize = true) {
+effects["fftartifacts"] = function(exporter, size = 1024) {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
@@ -1614,7 +1614,53 @@ effects["fftartifacts"] = function(exporter, size = 1024, normalize = true) {
 		fft.inverseTransform(timeDomain, output);
 		const a = fft.fromComplexArray(timeDomain, input);
 
-		if (normalize) {
+		outputArr.set(new Float32Array(a), i * size);
+	}
+	exporter.audioData = outputArr;
+}
+
+effects["fftquantizemagnitude"] = function(exporter, size = 1024, steps = 32) {
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = floor(len / size);
+
+	const outputArr = new Float32Array(floor(len / size) * size);
+	const fft = new FFT(size);
+
+	let input;
+	const output = fft.createComplexArray();
+	const timeDomain = fft.createComplexArray();
+
+	const hypot = Math.hypot;
+
+	for (let i = 0; i < lenR; i++) {
+		input = pointer.subarray(i * size, (i + 1) * size);
+
+		fft.realTransform(output, input);
+		fft.completeSpectrum(output);
+
+		for (let k = 0; k < output.length; k += 2) {
+			const re = output[k];
+			const im = output[k + 1];
+
+			const mag = hypot(re, im);
+			if (mag === 0) continue;
+
+			// Quantize magnitude
+			const qMag = round(mag * steps) / steps;
+
+			// Preserve phase by scaling
+			const scale = qMag / mag;
+			output[k] = re * scale;
+			output[k + 1] = im * scale;
+		}
+
+		fft.inverseTransform(timeDomain, output);
+		const a = fft.fromComplexArray(timeDomain, input);
+
+		if (!normalize) {
 			for (let j = 0; j < a.length; j++) {
 				a[j] /= size;
 			}
