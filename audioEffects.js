@@ -6,6 +6,11 @@ function percent(x) {
 	return x * 0.01;
 }
 
+function ispowof2(x) {
+	x = Number(x);
+	if (Math.log2(x) !== Math.round(Math.log2(x))) alert("The input you provided is not a power of 2.\n\nPowers of 2 include: 32, 64, 128, 256, 512, 1028, 2048, 4096, 8192, 16384, 32768, 66536..."); else return x;
+}
+
 const frequencyReference = '<br><br>Frequency Reference*<br>Human Voice (Mature Male): 80 Hertz - 180 Hertz<br>Human Voice (Mature Female): 120 Hertz - 310 Hertz<br><br><a style="font-size: 8px">*Sourced from</a> <a style="font-size: 8px" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/">https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/</a>';
 
 const effectsList = [
@@ -251,5 +256,13 @@ const effectsList = [
 		"keepsilence2",
 		[identifier, Number],
 		2
+	],
+	[
+		"FFT: Artifacts",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then converts the analyzed data back into PCM. The size must be a power of 2.",
+		'FFT Size: <input id="fftartifacts0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Normalize Volume (RECOMMENDED): <input id="fftartifacts1" type="checkbox" checked>',
+		2,
+		"fftartifacts",
+		[ispowof2, identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
