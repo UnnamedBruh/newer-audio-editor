@@ -260,9 +260,17 @@ const effectsList = [
 	[
 		"FFT: Artifacts",
 		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then converts the analyzed data back into PCM. The size must be a power of 2.",
-		'FFT Size: <input id="fftartifacts0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Normalize Volume (RECOMMENDED): <input id="fftartifacts1" type="checkbox" checked>',
+		'FFT Size: <input id="fftartifacts0" type="number" min="32" step="32" value="2048" style="width: 100px">',
 		2,
 		"fftartifacts",
+		[ispowof2, identifier]
+	],
+	[
+		"FFT: Quantize (Magnitude)",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then quantizes the magnitude of the analyzed data.",
+		'FFT Size: <input id="fftquantizemagnitude0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>FFT Units: <input id="fftquantizemagnitude1" type="number" min="4" step="4" value="32" style="width: 100px" title="Lower units = harsher, higher units = subtler">',
+		2,
+		"fftquantizemagnitude",
 		[ispowof2, identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
