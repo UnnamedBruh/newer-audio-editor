@@ -904,7 +904,7 @@
 						return buffer;
 					}
 					let sampleRate = exporters[0].sampleRate;
-					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 8, 16, 32, 64, 80, 96, 128, 168, 192, 256, 320)")) / 8) * 8;
+					const kbps = Math.ceil(Number(prompt("What is the KBPS (Kilobits Per Second) of the MP3 audio? (e.g. 8, 16, 32, 64, 80, 96, 128, 168, 192, 256, 320)")) / 4) * 4;
 					if (kbps === 0 || isNaN(kbps) || kbps === undefined || kbps === null) return;
 					const qual = Math.min(9, Math.max(0, prompt("What is the VBR (Variable BitRate) of the MP3 audio? (between 0 and 9. 0 = best quality and slower encoding, 9 = worst quality and faster encoding, 3 = balanced)") ?? 3));
 					const channels = (exporters.length === 2) ? 2 : 1;
