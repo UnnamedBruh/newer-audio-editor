@@ -261,9 +261,9 @@ const effectsList = [
 		"FFT: Artifacts",
 		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then converts the analyzed data back into PCM. The size must be a power of 2.",
 		'FFT Size: <input id="fftartifacts0" type="number" min="32" step="32" value="2048" style="width: 100px">',
-		2,
+		1,
 		"fftartifacts",
-		[ispowof2, identifier]
+		[ispowof2]
 	],
 	[
 		"FFT: Quantize (Magnitude)",
@@ -282,7 +282,7 @@ const effectsList = [
 		[ispowof2, Number]
 	],
 	[
-		"FFT: Smear (Spectral Blur)",
+		"FFT: Smear (Naive Spectral Blur)",
 		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then smears the frequencies of the data using a neighbor-average algorithm. This makes the audio sound like its future frequencies are fading in, and its current frequencies last a little longer.",
 		'FFT Size: <input id="fftsmearnaive0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Smear Across # Bins: <input id="fftsmearnaive1" type="number" min="2" step="1" value="2" style="width: 100px" title="Each bin refers to the data that is produced from analyzing chunks of the audio."><br>Hann-Style Weight: <input id="fftsmearnaive2" type="checkbox" checked title="Makes the smears smoother, but also takes more time.">',
 		3,
