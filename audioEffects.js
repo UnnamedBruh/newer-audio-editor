@@ -288,5 +288,13 @@ const effectsList = [
 		3,
 		"fftsmearnaive",
 		[ispowof2, ceil, identifier]
-	]
+	],
+	[
+		"FFT: Pitch Shift (Simple)",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then pitch shifts the audio by literally shifting the data indices. Since this effect is a naive implementation, the audio may sound robotic.",
+		'FFT Size: <input id="fftpitchshift0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Pitch Multiplier (in octaves): <input id="fftquantizephase1" type="number" min="0.01" step="0.04" value="1" style="width: 100px">',
+		2,
+		"fftpitchshift",
+		[ispowof2, Number]
+	],
 ].sort((a, b) => a[0].localeCompare(b[0]));
