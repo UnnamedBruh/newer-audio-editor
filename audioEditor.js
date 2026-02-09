@@ -1813,14 +1813,14 @@ function pitchShiftSimple(inputBuffer, shiftFactor = 1.2, windowSize = 1024) { /
 		// Hann window
 		window2[i] = 0.5 * (1 - cos((twopi * i) / (windowSize - 1)));
 	}
+	const segment = new Float32Array(windowSize);
+	const ifftBuffer = new Float32Array(windowSize);
 
 	for (let start = 0; start + windowSize <= inputBuffer.length; start += hopSize) {
-		const segment = new Float32Array(windowSize);
 		for (let i = 0; i < windowSize; i++) {
 			segment[i] = inputBuffer[start + i] * window[i];
 		}
 
-		const out = new Array(windowSize).fill(0);
 		const spectrum = fft.createComplexArray();
 		fft.realTransform(spectrum, segment);
 		fft.completeSpectrum(spectrum);
@@ -1836,19 +1836,18 @@ function pitchShiftSimple(inputBuffer, shiftFactor = 1.2, windowSize = 1024) { /
 				shiftedSpectrum[2 * targetIndex + 1] = spectrum[2 * i + 1]; // imag
 			}
 		}
-const yyy = floor(halv * shiftFactor);
+		const yyy = floor(halv * shiftFactor);
 		// Zero out the rest
 		for (let i = yyy; i < N; i++) {
 			shiftedSpectrum[2 * i] = 0;
 			shiftedSpectrum[2 * i + 1] = 0;
 		}
 
-		const ifftBuffer = new Float32Array(windowSize);
 		fft.inverseTransform(ifftBuffer, shiftedSpectrum);
 
 		// Overlap-add
 		for (let i = 0; i < windowSize; i++) {
-			outputBuffer[start + i] += ifftBuffer[i] / windowSize; // normalize
+			outputBuffer[start + i] += ifftBuffer[i];
 		}
 	}
 
