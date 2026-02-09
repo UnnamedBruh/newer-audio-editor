@@ -275,7 +275,7 @@ const effectsList = [
 	],
 	[
 		"FFT: Quantize (Phase)",
-		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then quantizes the phase of the analyzed data. This makes the audio sound like its frequencies are fading in + out, blending together and stretching out.<br><br>TIP: The Units can also be lower than 1. This gives it an effect a surreal sound.",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then quantizes the phase of the analyzed data. This makes the audio sound like its frequencies are fading in + out, blending together and stretching out.<br><br>TIP: The Units can also be lower than 1. This gives it an effect a fully blended sound.",
 		'FFT Size: <input id="fftquantizephase0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>FFT Units: <input id="fftquantizephase1" type="number" min="4" step="4" value="32" style="width: 100px" title="Lower units + smaller FFT size = harsher, higher units + higher FFT size = subtler">',
 		2,
 		"fftquantizephase",
@@ -284,9 +284,9 @@ const effectsList = [
 	[
 		"FFT: Smear (Spectral Blur)",
 		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then smears the frequencies of the data using a neighbor-average algorithm. This makes the audio sound like its future frequencies are fading in, and its current frequencies last a little longer.",
-		'FFT Size: <input id="fftsmearnaive0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Smear Across # Bins: <input id="fftsmearnaive1" type="number" min="2" step="1" value="2" style="width: 100px" title="Each bin refers to the data that is produced from analyzing chunks of the audio.">',
-		2,
+		'FFT Size: <input id="fftsmearnaive0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Smear Across # Bins: <input id="fftsmearnaive1" type="number" min="2" step="1" value="2" style="width: 100px" title="Each bin refers to the data that is produced from analyzing chunks of the audio."><br>Hann-Style Weight: <input id="fftsmearnaive2" type="checkbox" checked title="Makes the smears smoother, but also takes more time.">',
+		3,
 		"fftsmearnaive",
-		[ispowof2, ceil]
+		[ispowof2, ceil, identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
