@@ -1713,3 +1713,53 @@ effects["fftquantizephase"] = function(exporter, size = 1024, steps = 32) { // T
 	}
 	exporter.audioData = outputArr;
 }
+
+effects["fftnaivesmear"] = function(exporter, size = 1024, smearAmount = 3, weight = 0.3) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = floor(len / size);
+
+	const outputArr = new Float32Array(floor(len / size) * size);
+	const fft = new FFT(size);
+
+	let input;
+	const output = fft.createComplexArray();
+	const timeDomain = fft.createComplexArray();
+
+	const hypot = Math.hypot;
+	const atan2 = Math.atan2;
+	const twopi = Math.PI * 2;
+
+	for (let i = 0; i < lenR; i++) {
+		input = pointer.subarray(i * size, (i + 1) * size);
+
+		fft.realTransform(output, input);
+		fft.completeSpectrum(output);
+
+// Manipulate audio
+for (let j = 0; j < output.length; j += 2) {
+    let re = output[j];
+    let im = output[j + 1];
+
+    // Spread some of this bin's energy into neighboring bins
+    for (let k = 1; k <= smearAmount; k++) {
+        if (j + 2 * k < output.length) {
+            output[j + 2 * k] += re * weight; // adjust weight
+            output[j + 2 * k + 1] += im * weight;
+        }
+        if (j - 2 * k >= 0) {
+            output[j - 2 * k] += re * weight;
+            output[j - 2 * k + 1] += im * weight;
+        }
+    }
+}
+
+		fft.inverseTransform(timeDomain, output);
+		const a = fft.fromComplexArray(timeDomain, input);
+
+		outputArr.set(a, i * size);
+	}
+	exporter.audioData = outputArr;
+}
