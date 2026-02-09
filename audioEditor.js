@@ -1714,7 +1714,7 @@ effects["fftquantizephase"] = function(exporter, size = 1024, steps = 32) { // T
 	exporter.audioData = outputArr;
 }
 
-effects["fftnaivesmear"] = function(exporter, size = 1024, smearAmount = 3, weight = 0.3) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
+effects["fftsmearnaive"] = function(exporter, size = 1024, smearAmount = 3, weight = 0.3) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
