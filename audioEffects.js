@@ -280,5 +280,13 @@ const effectsList = [
 		2,
 		"fftquantizephase",
 		[ispowof2, Number]
+	],
+	[
+		"FFT: Smear (Naive/Simple)",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then smears the frequencies of the data using a simple algorithm. This makes the audio sound like its future frequencies are fading in, and its current frequencies last a little longer.",
+		'FFT Size: <input id="fftsmearnaive0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Smear Across # Bins: <input id="fftsmearnaive1" type="number" min="2" step="1" value="3" style="width: 100px" title="Each bin refers to the data that is produced from analyzing chunks of the audio."><br>Smear Weight: <input id="fftsmearnaive2" type="number" min="0.1" step="1" value="30" style="width: 100px" title="The smearing percentage.">%',
+		3,
+		"fftsmearnaive",
+		[ispowof2, ceil, percent]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
