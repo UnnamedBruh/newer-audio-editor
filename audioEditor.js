@@ -1801,63 +1801,62 @@ effects["fftsmearnaive"] = function(exporter, size = 1024, smearRadius = 2, smoo
 	exporter.audioData = outputArr;
 }
 
-function pitchShiftSimple(inputBuffer, shiftFactor = 1.2, windowSize = 1024) { // This function was written by GPT-5.0 Mini
-	const fft = new FFT(windowSize);
-	const outputBuffer = new Float32Array(inputBuffer.length);
-	const hopSize = windowSize / 2;
+function pitchShift(samples, shift, frameSize = 1024) { // This function was written using GPT-5.0 Mini
+  const fft = new FFT(frameSize);
+  const out = new Float32Array(samples.length);
 
-	const twopi = 2 * Math.PI;
+  const input = new Array(frameSize).fill(0);
+  const spectrum = fft.createComplexArray();
+  const shifted = fft.createComplexArray();
+  const time = fft.createComplexArray();
 
-	const window2 = new Float32Array(windowSize);
-	for (let i = 0; i < windowSize; i++) {
-		// Hann window
-		window2[i] = 0.5 * (1 - cos((twopi * i) / (windowSize - 1)));
-	}
-	const segment = new Float32Array(windowSize);
-	const ifftBuffer = new Float32Array(windowSize);
+  for (let i = 0; i < samples.length; i += frameSize) {
+    // Copy frame
+    for (let j = 0; j < frameSize; j++) {
+      input[j] = samples[i + j] || 0;
+    }
 
-	for (let start = 0; start + windowSize <= inputBuffer.length; start += hopSize) {
-		for (let i = 0; i < windowSize; i++) {
-			segment[i] = inputBuffer[start + i] * window[i];
-		}
+    // FFT
+    fft.realTransform(spectrum, input);
+    fft.completeSpectrum(spectrum);
 
-		const spectrum = fft.createComplexArray();
-		fft.realTransform(spectrum, segment);
-		fft.completeSpectrum(spectrum);
+    shifted.fill(0);
 
-		// Simple pitch shift by bin index scaling
-		const shiftedSpectrum = fft.createComplexArray();
-		const N = windowSize;
-		const halv = N / 2;
-		for (let i = 0; i < halv; i++) {
-			const targetIndex = floor(i * shiftFactor);
-			if (targetIndex < halv) {
-				shiftedSpectrum[2 * targetIndex] = spectrum[2 * i];	   // real
-				shiftedSpectrum[2 * targetIndex + 1] = spectrum[2 * i + 1]; // imag
-			}
-		}
-		const yyy = floor(halv * shiftFactor);
-		// Zero out the rest
-		for (let i = yyy; i < N; i++) {
-			shiftedSpectrum[2 * i] = 0;
-			shiftedSpectrum[2 * i + 1] = 0;
-		}
+    const half = frameSize / 2;
 
-		fft.inverseTransform(ifftBuffer, shiftedSpectrum);
+    // Shift positive frequencies
+    for (let k = 0; k <= half; k++) {
+      const src = Math.floor(k / shift);
+      if (src <= half) {
+        shifted[2 * k]     = spectrum[2 * src];
+        shifted[2 * k + 1] = spectrum[2 * src + 1];
+      }
+    }
 
-		// Overlap-add
-		for (let i = 0; i < windowSize; i++) {
-			outputBuffer[start + i] += ifftBuffer[i];
-		}
-	}
+    // Restore symmetry
+    for (let k = 1; k < half; k++) {
+      shifted[2 * (frameSize - k)]     = shifted[2 * k];
+      shifted[2 * (frameSize - k) + 1] = -shifted[2 * k + 1];
+    }
 
-	return outputBuffer;
+    // IFFT
+    fft.inverseTransform(time, shifted);
+
+    // Copy back with normalization
+    for (let j = 0; j < frameSize; j++) {
+      if (i + j < out.length) {
+        out[i + j] += time[2 * j] / frameSize;
+      }
+    }
+  }
+
+  return out;
 }
 
 effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2) {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
-	if (len === 0) return;
+	if (len === 0 || pitchShift === 1) return;
 	
 	exporter.audioData = pitchShiftSimple(pointer, pitchShift, size);
 }
