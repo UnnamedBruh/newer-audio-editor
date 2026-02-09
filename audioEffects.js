@@ -8,7 +8,7 @@ function percent(x) {
 
 function ispowof2(x) {
 	x = Number(x);
-	if (Math.log2(x) !== Math.round(Math.log2(x))) alert("The input you provided is not a power of 2.\n\nPowers of 2 include: 32, 64, 128, 256, 512, 1028, 2048, 4096, 8192, 16384, 32768, 66536..."); else return x;
+	if (Math.log2(x) !== Math.round(Math.log2(x)) && x !== 65536) alert("The input you provided is not a power of 2.\n\nPowers of 2 include: 32, 64, 128, 256, 512, 1028, 2048, 4096, 8192, 16384, 32768, 65536..."); else return x;
 }
 
 const frequencyReference = '<br><br>Frequency Reference*<br>Human Voice (Mature Male): 80 Hertz - 180 Hertz<br>Human Voice (Mature Female): 120 Hertz - 310 Hertz<br><br><a style="font-size: 8px">*Sourced from</a> <a style="font-size: 8px" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/">https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/</a>';
