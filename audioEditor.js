@@ -1714,7 +1714,7 @@ effects["fftquantizephase"] = function(exporter, size = 1024, steps = 32) { // T
 	exporter.audioData = outputArr;
 }
 
-effects["fftsmearnaive"] = function(exporter, size = 1024, smearRadius = 2) { // This function is written by GPT-5.0 Mini.
+effects["fftsmearnaive"] = function(exporter, size = 1024, smearRadius = 2, smooth = true) { // This function is written by GPT-5.0 Mini.
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
@@ -1729,6 +1729,7 @@ effects["fftsmearnaive"] = function(exporter, size = 1024, smearRadius = 2) { //
 
 	const hypot = Math.hypot;
 	const atan2 = Math.atan2;
+	const pi = Math.PI;
 
 	for (let i = 0; i < lenR; i++) {
 		input = pointer.subarray(i * size, (i + 1) * size);
@@ -1751,7 +1752,23 @@ effects["fftsmearnaive"] = function(exporter, size = 1024, smearRadius = 2) { //
 
 		// Simple convolution kernel: uniform over radius
 		const newMag = new Float32Array(binCount);
-		for (let j = 0; j < binCount; j++) {
+		if (smooth) {
+			for (let j = 0; j < binCount; j++) {
+			let sum = 0;
+			let norm = 0;
+			for (let k = -smearRadius; k <= smearRadius; k++) {
+				const idx = j + k;
+				if (idx >= 0 && idx < binCount) {
+					// Hann weight: w = 0.5 + 0.5*cos(pi * k / R)
+					const w = 0.5 + 0.5 * cos(pi * k / smearRadius);
+					sum += mag[idx] * w;
+					norm += w;
+				}
+			}
+			newMag[j] = sum / norm; // normalized weighted average
+		}
+		} else {
+			for (let j = 0; j < binCount; j++) {
 			let sum = 0;
 			let count = 0;
 			for (let k = -smearRadius; k <= smearRadius; k++) {
@@ -1762,6 +1779,7 @@ effects["fftsmearnaive"] = function(exporter, size = 1024, smearRadius = 2) { //
 				}
 			}
 			newMag[j] = sum / count; // average over neighbors
+		}
 		}
 
 		// Reconstruct complex spectrum
