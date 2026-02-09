@@ -1,6 +1,5 @@
 const abs = Math.abs, sqrt = Math.sqrt, sign = Math.sign, cbrt = Math.cbrt, floor = Math.floor, ceil = Math.ceil, log1p = Math.log1p, pow = Math.pow, round = Math.round, tru = Math.trunc, rand = Math.random, sin = Math.sin, cos = Math.cos;
 
-
 const muLawCache = Object.create(null);
 
 function muLawCompress(a,t=255){return sign(a)*log1p(t*abs(a))/log1p(t)}function muLawExpand(a,t=255){return sign(a)*(1/t)*(pow(1+t,abs(a))-1)}function muLawQuantize(a,t=256,n=255){const x=muLawCache[a];if(x!==undefined)return x;const u=muLawCompress(a,n);const r=muLawExpand(floor((u+1)/2*(t-1))/(t-1)*2-1,n);muLawCache[a]=r;return r}
@@ -1614,12 +1613,12 @@ effects["fftartifacts"] = function(exporter, size = 1024) {
 		fft.inverseTransform(timeDomain, output);
 		const a = fft.fromComplexArray(timeDomain, input);
 
-		outputArr.set(new Float32Array(a), i * size);
+		outputArr.set(a, i * size);
 	}
 	exporter.audioData = outputArr;
 }
 
-effects["fftquantizemagnitude"] = function(exporter, size = 1024, steps = 32) {
+effects["fftquantizemagnitude"] = function(exporter, size = 1024, steps = 32) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
@@ -1660,7 +1659,57 @@ effects["fftquantizemagnitude"] = function(exporter, size = 1024, steps = 32) {
 		fft.inverseTransform(timeDomain, output);
 		const a = fft.fromComplexArray(timeDomain, input);
 
-		outputArr.set(new Float32Array(a), i * size);
+		outputArr.set(a, i * size);
+	}
+	exporter.audioData = outputArr;
+}
+
+effects["fftquantizephase"] = function(exporter, size = 1024, steps = 32) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = floor(len / size);
+
+	const outputArr = new Float32Array(floor(len / size) * size);
+	const fft = new FFT(size);
+
+	let input;
+	const output = fft.createComplexArray();
+	const timeDomain = fft.createComplexArray();
+
+	const hypot = Math.hypot;
+	const atan2 = Math.atan2;
+	const twopi = Math.PI * 2;
+
+	for (let i = 0; i < lenR; i++) {
+		input = pointer.subarray(i * size, (i + 1) * size);
+
+		fft.realTransform(output, input);
+		fft.completeSpectrum(output);
+
+		// Manipulate audio: Phase Quantization
+		for (let k = 0; k < output.length; k += 2) {
+			const re = output[k];
+			const im = output[k + 1];
+
+			// Compute magnitude and phase
+			const mag = hypot(re, im);
+			let phase = atan2(im, re);
+
+			// Quantize phase
+			const stepSize = twopi / steps;
+			phase = round(phase / stepSize) * stepSize;
+
+			// Rebuild complex number
+			output[k] = mag * cos(phase);
+			output[k + 1] = mag * sin(phase);
+		}
+
+		fft.inverseTransform(timeDomain, output);
+		const a = fft.fromComplexArray(timeDomain, input);
+
+		outputArr.set(a, i * size);
 	}
 	exporter.audioData = outputArr;
 }
