@@ -275,7 +275,7 @@ const effectsList = [
 	],
 	[
 		"FFT: Quantize (Phase)",
-		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then quantizes the phase of the analyzed data. This gives the audio a REPLACE THIS AIJOI[EPIHFLR[09GTUPOIL effect.<br><br>TIP: The Units can also be lower than 1. This gives it an effect LPALPALALLBEPLEPLEBLPELPBLPELBPLBPLEPLEBPL.",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then quantizes the phase of the analyzed data. This makes the audio sound like its frequencies are fading in + out, blending together and stretching out.<br><br>TIP: The Units can also be lower than 1. This gives it an effect a surreal sound.",
 		'FFT Size: <input id="fftquantizephase0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>FFT Units: <input id="fftquantizephase1" type="number" min="4" step="4" value="32" style="width: 100px" title="Lower units + smaller FFT size = harsher, higher units + higher FFT size = subtler">',
 		2,
 		"fftquantizephase",
