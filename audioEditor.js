@@ -1730,7 +1730,8 @@ effects["fftsmearnaive"] = function(exporter, size = 1024, smearAmount = 3, weig
 
 	const hypot = Math.hypot;
 	const atan2 = Math.atan2;
-	const twopi = Math.PI * 2;
+
+	const kernel = [weight/2, weight, weight/2]; // simple 3-bin smoothing
 
 	for (let i = 0; i < lenR; i++) {
 		input = pointer.subarray(i * size, (i + 1) * size);
@@ -1739,21 +1740,27 @@ effects["fftsmearnaive"] = function(exporter, size = 1024, smearAmount = 3, weig
 		fft.completeSpectrum(output);
 
 // Manipulate audio
+// Extract magnitude and phase
+const mag = new Array(floor(output.length/2));
+const magLen = mag.length - 1;
+const phase = new Array(floor(output.length/2));
 for (let j = 0; j < output.length; j += 2) {
-    let re = output[j];
-    let im = output[j + 1];
+	mag[j/2] = hypot(output[j], output[j+1]);
+	phase[j/2] = atan2(output[j+1], output[j]);
+}
 
-    // Spread some of this bin's energy into neighboring bins
-    for (let k = 1; k <= smearAmount; k++) {
-        if (j + 2 * k < output.length) {
-            output[j + 2 * k] += re * weight; // adjust weight
-            output[j + 2 * k + 1] += im * weight;
-        }
-        if (j - 2 * k >= 0) {
-            output[j - 2 * k] += re * weight;
-            output[j - 2 * k + 1] += im * weight;
-        }
-    }
+// Apply convolution kernel across magnitude
+const newMag = mag.slice();
+for (let j = 1; j < magLen; j++) {
+	newMag[j] = mag[j-1]*kernel[0] + mag[j]*kernel[1] + mag[j+1]*kernel[2];
+}
+
+// Reconstruct complex spectrum
+for (let j = 0; j < output.length; j += 2) {
+	const m = newMag[j/2];
+	const p = phase[j/2];
+	output[j] = m * cos(p);
+	output[j+1] = m * sin(p);
 }
 
 		fft.inverseTransform(timeDomain, output);
