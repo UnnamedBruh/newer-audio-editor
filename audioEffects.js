@@ -282,9 +282,9 @@ const effectsList = [
 		[ispowof2, Number]
 	],
 	[
-		"FFT: Smear (Naive/Simple)",
+		"FFT: Smear (Direct Bin Distribution)",
 		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then smears the frequencies of the data using a simple algorithm. This makes the audio sound like its future frequencies are fading in, and its current frequencies last a little longer.",
-		'FFT Size: <input id="fftsmearnaive0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Smear Across # Bins: <input id="fftsmearnaive1" type="number" min="2" step="1" value="3" style="width: 100px" title="Each bin refers to the data that is produced from analyzing chunks of the audio."><br>Smear Weight: <input id="fftsmearnaive2" type="number" min="0.1" step="1" value="30" style="width: 100px" title="The smearing percentage.">%',
+		'FFT Size: <input id="fftsmearnaive0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Smear Across # Bins (ALWAYS 3): <input id="fftsmearnaive1" type="number" min="2" step="1" value="3" style="width: 100px" title="Each bin refers to the data that is produced from analyzing chunks of the audio." disabled><br>Smear Weight: <input id="fftsmearnaive2" type="number" min="1" step="1" value="60" style="width: 100px" title="The smearing percentage.">%',
 		3,
 		"fftsmearnaive",
 		[ispowof2, ceil, percent]
