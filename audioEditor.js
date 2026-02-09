@@ -1845,7 +1845,7 @@ function pitchShift(samples, shift, frameSize = 1024) { // This function was wri
     // Copy back with normalization
     for (let j = 0; j < frameSize; j++) {
       if (i + j < out.length) {
-        out[i + j] += time[2 * j] / frameSize;
+        out[i + j] += time[2 * j];
       }
     }
   }
@@ -1858,5 +1858,5 @@ effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2) {
 	const len = pointer.length;
 	if (len === 0 || pitchShift === 1) return;
 	
-	exporter.audioData = pitchShiftSimple(pointer, pitchShift, size);
+	exporter.audioData = pitchShift(pointer, pitchShift, size);
 }
