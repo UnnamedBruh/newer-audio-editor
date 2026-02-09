@@ -1714,14 +1714,13 @@ effects["fftquantizephase"] = function(exporter, size = 1024, steps = 32) { // T
 	exporter.audioData = outputArr;
 }
 
-effects["fftsmearnaive"] = function(exporter, size = 1024, smearAmount = 3, weight = 0.3) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
+effects["fftsmearnaive"] = function(exporter, size = 1024, smearRadius = 2) { // This function is written by GPT-5.0 Mini.
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
 
 	const lenR = floor(len / size);
-
-	const outputArr = new Float32Array(floor(len / size) * size);
+	const outputArr = new Float32Array(lenR * size);
 	const fft = new FFT(size);
 
 	let input;
@@ -1731,42 +1730,55 @@ effects["fftsmearnaive"] = function(exporter, size = 1024, smearAmount = 3, weig
 	const hypot = Math.hypot;
 	const atan2 = Math.atan2;
 
-	const kernel = [weight/2, weight, weight/2]; // simple 3-bin smoothing
-
 	for (let i = 0; i < lenR; i++) {
 		input = pointer.subarray(i * size, (i + 1) * size);
 
 		fft.realTransform(output, input);
 		fft.completeSpectrum(output);
 
-// Manipulate audio
-// Extract magnitude and phase
-const mag = new Array(floor(output.length/2));
-const magLen = mag.length - 1;
-const phase = new Array(floor(output.length/2));
-for (let j = 0; j < output.length; j += 2) {
-	mag[j/2] = hypot(output[j], output[j+1]);
-	phase[j/2] = atan2(output[j+1], output[j]);
-}
+		// --- FFT Smear via convolution ---
+		const binCount = output.length / 2;
+		const mag = new Float32Array(binCount);
+		const phase = new Float32Array(binCount);
 
-// Apply convolution kernel across magnitude
-const newMag = mag.slice();
-for (let j = 1; j < magLen; j++) {
-	newMag[j] = mag[j-1]*kernel[0] + mag[j]*kernel[1] + mag[j+1]*kernel[2];
-}
+		// Extract magnitude and phase
+		for (let j = 0; j < binCount; j++) {
+			const re = output[2*j];
+			const im = output[2*j + 1];
+			mag[j] = hypot(re, im);
+			phase[j] = atan2(im, re);
+		}
 
-// Reconstruct complex spectrum
-for (let j = 0; j < output.length; j += 2) {
-	const m = newMag[j/2];
-	const p = phase[j/2];
-	output[j] = m * cos(p);
-	output[j+1] = m * sin(p);
-}
+		// Simple convolution kernel: uniform over radius
+		const newMag = new Float32Array(binCount);
+		for (let j = 0; j < binCount; j++) {
+			let sum = 0;
+			let count = 0;
+			for (let k = -smearRadius; k <= smearRadius; k++) {
+				const idx = j + k;
+				if (idx >= 0 && idx < binCount) {
+					sum += mag[idx];
+					count++;
+				}
+			}
+			newMag[j] = sum / count; // average over neighbors
+		}
 
+		// Reconstruct complex spectrum
+		for (let j = 0; j < binCount; j++) {
+			const m = newMag[j];
+			const p = phase[j];
+			output[2*j] = m * cos(p);
+			output[2*j + 1] = m * sin(p);
+		}
+
+		// Inverse FFT
 		fft.inverseTransform(timeDomain, output);
 		const a = fft.fromComplexArray(timeDomain, input);
 
+		// Copy to output
 		outputArr.set(a, i * size);
 	}
+
 	exporter.audioData = outputArr;
 }
