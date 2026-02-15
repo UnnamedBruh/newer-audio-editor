@@ -1630,15 +1630,36 @@ effects["fftasrawdata"] = function(exporter, size = 1024, mode = "copytwice") {
 	const freqDomain = fft.createComplexArray();
 	const timeDomain = fft.createComplexArray();
 
+	const ccc = {copytwice: 0, copyonce: 1, filltwice: 2, fillonce: 3};
+	const m = ccc[mode];
+
 	for (let i = 0; i < lenR; i++) {
 		let input = pointer.subarray(i * size, (i + 1) * size);
 
 		// Step 1: FFT
-		for (let j = 0; j < size; j++) {
-			freqDomain[j] = input[j]; // real/imaginary only
-		}
-		for (let j = size, k = 0; j < size*2; j++, k++) {
-			freqDomain[j] = input[k]; // real/imaginary only (copy the other half)
+		switch (m) {
+			case 0: {
+				for (let j = size, k = 0; j < size*2; j++, k++) {
+					freqDomain[j] = input[k]; // real/imaginary only (copy the other half)
+				}
+			}
+			case 1: {
+				for (let j = 0; j < size; j++) {
+					freqDomain[j] = input[j]; // real/imaginary only
+				}
+				break;
+			}
+			case 2: {
+				for (let j = 0, k = 1; j < size; j++, k += 2) {
+					freqDomain[k] = input[j]; // imaginary
+				}
+			}
+			case 3: {
+				for (let j = 0, k = 0; j < size; j++, k += 2) {
+					freqDomain[k] = input[j]; // imaginary
+				}
+				break;
+			}
 		}
 		fft.completeSpectrum(freqDomain);
 
