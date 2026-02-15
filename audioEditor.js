@@ -1618,6 +1618,33 @@ effects["fftartifacts"] = function(exporter, size = 1024) {
 	exporter.audioData = outputArr;
 }
 
+effects["fftasrawdata"] = function(exporter, size = 1024) {
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = floor(len / size);
+
+	const outputArr = new Float32Array(floor(len / size) * size);
+	const fft = new FFT(size);
+
+	let input;
+	const timeDomain = fft.createComplexArray();
+
+	let arr = new Float32Array(size);
+
+	for (let i = 0; i < lenR; i++) {
+		input = pointer.subarray(i * size, (i + 1) * size);
+		arr.set(input);
+
+		fft.inverseTransform(timeDomain, arr);
+		const a = fft.fromComplexArray(timeDomain);
+
+		outputArr.set(a, i * size);
+	}
+	exporter.audioData = outputArr;
+}
+
 effects["fftquantizemagnitude"] = function(exporter, size = 1024, steps = 32) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
 	const pointer = exporter.audioData;
 	const len = pointer.length;
