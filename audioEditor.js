@@ -1629,6 +1629,7 @@ effects["fftasrawdata"] = function(exporter, size = 1024) {
 	const fft = new FFT(size);
 
 	let input;
+	let output;
 	const timeDomain = fft.createComplexArray();
 
 	let arr = new Float32Array(size);
@@ -1637,8 +1638,10 @@ effects["fftasrawdata"] = function(exporter, size = 1024) {
 		input = pointer.subarray(i * size, (i + 1) * size);
 		arr.set(input);
 
-		fft.inverseTransform(timeDomain, arr);
-		const a = fft.fromComplexArray(timeDomain);
+		output = arr;
+
+		fft.inverseTransform(timeDomain, output);
+		const a = fft.fromComplexArray(timeDomain, input);
 
 		outputArr.set(a, i * size);
 	}
