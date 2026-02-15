@@ -300,9 +300,9 @@ const effectsList = [
 	[
 		"FFT: As Raw Data",
 		"Treats the audio data as analyzed FFT data, and converts it into PCM. The size must be a power of 2.<br><a style=\"color: red\">THIS WILL RESULT IN EXTREMELY DISTORTED AUDIO. USE THIS EFFECT ONLY WHEN YOU KNOW EXACTLY WHAT YOU ARE DOING.</a>",
-		'FFT Size: <input id="fftasrawdata0" type="number" min="32" step="32" value="2048" style="width: 100px">',
-		1,
+		'FFT Size: <input id="fftasrawdata0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Interpret Mode: <select id="fftasrawdata1"><option value="copytwice">fill in chunk data twice</option><option value="copyonce">fill in chunk data once</option><option value="filltwice">spread chunk data into real + imaginary</option><option value="fillonce">spread chunk data into real only</option></select>',
+		2,
 		"fftasrawdata",
-		[ispowof2]
+		[ispowof2, identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
