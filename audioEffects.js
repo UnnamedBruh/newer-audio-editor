@@ -1,7 +1,7 @@
 function identifier(x) {
 	return x;
 }
-
+ 
 function percent(x) {
 	return x * 0.01;
 }
