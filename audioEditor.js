@@ -1618,33 +1618,45 @@ effects["fftartifacts"] = function(exporter, size = 1024) {
 	exporter.audioData = outputArr;
 }
 
-effects["fftasrawdata"] = function(exporter, size = 1024) {
+effects["fftasrawdata"] = function(exporter, size = 1024, mode = "copytwice") {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
 
 	const lenR = floor(len / size);
-
-	const outputArr = new Float32Array(floor(len / size) * size);
+	const outputArr = new Float32Array(lenR * size);
 	const fft = new FFT(size);
 
-	let input;
-	let output;
+	const freqDomain = fft.createComplexArray();
 	const timeDomain = fft.createComplexArray();
 
-	let arr = new Float32Array(size);
-
 	for (let i = 0; i < lenR; i++) {
-		input = pointer.subarray(i * size, (i + 1) * size);
-		arr.set(input);
+		let input = pointer.subarray(i * size, (i + 1) * size);
 
-		output = arr;
+		// Step 1: FFT
+		for (let j = 0; j < size; j++) {
+			freqDomain[j] = input[j]; // real/imaginary only
+		}
+		for (let j = size, k = 0; j < size*2; j++, k++) {
+			freqDomain[j] = input[k]; // real/imaginary only (copy the other half)
+		}
+		fft.completeSpectrum(freqDomain);
 
-		fft.inverseTransform(timeDomain, output);
-		const a = fft.fromComplexArray(timeDomain, input);
+		// Step 2: Introduce chaos
+		for (let j = 0; j < freqDomain.length; j += 2) {
+			// Randomize magnitude (scale) and phase (sign flip)
+			freqDomain[j] *= Math.random() * 2 - 1;      // real part
+			freqDomain[j + 1] *= Math.random() * 2 - 1;  // imaginary part
+		}
 
-		outputArr.set(a, i * size);
+		// Step 3: Inverse FFT back to time-domain
+		fft.inverseTransform(timeDomain, freqDomain);
+		const outputChunk = fft.fromComplexArray(timeDomain);
+
+		// Step 4: Write back
+		outputArr.set(outputChunk, i * size);
 	}
+
 	exporter.audioData = outputArr;
 }
 
@@ -1841,43 +1853,43 @@ function pitchShift2(samples, shift, frameSize = 1024) { // This function was wr
   const time = fft.createComplexArray();
 
   for (let i = 0; i < samples.length; i += frameSize) {
-    // Copy frame
-    for (let j = 0; j < frameSize; j++) {
-      input[j] = samples[i + j] || 0;
-    }
+	// Copy frame
+	for (let j = 0; j < frameSize; j++) {
+	  input[j] = samples[i + j] || 0;
+	}
 
-    // FFT
-    fft.realTransform(spectrum, input);
-    fft.completeSpectrum(spectrum);
+	// FFT
+	fft.realTransform(spectrum, input);
+	fft.completeSpectrum(spectrum);
 
-    shifted.fill(0);
+	shifted.fill(0);
 
-    const half = frameSize / 2;
+	const half = frameSize / 2;
 
-    // Shift positive frequencies
-    for (let k = 0; k <= half; k++) {
-      const src = Math.floor(k / shift);
-      if (src <= half) {
-        shifted[2 * k]     = spectrum[2 * src];
-        shifted[2 * k + 1] = spectrum[2 * src + 1];
-      }
-    }
+	// Shift positive frequencies
+	for (let k = 0; k <= half; k++) {
+	  const src = Math.floor(k / shift);
+	  if (src <= half) {
+		shifted[2 * k]	 = spectrum[2 * src];
+		shifted[2 * k + 1] = spectrum[2 * src + 1];
+	  }
+	}
 
-    // Restore symmetry
-    for (let k = 1; k < half; k++) {
-      shifted[2 * (frameSize - k)]     = shifted[2 * k];
-      shifted[2 * (frameSize - k) + 1] = -shifted[2 * k + 1];
-    }
+	// Restore symmetry
+	for (let k = 1; k < half; k++) {
+	  shifted[2 * (frameSize - k)]	 = shifted[2 * k];
+	  shifted[2 * (frameSize - k) + 1] = -shifted[2 * k + 1];
+	}
 
-    // IFFT
-    fft.inverseTransform(time, shifted);
+	// IFFT
+	fft.inverseTransform(time, shifted);
 
-    // Copy back with normalization
-    for (let j = 0; j < frameSize; j++) {
-      if (i + j < out.length) {
-        out[i + j] += time[2 * j];
-      }
-    }
+	// Copy back with normalization
+	for (let j = 0; j < frameSize; j++) {
+	  if (i + j < out.length) {
+		out[i + j] += time[2 * j];
+	  }
+	}
   }
 
   return out;
