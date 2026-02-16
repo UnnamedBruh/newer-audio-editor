@@ -308,9 +308,9 @@ const effectsList = [
 	[
 		"FFT: Interpolate (Magnitude)",
 		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then saturates the audio by interpolating the magnitude of the frequencies.",
-		'FFT Size: <input id="fftsaturationsmear0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Interpolation: <input id="fftsaturationsmear1" type="number" min="1" step="1" value="50" style="width: 100px">%',
-		2,
+		'FFT Size: <input id="fftsaturationsmear0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Interpolation: <input id="fftsaturationsmear1" type="number" min="1" step="1" value="50" style="width: 100px">%<br>Interpolation Direction: <select id="fftsaturationsmear2"><option value="btou">lower -> upper</option><option value="utop">upper -> lower</option></select>',
+		3,
 		"fftsaturationsmear",
-		[ispowof2, function(x){return 1 - percent(x);}]
+		[ispowof2, function(x){return 1 - x * 0.01;}, identifier]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
