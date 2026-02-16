@@ -1618,7 +1618,7 @@ effects["fftartifacts"] = function(exporter, size = 1024) {
 	exporter.audioData = outputArr;
 }
 
-effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
+effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5, mode = "btou") { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
@@ -1634,6 +1634,10 @@ effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5) { /
 
 	const hypot = Math.hypot;
 
+	const startAt = mode === "btou" ? 0 : output.length - 2;
+	const increaseBy = Math.sign(-0.5+(mode==="btou")) * 2;
+	const notEqual = mode === "btou" ? output.length : -2;
+
 	for (let i = 0; i < lenR; i++) {
 		input = pointer.subarray(i * size, (i + 1) * size);
 
@@ -1642,7 +1646,7 @@ effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5) { /
 
 		let y = 0;
 
-		for (let k = 0; k < output.length; k += 2) {
+		for (let k = startAt; k !== notEqual; k += increaseBy) {
 			const re = output[k];
 			const im = output[k + 1];
 
