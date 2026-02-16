@@ -304,5 +304,13 @@ const effectsList = [
 		2,
 		"fftasrawdata",
 		[ispowof2, identifier]
+	],
+	[
+		"FFT: Saturation (Smear Vertically)",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then saturates the audio by smearing the frequencies vertically.",
+		'FFT Size: <input id="fftsaturationsmear0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Smear: <input id="fftsaturationsmear1" type="number" min="1" step="1" value="50" style="width: 100px">%',
+		2,
+		"fftsaturationsmear",
+		[ispowof2, function(x){return 1 - percent(x);}]
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
