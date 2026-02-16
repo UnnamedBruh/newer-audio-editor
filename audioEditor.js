@@ -1638,7 +1638,13 @@ effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5) {
 		fft.realTransform(output, input);
 		fft.completeSpectrum(output);
 
-		
+		let x = 0, y = 0;
+		for (let j = 0; j < size*2; j += 2) {
+			x = interpolate(x, output[j], smear);
+			output[j] = x;
+			y = interpolate(y, output[j+1], smear);
+			output[j+1] = y;
+		}
 
 		fft.inverseTransform(timeDomain, output);
 		const a = fft.fromComplexArray(timeDomain, input);
