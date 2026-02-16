@@ -1618,7 +1618,7 @@ effects["fftartifacts"] = function(exporter, size = 1024) {
 	exporter.audioData = outputArr;
 }
 
-effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5) {
+effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5) { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0) return;
@@ -1632,18 +1632,31 @@ effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5) {
 	const output = fft.createComplexArray();
 	const timeDomain = fft.createComplexArray();
 
+	const hypot = Math.hypot;
+
 	for (let i = 0; i < lenR; i++) {
 		input = pointer.subarray(i * size, (i + 1) * size);
 
 		fft.realTransform(output, input);
 		fft.completeSpectrum(output);
 
-		let x = 0, y = 0;
-		for (let j = 0; j < size*2; j += 2) {
-			x = interpolate(x, output[j], smear);
-			output[j] = x;
-			y = interpolate(y, output[j+1], smear);
-			output[j+1] = y;
+		let y = 0;
+
+		for (let k = 0; k < output.length; k += 2) {
+			const re = output[k];
+			const im = output[k + 1];
+
+			const mag = hypot(re, im);
+			if (mag === 0) continue;
+
+			// Smear magnitude
+			const qMag = interpolate(y, mag, smear);
+			y = qMag;
+
+			// Preserve phase by scaling
+			const scale = qMag / mag;
+			output[k] = re * scale;
+			output[k + 1] = im * scale;
 		}
 
 		fft.inverseTransform(timeDomain, output);
