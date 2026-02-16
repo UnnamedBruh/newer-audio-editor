@@ -1618,6 +1618,36 @@ effects["fftartifacts"] = function(exporter, size = 1024) {
 	exporter.audioData = outputArr;
 }
 
+effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5) {
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = floor(len / size);
+
+	const outputArr = new Float32Array(floor(len / size) * size);
+	const fft = new FFT(size);
+
+	let input;
+	const output = fft.createComplexArray();
+	const timeDomain = fft.createComplexArray();
+
+	for (let i = 0; i < lenR; i++) {
+		input = pointer.subarray(i * size, (i + 1) * size);
+
+		fft.realTransform(output, input);
+		fft.completeSpectrum(output);
+
+		
+
+		fft.inverseTransform(timeDomain, output);
+		const a = fft.fromComplexArray(timeDomain, input);
+
+		outputArr.set(a, i * size);
+	}
+	exporter.audioData = outputArr;
+}
+
 effects["fftasrawdata"] = function(exporter, size = 1024, mode = "copytwice") {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
@@ -1662,13 +1692,6 @@ effects["fftasrawdata"] = function(exporter, size = 1024, mode = "copytwice") {
 			}
 		}
 		fft.completeSpectrum(freqDomain);
-
-		// Step 2: Introduce chaos
-		for (let j = 0; j < freqDomain.length; j += 2) {
-			// Randomize magnitude (scale) and phase (sign flip)
-			freqDomain[j] *= Math.random() * 2 - 1;      // real part
-			freqDomain[j + 1] *= Math.random() * 2 - 1;  // imaginary part
-		}
 
 		// Step 3: Inverse FFT back to time-domain
 		fft.inverseTransform(timeDomain, freqDomain);
