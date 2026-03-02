@@ -1618,6 +1618,42 @@ effects["fftartifacts"] = function(exporter, size = 1024) {
 	exporter.audioData = outputArr;
 }
 
+effects["fftinterpol"] = function(exporter, size = 1024) {
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = floor(len / size);
+
+	const outputArr = new Float32Array(floor(len / size) * size);
+	outputArr.set(pointer.subarray(0, size));
+	const fft = new FFT(size);
+
+	let input = pointer.slice(0, size);
+	let interpolateTo = pointer.slice((lenR - 1) * size, lenR * size);
+	const output2 = fft.createComplexArray();
+	const output = fft.createComplexArray();
+	const timeDomain = fft.createComplexArray();
+
+	fft.realTransform(output, input);
+	fft.completeSpectrum(output);
+
+	fft.realTransform(output2, interpolateTo);
+	fft.completeSpectrum(output2);
+
+	for (let i = 1; i < lenR; i++) {
+		for (let j = 0; j < interpolateTo.length; j++) {
+			output[j] = interpolate(input[j], output2[j], j / interpolateTo.length);
+		}
+
+		fft.inverseTransform(timeDomain, output);
+		const a = fft.fromComplexArray(timeDomain, input);
+
+		outputArr.set(a, i * size);
+	}
+	exporter.audioData = outputArr;
+}
+
 effects["fftsaturationsmear"] = function(exporter, size = 1024, smear = 0.5, mode = "btou") { // This function was created by rearranging GPT-5.0 Mini's provided code into a functioning audio effect.
 	const pointer = exporter.audioData;
 	const len = pointer.length;
