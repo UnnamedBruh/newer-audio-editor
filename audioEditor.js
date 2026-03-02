@@ -1643,7 +1643,7 @@ effects["fftinterpol"] = function(exporter, size = 1024) {
 
 	for (let i = 1; i < lenR; i++) {
 		for (let j = 0; j < interpolateTo.length; j++) {
-			output[j] = interpolate(input[j], output2[j], j / interpolateTo.length);
+			output[j] = interpolate(input[j], output2[j], i / lenR);
 		}
 
 		fft.inverseTransform(timeDomain, output);
