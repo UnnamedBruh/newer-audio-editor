@@ -266,6 +266,14 @@ const effectsList = [
 		[ispowof2]
 	],
 	[
+		"FFT: Morph Raw FFT Data",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then linearly morphs the start of the analyzed data into the end of the analyzed data, instead of letting it play out normally. The size must be a power of 2.",
+		'FFT Size: <input id="fftinterpol0" type="number" min="32" step="32" value="2048" style="width: 100px">',
+		1,
+		"fftinterpol",
+		[ispowof2]
+	],
+	[
 		"FFT: Quantize (Magnitude)",
 		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then quantizes the magnitude of the analyzed data. This gives the audio a slightly wet, rippling, gritty effect.<br><br>TIP: The Units can also be lower than 1. This gives it an effect that\'s similar to OGG Vorbis\' compression artifacts.",
 		'FFT Size: <input id="fftquantizemagnitude0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>FFT Units: <input id="fftquantizemagnitude1" type="number" min="4" step="4" value="32" style="width: 100px" title="Lower units + smaller FFT size = harsher, higher units + higher FFT size = subtler">',
