@@ -732,11 +732,11 @@
 						}
 						return le;
 					}
-					async function applyEffect() {
+					async function applyEffect(i = 0, len = exporters.length) {
 						if (currentSelected) {
 							apply.disabled = true;
 							const lens = new Array(exporters.length);
-							for (let i = 0; i < exporters.length; i++) {
+							for (; i < len; i++) {
 								lens[i] = await applyEffectOnExporter(i);
 							}
 							if (exporters[1] && exporters[1].audioData.length !== exporters[0].audioData.length) {
@@ -771,7 +771,8 @@
 					apply.onclick = async function() {await applyEffect();}
 					applyToSpecific.onclick = async function() {
 						const numberIndexes = ["first", "second", "third", "fourth"];
-						await applyEffectOnExporter((prompt("Which channel do you want to apply the effect to? (" + (exporters.map((x, i) => {return (i+1) + " = " + numberIndexes[i] + " channel";}).join(", ")) + ")") ?? 1) - 1);
+						const index = Number(prompt("Which channel do you want to apply the effect to? (" + (exporters.map((x, i) => {return (i+1) + " = " + numberIndexes[i] + " channel";}).join(", ")) + ")") ?? 1) - 1;
+						await applyEffect(index, index + 1);
 					}
 					let previous = 0;
 					opt.oninput = function() {
