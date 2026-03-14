@@ -320,5 +320,22 @@ const effectsList = [
 		3,
 		"fftsaturationsmear",
 		[ispowof2, function(x){return 1 - x * 0.01;}, identifier]
+	],
+	[
+		"Keep Silence",
+		"Keeps the selected locations (specified by the dropdown) in the silent sections of audio.",
+		'Locations: <select id="trimsilence0"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select><br>Tolerance Level: <input id="trimsilence1" type="number" min="0" step="0.0060554543779289816" value="0.0060554543779289816" max="0.1" style="width: 100px">',
+		2,
+		"keepsilence",
+		[identifier, Number]
+	],
+	[
+		"Keep Silence (Stereo)",
+		"Keeps the selected locations (specified by the dropdown) in the silent sections of audio, while also keeping sync of both channels.",
+		'Locations: <select id="trimsilence20"><option value="f">start of audio</option><option value="e">end of audio</option><option>both sides</option><option value="all">all silent audio</option></select><br>Tolerance Level: <input id="trimsilence21" type="number" min="0" step="0.0060554543779289816" value="0.0060554543779289816" max="0.1" style="width: 100px">',
+		2,
+		"keepsilence2",
+		[identifier, Number],
+		2
 	]
 ].sort((a, b) => a[0].localeCompare(b[0]));
