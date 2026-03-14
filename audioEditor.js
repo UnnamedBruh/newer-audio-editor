@@ -1253,27 +1253,6 @@ effects["biquadfilterlineartween"] = async function(exporter, freqStart, freqEnd
 	await renderWithFilter(bb);
 }
 
-effects["midside"] = function(exporters, mode) { // Mode
-	const len = exporters[0].audioData.length;
-	const pointer1 = exporters[0].audioData;
-	const pointer2 = exporters[1].audioData;
-	if (mode === "rev") {
-		let temp = 0;
-		for (let i = 0; i < len; i++) {
-			temp = pointer1[i];
-			pointer1[i] = (pointer1[i] - pointer2[i]);
-			pointer2[i] = (temp + pointer2[i]);
-		}
-	} else {
-		let temp = 0;
-		for (let i = 0; i < len; i++) {
-			temp = pointer1[i];
-			pointer1[i] = (pointer1[i] + pointer2[i]) * 0.5;
-			pointer2[i] = (temp - pointer2[i]) * 0.5;
-		}
-	}
-}
-
 effects["trimsilence"] = function(exporters, mode, tolerance = 0.0060554543779289816) {
 	const len = exporters.audioData.length;
 	const pointer = exporters.audioData;
