@@ -501,9 +501,9 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 					for (let i = 0; i < len; i++) {
 						let b = Math.round(samples[i] * 2047);
 						let x = Math.round(buffer2[i] * 2047);
-						view.setInt16(offset, (b<0?(b|=0b1000000000000000):b), true);
+						view.setInt16(offset, (b<0?(b|=0b1000000000000000):b)>>4, true);
 						offset += 2;
-						view.setUint16(offset, (x<0?(x|=0b1000000000000000):x), true);
+						view.setUint16(offset, (x<0?(x|=0b1000000000000000):x)>>4, true);
 						offset += 2;
 					}
 				} else {
