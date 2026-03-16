@@ -565,10 +565,10 @@ AudioExporter.prototype.convertToWav = function(metadata = {}, buffer2, encodeBe
 					offset++;
 				}
 			} else if (bits === 12) {
-				if (encodeBetter) {
+				if (encodeBetter) { // We're encoding it "better" so famous browsers like Chrome can decode the audio. (Chrome expects WAV samples to be padded, not bit-aligned)
 					for (let i = 0; i < len; i++) {
 						let b = Math.round(samples[i] * 2047);
-						view.setInt16(offset, b >> 4, true);
+						view.setInt16(offset, (b<0?(b|=0b1000000000000000):b) >> 4, true);
 						offset += 2;
 					}
 				} else {
