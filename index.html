@@ -1691,7 +1691,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				return sharedBuffer;
 			}
 			async function loadAudioFiles(eve) {
-				if (!eve || !eve.target || !eve.target.files || !eve.target.files.length) return;let firstFile = eve.target.files[0], secondFile = eve.target.files[1], isCorrect;
+				if (!eve || !eve.target || !eve.target.files || !eve.target.files.length) return;
+				let firstFile = eve.target.files[0], secondFile = eve.target.files[1], isCorrect;
 				function swapFiles() {const temp = secondFile;secondFile = firstFile;firstFile = temp;}
 				if (secondFile) {
 					isCorrect = confirm("It seems like you selected two audio files. Is this correct?");
@@ -1701,6 +1702,60 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				if (!whichInterpret && (firstFile.name.endsWith(".lsac") || firstFile.name.endsWith(".fbac"))) {
 					alert("LSAC and FBAC file loading is no longer supported by this audio editor, due to several issues with the original encoders and decoders, and lack of widespread support across many environments and plugins. We sincerely apologize for taking down our own audio format, but we hope to bring in a much better codec!");
 				} else {
+					if (eve.target.files.length >= 2 && confirm(`${eve.target.files.length == 2 ? "Looks like you selected two, or more audio files! ":""}Would you like to merge them (like one track played after another, instead of all playing at once)?`)) {
+						const fileReader = new FileReader();
+						const decoded = [];
+						let filen = "";
+						let callback = null;
+						fileReader.onload = async function(event) {
+							exporters = null;
+							if (ed) {
+								ed.innerHTML = "";
+								ed.remove();
+								ed = null;
+							}
+							data = null;
+							sampleData = null;
+							skipSample = 480;
+							try {
+								decoded.push(await audioContext.decodeAudioData(event.target.result));
+								callback();
+							} catch {
+								alert("Decoding file " + filen + " has failed.");
+								callback();
+							}
+						}
+						for (let i = 0; i < eve.target.files.length; i++) {
+							await new Promise(function(resolve, reject) {
+								filen = eve.target.files[i].name.trim();
+								callback = resolve;
+								fileReader.readAsArrayBuffer(eve.target.files[i]);
+							});
+						}
+						loadFromURL.style.color = "green";
+						const oldURL = loadFromURL.value;
+						loadFromURL.value = "success!";
+						const bffr = audioContext.createBuffer(2, decoded.reduce((x,y) => x + y.length,0), 48000);
+						for (let i = 0; i < bffr.numberOfChannels; i++) {
+							let ff = 0;
+							for (let j = 0; j < decoded.length; j++) {
+								if (decoded[j].numberOfChannels == 2) {
+									bffr.getChannelData(i).set(decoded[j].getChannelData(i), ff);
+								} else if (decoded[j].numberOfChannels == 1) {
+									bffr.getChannelData(i).set(decoded[j].getChannelData(0), ff);
+								}
+								ff += decoded[j].length;
+							}
+						}
+						sharedBuffer = loadSharedBuffer(bffr);
+						filename = firstFile.name.split(".").slice(0, -1).join(".");
+						importSubtitles.disabled = false;
+						reimp.disabled = false;
+						loadFromURL.disabled = false;
+						loadFromURL.value = oldURL;
+						loadFromURL.style.color = "";
+						return;
+					}
 					const fileReader = new FileReader();
 					fileReader.onload = async function(event) {
 						try {
