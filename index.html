@@ -1707,6 +1707,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						const decoded = [];
 						let filen = "";
 						let callback = null;
+						let show = true;
 						fileReader.onload = async function(event) {
 							exporters = null;
 							if (ed) {
@@ -1719,7 +1720,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							skipSample = 480;
 							try {
 								decoded.push(await audioContext.decodeAudioData(event.target.result));
-								alert("File " + filen + " has been decoded.");
+								if (show) show = confirm("File " + filen + " has been decoded.");
 								callback();
 							} catch {
 								alert("Decoding file " + filen + " has failed.");
@@ -1749,6 +1750,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							}
 						}
 						sharedBuffer = bffr;
+						oldSharedBufferFor = copyBuffer(sharedBuffer);
 						sharedBuffer = loadSharedBuffer(sharedBuffer);
 						filename = firstFile.name.split(".").slice(0, -1).join(".");
 						importSubtitles.disabled = false;
