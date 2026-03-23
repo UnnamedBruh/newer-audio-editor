@@ -58,7 +58,7 @@ const effectsList = [
 		"Lowpass: Ease-In-Out (Smooth)",
 		"Smooths out the audio using the ease in-out tween for every nth group, creating an obscure \"lowpass\" artifact that may show up in legacy software. The audio may sound a bit wet or \"underwater-y\".",
 		'Smoothing Threshold (measured in samples): <input id="smootheaseinout0" type="number" min="1" max="256" step="1" value="4">',
-		1
+		1,
 		"smootheaseinout",
 		[Number]
 	],
