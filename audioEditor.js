@@ -145,6 +145,16 @@ effects["smooth"] = function(buffer, samples, method) {
 	}
 }
 
+effects["smootheaseinout"] = function(buffer, samples) {
+	const v = buffer.audioData.length;
+	let z = buffer.audioData;
+	const p = Math.PI / 2;
+	for (let i = 1; i < v; i++) {
+		const x = ceil(i/samples)*samples;
+		z[i] = interpolate(z[x-samples], z[x], cos(p * (x-i) / samples));
+	}
+}
+
 effects["distort"] = function(buffer, perc, method) {
 	const v = buffer.audioData.length;
 	const z = buffer.audioData;
