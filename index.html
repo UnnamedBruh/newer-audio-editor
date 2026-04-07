@@ -45,6 +45,7 @@
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button> <button id="endsel" disabled>Select End Of Audio</button>
 		<h1 id="disappearheader">Searadare (Newer Audio Editor)</h1>
+		<a>Scroll down to see legal information regarding our Newer Audio Editor.</a><br>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac" multiple><br>
 		Load Audio File From URL: <input type="url" id="audurl" title="Add multiple URLs by separating them with commas ,"><br>
 		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button> <button id="micrecord">Import Recording From Microphone</button>
@@ -60,8 +61,9 @@
 		<a>If the complaint is networking-related, and <b>does not mention any privacy concerns</b>, the author will either A) simply dismiss it, or B) eventually respond to the complaint(s) whenever they experience emotional displeasure.</a><br><br>
 		<a>Thank you for understanding the unintentionally-wordy section above, and your patience.</a>
 		<h2>Privacy Policy</h2>
-		<a>We value your privacy and are committed to transparency regarding how we handle your information. When you upload files to this project, we do not collect, store, sell, track, monitor, accumulate, hoard, gather, lend, send, transfer or transmit any data associated with these files or your personal information. This includes uploaded files, any data generated from this software, and additional fetching information your browser sends to the original newer-audio-editor website.</a><br>
-		<a>However, we use the CodeTabs CORS proxy, which is a third-party service that allows bypassing CORS. There may be additional processing involved with this service.</a>
+		<a>We value your privacy and are committed to transparency regarding how we handle your information. When you upload files to this project, we do not collect, store, sell, track, monitor, accumulate, hoard, gather, lend, send, transfer or transmit any data associated with these files or your personal information. This includes uploaded files, any data generated from this software, and additional fetching information your browser sends to the original newer-audio-editor <u>project</u>. However, we do not guarantee that the <u>web hosting service</u> (GitHub Pages) may follow these conventions.</a><br><br>
+		<i><u>Project</u> refers to the original <a href="https://github.com/UnnamedBruh/newer-audio-editor/">Newer Audio Editor</a> repository. The <u>web hosting service</u>, GitHub Pages, allows users to browse this project.</i> <a>It is important to know that these terms are not interchangeable.</a><br><br>
+		<a>For the "Load Audio File From URL" feature, we use the CodeTabs CORS proxy, which is a third-party service that allows bypassing CORS. There may be additional processing involved with this service. As of March 2026, the service lacks an official privacy policy. Therefore, we do not guarantee that the service is reliable for retrieving sensitive or confidential information.</a>
 		<div id="subtitles" style="display: none; background-color: black; color: white; font-size: 14px; font-family: sans-serif; position: absolute; top: 70vh; left: 0px; width: 100%; height: min-content; text-align: center;"></div>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
