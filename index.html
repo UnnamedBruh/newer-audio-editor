@@ -1425,7 +1425,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						encoder.init();
 						const CHANNELS = exporters.length;
 						const SAMPLERATE = exporters[0].sampleRate;
-						const CHUNKS = Number(prompt("What is the number of chunks the encoder would use during audio analysis & encoding? (3200 = recommended, 1200 = bad, 2400 = okay, 2800 = good, 4800 = good, 9000 = bad") ?? 3200);
+						const CHUNKS = Number(prompt("What is the number of chunks the encoder would use during audio analysis & encoding? (3200 = recommended, 1200 = bad compression, 2400 = okay compression, 2800 = good compression, 4800 = good quality, 9000 = bad quality") ?? 3200);
 						const audioData = exporters.map(i => timelineBeginAudio ? i.audioData.subarray(timelineBeginAudio, timelineEndAudio) : i.audioData);
 						const len = audioData[0].length * audioData.length;
 						let int16Buffer = new Int16Array(len);
@@ -1449,7 +1449,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						alert("The ASAF encoding failed: " + err.message);
 						console.error(err);
 					}
-					exportBtn5.disabled = false;
+					exportBtn6.disabled = false;
 				}
 				window.onscroll = function() {
 					const scrx = window.scrollX;
