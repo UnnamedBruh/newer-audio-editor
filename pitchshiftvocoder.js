@@ -463,35 +463,41 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       this.analysisMag[k] = mag;
     }
 
-    if (perceptuallyaccurate > 0.5) {
-    // -------- synthesis (phase-locked) --------
-this.synth.fill(0);
-const norm = new Float32Array(N);
-
-// 1. detect spectral peaks
+    if (perceptuallyaccurate > 0.5) {// 1. detect peaks
 const peaks = this.findPeaks(this.analysisMag, half);
-
-// map each bin → nearest peak
 const peakIndexForBin = new Int16Array(half + 1);
 
 for (let k = 0; k <= half; k++) {
-  let bestPeak = 0;
-  let bestDist = Infinity;
-
+  let bestPeak = 0, bestDist = Infinity;
   for (let p = 0; p < peaks.length; p++) {
-    const pk = peaks[p];
-    const d = Math.abs(k - pk);
-
-    if (d < bestDist) {
-      bestDist = d;
-      bestPeak = pk;
-    }
+    const d = Math.abs(k - peaks[p]);
+    if (d < bestDist) { bestDist = d; bestPeak = peaks[p]; }
   }
-
   peakIndexForBin[k] = bestPeak;
 }
 
-// 2. synthesize with locked phases
+// 2. Accumulate phase for each peak ONCE, into its shifted position
+const peakPhase = new Float32Array(half + 1); // synthesized phase per source peak
+const peakSeen = new Uint8Array(half + 1);
+
+for (let p = 0; p < peaks.length; p++) {
+  const pk = peaks[p];
+  const shiftedPeak = Math.round(pk * shift);
+  if (shiftedPeak > half) continue;
+
+  const freq = this.analysisFreq[pk];
+  const phaseInc = freq * shift * this.hop; // scale phase velocity by shift too
+  
+  // Accumulate into the SHIFTED peak index
+  this.sumPhase[shiftedPeak] = (this.sumPhase[shiftedPeak] || 0) + phaseInc;
+  peakPhase[pk] = this.sumPhase[shiftedPeak];
+  peakSeen[pk] = 1;
+}
+
+// 3. Place bins using their peak's phase, locked to the peak's rotation
+this.synth.fill(0);
+const norm = new Float32Array(N);
+
 for (let k = 0; k <= half; k++) {
   const mag = this.analysisMag[k];
   if (mag < 1e-8) continue;
@@ -499,17 +505,11 @@ for (let k = 0; k <= half; k++) {
   const target = k * shift;
   const i0 = target | 0;
   const frac = target - i0;
-
   if (i0 > half) continue;
 
   const peak = peakIndexForBin[k];
-
-  // use PEAK phase instead of bin phase
-  const freq = this.analysisFreq[peak];
-  const phaseInc = freq * this.hop;
-
-  const phase = (this.sumPhase[peak] || 0) + phaseInc;
-  this.sumPhase[peak] = phase;
+  // Phase of this bin = peak's synthesized phase + offset proportional to bin distance from peak
+  const phase = peakPhase[peak];
 
   const bins = [i0, i0 + 1];
   const w = [1 - frac, frac];
@@ -517,12 +517,9 @@ for (let k = 0; k <= half; k++) {
   for (let b = 0; b < 2; b++) {
     const bin = bins[b];
     if (bin > half) continue;
-
     const weight = mag * w[b];
-
     this.synth[2 * bin] += weight * Math.cos(phase);
     this.synth[2 * bin + 1] += weight * Math.sin(phase);
-
     norm[bin] += w[b];
   }
 }
