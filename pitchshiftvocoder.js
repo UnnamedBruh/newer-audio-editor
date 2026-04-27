@@ -665,9 +665,9 @@ processChannel(frame, prevPhase, sumPhase, synthFreqBuf, shift, perceptuallyAccu
     }
 
     const midTime  = this.processChannel(
-      midFrame,  this.prevPhase,     this.sumPhase,     this.synthFreq,     shift, pa);
-    const sideTime = this.processChannel(
-      sideFrame, this.prevPhaseSide, this.sumPhaseSide,  this.synthFreqSide, shift, pa);
+  midFrame,  this.prevPhase,     this.sumPhase,     this.synthFreq,     shift, pa, this.prevFreq);
+const sideTime = this.processChannel(
+  sideFrame, this.prevPhaseSide, this.sumPhaseSide, this.synthFreqSide, shift, pa, this.prevFreqSide);
 
     // Bug 6 fix: divide by the Hann/4× OLA normalisation constant so that
     // the overlapping windowed frames sum to unity gain.
