@@ -269,8 +269,8 @@ class PitchShifterProcessorPolished extends AudioWorkletProcessor {
 
     // -------- Synthesis --------
     this.synth.fill(0);
-    const norm = new Float32Array(N);
-
+const norm = this.norm; norm.fill(0);
+    
     for (let k = 0; k <= half; k++) {
       const mag = this.analysisMag[k];
       if (mag < 1e-8) continue;
@@ -381,8 +381,8 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     this.synth    = this.fft.createComplexArray();
     this.time     = this.fft.createComplexArray();
 
-    this.olaL = new Float32Array(this.N * 2);
-    this.olaR = new Float32Array(this.N * 2);
+    this.olaL = new Float32Array(this.N * 8);
+    this.olaR = new Float32Array(this.N * 8);
 
     this.olaReadPos  = 0;
     this.olaWritePos = 0;
@@ -394,6 +394,16 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     for (let i = 0; i < this.N; i++) {
       this.window[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / this.N));
     }
+
+      // Fix 4: pre-allocate scratch buffers
+  this.analysisMag   = new Float32Array(this.half + 1);
+  this.analysisFreq  = new Float32Array(this.half + 1);
+  this.synthNorm     = new Float32Array(this.half + 1);
+  this.norm          = new Float32Array(this.N);
+
+  // Fix 1: track last shift to detect changes
+  this.lastShift = 1.0;
+    this.updatedTargets = new Uint8Array(this.half + 1);
   }
 
   process(inputs, outputs, parameters) {
@@ -413,6 +423,14 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     for (let i = 0; i < inL.length; i++) {
       const shift = shiftArr.length > 1 ? shiftArr[i] : shiftArr[0];
       const pa    = paArr.length    > 1 ? paArr[i]    : paArr[0];
+
+      if (Math.abs(shift - this.lastShift) > 0.001) {
+  this.sumPhase.fill(0);
+  this.sumPhaseSide.fill(0);
+  this.prevPhase.fill(0);
+  this.prevPhaseSide.fill(0);
+  this.lastShift = shift;
+}
 
       this.inputL[this.writePos] = inL[i];
       this.inputR[this.writePos] = inR[i];
@@ -446,8 +464,8 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     this.fft.realTransform(this.spectrum, frame);
     this.fft.completeSpectrum(this.spectrum);
 
-    const analysisMag  = new Float32Array(half + 1);
-    const analysisFreq = new Float32Array(half + 1);
+    const analysisMag  = this.analysisMag;  analysisMag.fill(0);
+const analysisFreq = this.analysisFreq; analysisFreq.fill(0);
 
     for (let k = 0; k <= half; k++) {
       const re = this.spectrum[2 * k];
@@ -485,16 +503,17 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
         peakForSrcBin[k] = bestPeak;
       }
 
-      // Bug 2 fix: accumulate phase at TARGET peak indices, not source.
-      // The synthesis IFFT operates in target (shifted) frequency space, so
-      // the phase accumulator must live there too.  The phase increment is
-      // analysisFreq[pk] * shift * hop — the shifted instantaneous frequency
-      // times the synthesis hop.
-      for (let p = 0; p < peaks.length; p++) {
-        const pk       = peaks[p];
-        const targetPk = Math.min(Math.round(pk * shift), half);
-        sumPhase[targetPk] += analysisFreq[pk] * shift * this.hop;
-      }
+      const updatedTargets = this.updatedTargets;
+updatedTargets.fill(0);
+for (let p = 0; p < peaks.length; p++) {
+  const pk       = peaks[p];
+  const targetPk = Math.min(Math.round(pk * shift), half);
+  sumPhase[targetPk] += analysisFreq[pk] * shift * this.hop;
+  updatedTargets[targetPk] = 1;
+}
+for (let k = 0; k <= half; k++) {
+  if (!updatedTargets[k]) sumPhase[k] *= 0.95;
+}
 
       // Scatter bins into shifted positions.
       // Bug 4 fix: every bin (peak or not) derives its synthesis phase from
@@ -534,7 +553,7 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       // in a single pass.  This makes the phase evolution deterministic and
       // independent of scatter order.
       synthFreqBuf.fill(0);
-      const synthNorm = new Float32Array(half + 1);
+const synthNorm = this.synthNorm; synthNorm.fill(0);
 
       for (let k = 0; k <= half; k++) {
         const mag = analysisMag[k];
