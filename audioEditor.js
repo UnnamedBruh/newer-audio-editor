@@ -2005,5 +2005,5 @@ effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2, windo
 	const len = pointer.length;
 	if (len === 0 || pitchShift === 1) return;
 	
-	exporter.audioData = pitchShift2(pointer, pitchShift, size, windowing);
+	exporter.audioData = pitchShift2Naive(pointer, pitchShift, size, windowing);
 }
