@@ -2018,7 +2018,7 @@ effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2, windo
 
 let hasLoadedPitchShiftModule = false;
 
-effects["fftpitchshiftbetter"] = async function(exporter, pitchShift = 1.2) {
+effects["fftpitchshiftbetter"] = async function(exporter, _, pitchShift = 1.2) {
 	// Main render function, originally written by Claude Sonnet 4.5
 	async function renderWithFilter(sourceBuffer) {
 		try {
