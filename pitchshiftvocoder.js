@@ -366,28 +366,30 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
 
     // Mid phase state
     this.prevPhase = new Float32Array(this.half + 1);
-    this.sumPhase = new Float32Array(this.half + 1);
+    this.sumPhase  = new Float32Array(this.half + 1);
 
     // Side phase state
     this.prevPhaseSide = new Float32Array(this.half + 1);
-    this.sumPhaseSide = new Float32Array(this.half + 1);
+    this.sumPhaseSide  = new Float32Array(this.half + 1);
 
-    this.sumPhasePeak = new Float32Array(this.half + 1);
-    this.sumPhasePeakSide = new Float32Array(this.half + 1);
+    // Bug 5 fix: replace the two dead sumPhasePeak arrays with per-channel
+    // synthFreq scratch buffers used by the basic (non-peak-locking) path.
+    this.synthFreq     = new Float32Array(this.half + 1);
+    this.synthFreqSide = new Float32Array(this.half + 1);
 
     this.spectrum = this.fft.createComplexArray();
-    this.synth = this.fft.createComplexArray();
-    this.time = this.fft.createComplexArray();
+    this.synth    = this.fft.createComplexArray();
+    this.time     = this.fft.createComplexArray();
 
     this.olaL = new Float32Array(this.N * 2);
     this.olaR = new Float32Array(this.N * 2);
 
-    this.olaReadPos = 0;
+    this.olaReadPos  = 0;
     this.olaWritePos = 0;
-    this.inputCount = 0;
+    this.inputCount  = 0;
 
     this.freqPerBin = (2 * Math.PI) / this.N;
-    this.twoPi = 2 * Math.PI;
+    this.twoPi      = 2 * Math.PI;
 
     for (let i = 0; i < this.N; i++) {
       this.window[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / this.N));
@@ -395,22 +397,22 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
   }
 
   process(inputs, outputs, parameters) {
-    const input = inputs[0];
+    const input  = inputs[0];
     const output = outputs[0];
 
     if (!input || !output || !input[0] || !input[1]) return true;
 
-    const inL = input[0];
-    const inR = input[1];
+    const inL  = input[0];
+    const inR  = input[1];
     const outL = output[0];
     const outR = output[1];
 
     const shiftArr = parameters.shift;
-    const paArr = parameters.perceptuallyaccurate;
+    const paArr    = parameters.perceptuallyaccurate;
 
     for (let i = 0; i < inL.length; i++) {
       const shift = shiftArr.length > 1 ? shiftArr[i] : shiftArr[0];
-      const pa = paArr.length > 1 ? paArr[i] : paArr[0];
+      const pa    = paArr.length    > 1 ? paArr[i]    : paArr[0];
 
       this.inputL[this.writePos] = inL[i];
       this.inputR[this.writePos] = inR[i];
@@ -421,9 +423,9 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
         this.processFrame(shift, pa);
       }
 
-      const op = this.olaReadPos;
-      outL[i] = this.olaL[op] || 0;
-      outR[i] = this.olaR[op] || 0;
+      const op   = this.olaReadPos;
+      outL[i]    = this.olaL[op] || 0;
+      outR[i]    = this.olaR[op] || 0;
       this.olaL[op] = 0;
       this.olaR[op] = 0;
       this.olaReadPos = (this.olaReadPos + 1) % this.olaL.length;
@@ -432,108 +434,154 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     return true;
   }
 
-  processChannel(frame, prevPhase, sumPhase, shift, perceptuallyAccurate) {
-    const N = this.N;
+  // Bug 6 fix: Hann at 4× overlap has a constant OLA gain of 1.5.
+  // All output samples are divided by this constant so amplitude is preserved
+  // regardless of how many frames overlap at any given point.
+  static get OLA_NORM() { return 1.5; }
+
+  processChannel(frame, prevPhase, sumPhase, synthFreqBuf, shift, perceptuallyAccurate) {
+    const N    = this.N;
     const half = this.half;
 
     this.fft.realTransform(this.spectrum, frame);
     this.fft.completeSpectrum(this.spectrum);
 
-    const analysisMag = new Float32Array(half + 1);
+    const analysisMag  = new Float32Array(half + 1);
     const analysisFreq = new Float32Array(half + 1);
 
     for (let k = 0; k <= half; k++) {
       const re = this.spectrum[2 * k];
       const im = this.spectrum[2 * k + 1];
 
-      const mag = Math.hypot(re, im);
+      const mag   = Math.hypot(re, im);
       const phase = Math.atan2(im, re);
 
-      const prev = prevPhase[k];
-      prevPhase[k] = phase;
+      const prev     = prevPhase[k];
+      prevPhase[k]   = phase;
 
       let delta = phase - prev - this.freqPerBin * k * this.hop;
-      delta -= this.twoPi * Math.round(delta / this.twoPi);
+      delta    -= this.twoPi * Math.round(delta / this.twoPi);
 
       analysisFreq[k] = this.freqPerBin * k + delta / this.hop;
-      analysisMag[k] = mag;
+      analysisMag[k]  = mag;
     }
 
     this.synth.fill(0);
     const norm = new Float32Array(N);
 
     if (perceptuallyAccurate > 0.5) {
-    const peaks = this.findPeaks(analysisMag, half);
+      // ── Peak-locking path ──────────────────────────────────────────────
 
-    // Map each bin to its nearest peak
-    const peakIndexForBin = new Int16Array(half + 1);
-    for (let k = 0; k <= half; k++) {
+      const peaks = this.findPeaks(analysisMag, half);
+
+      // Map each SOURCE bin to its nearest source peak.
+      const peakForSrcBin = new Int16Array(half + 1);
+      for (let k = 0; k <= half; k++) {
         let bestPeak = 0, bestDist = Infinity;
         for (let p = 0; p < peaks.length; p++) {
-            const d = Math.abs(k - peaks[p]);
-            if (d < bestDist) { bestDist = d; bestPeak = peaks[p]; }
+          const d = Math.abs(k - peaks[p]);
+          if (d < bestDist) { bestDist = d; bestPeak = peaks[p]; }
         }
-        peakIndexForBin[k] = bestPeak;
-    }
+        peakForSrcBin[k] = bestPeak;
+      }
 
-    // Accumulate phase for each peak in SOURCE space
-    for (let p = 0; p < peaks.length; p++) {
-        const pk = peaks[p];
-        const freq = analysisFreq[pk];
-        // Phase increment accounts for the pitch shift
-        sumPhase[pk] += freq * shift * this.hop;
-    }
+      // Bug 2 fix: accumulate phase at TARGET peak indices, not source.
+      // The synthesis IFFT operates in target (shifted) frequency space, so
+      // the phase accumulator must live there too.  The phase increment is
+      // analysisFreq[pk] * shift * hop — the shifted instantaneous frequency
+      // times the synthesis hop.
+      for (let p = 0; p < peaks.length; p++) {
+        const pk       = peaks[p];
+        const targetPk = Math.min(Math.round(pk * shift), half);
+        sumPhase[targetPk] += analysisFreq[pk] * shift * this.hop;
+      }
 
-    // Scatter bins into shifted positions using their peak's phase
-    for (let k = 0; k <= half; k++) {
-        const mag = analysisMag[k];
-        if (mag < 1e-8) continue;
-
-        const target = k * shift;
-        const i0 = target | 0;
-        const frac = target - i0;
-        if (i0 > half) continue;
-
-        const peak = peakIndexForBin[k];
-        const phase = sumPhase[peak]; // consistent source-space lookup
-
-        const bins = [i0, i0 + 1];
-        const w = [1 - frac, frac];
-
-        for (let b = 0; b < 2; b++) {
-            const bin = bins[b];
-            if (bin > half) continue;
-            const weight = mag * w[b];
-            this.synth[2 * bin] += weight * Math.cos(phase);
-            this.synth[2 * bin + 1] += weight * Math.sin(phase);
-            norm[bin] += w[b];
-        }
-    }
-} else {
+      // Scatter bins into shifted positions.
+      // Bug 4 fix: every bin (peak or not) derives its synthesis phase from
+      // its owning peak's accumulator, which now lives in target space.
       for (let k = 0; k <= half; k++) {
         const mag = analysisMag[k];
         if (mag < 1e-8) continue;
 
         const target = k * shift;
-        const i0 = target | 0;
-        const frac = target - i0;
+        const i0     = target | 0;
+        const frac   = target - i0;
         if (i0 > half) continue;
 
-        const freq = analysisFreq[k];
-        const phaseInc = freq * this.hop;
-
-        const phase = (sumPhase[i0] || 0) + phaseInc;
-        sumPhase[i0] = phase;
+        // Resolve the owning peak to target space.
+        const targetPeak = Math.min(Math.round(peakForSrcBin[k] * shift), half);
+        const phase      = sumPhase[targetPeak];
 
         const bins = [i0, i0 + 1];
-        const w = [1 - frac, frac];
+        const w    = [1 - frac, frac];
 
         for (let b = 0; b < 2; b++) {
           const bin = bins[b];
           if (bin > half) continue;
           const weight = mag * w[b];
-          this.synth[2 * bin] += weight * Math.cos(phase);
+          this.synth[2 * bin]     += weight * Math.cos(phase);
           this.synth[2 * bin + 1] += weight * Math.sin(phase);
+          norm[bin] += w[b];
+        }
+      }
+
+    } else {
+      // ── Basic path ────────────────────────────────────────────────────
+
+      // Bug 3 fix: instead of letting the last source bin that maps to a
+      // given target bin "win", collect the weighted-average instantaneous
+      // frequency for each target bin, then advance all phase accumulators
+      // in a single pass.  This makes the phase evolution deterministic and
+      // independent of scatter order.
+      synthFreqBuf.fill(0);
+      const synthNorm = new Float32Array(half + 1);
+
+      for (let k = 0; k <= half; k++) {
+        const mag = analysisMag[k];
+        if (mag < 1e-8) continue;
+
+        const target = k * shift;
+        const i0     = target | 0;
+        const frac   = target - i0;
+        if (i0 > half) continue;
+
+        const freq = analysisFreq[k];
+        const bins = [i0, i0 + 1];
+        const w    = [1 - frac, frac];
+
+        for (let b = 0; b < 2; b++) {
+          const bin = bins[b];
+          if (bin > half) continue;
+          synthFreqBuf[bin] += freq * shift * w[b];
+          synthNorm[bin]    += w[b];
+        }
+      }
+
+      // Advance phase accumulators once per target bin, then scatter.
+      for (let k = 0; k <= half; k++) {
+        if (synthNorm[k] > 0) {
+          sumPhase[k] += (synthFreqBuf[k] / synthNorm[k]) * this.hop;
+        }
+      }
+
+      for (let k = 0; k <= half; k++) {
+        const mag = analysisMag[k];
+        if (mag < 1e-8) continue;
+
+        const target = k * shift;
+        const i0     = target | 0;
+        const frac   = target - i0;
+        if (i0 > half) continue;
+
+        const bins = [i0, i0 + 1];
+        const w    = [1 - frac, frac];
+
+        for (let b = 0; b < 2; b++) {
+          const bin = bins[b];
+          if (bin > half) continue;
+          const weight = mag * w[b];
+          this.synth[2 * bin]     += weight * Math.cos(sumPhase[bin]);
+          this.synth[2 * bin + 1] += weight * Math.sin(sumPhase[bin]);
           norm[bin] += w[b];
         }
       }
@@ -541,45 +589,54 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
 
     for (let k = 0; k <= half; k++) {
       if (norm[k] > 0) {
-        this.synth[2 * k] /= norm[k];
+        this.synth[2 * k]     /= norm[k];
         this.synth[2 * k + 1] /= norm[k];
       }
     }
 
     for (let k = 1; k < half; k++) {
-      this.synth[2 * (N - k)] = this.synth[2 * k];
+      this.synth[2 * (N - k)]     =  this.synth[2 * k];
       this.synth[2 * (N - k) + 1] = -this.synth[2 * k + 1];
     }
 
     this.fft.inverseTransform(this.time, this.synth);
 
-    // Return a copy of the time-domain result
     return this.time.slice();
   }
 
   processFrame(shift, pa) {
     const N = this.N;
 
-    const midFrame = new Float32Array(N);
+    const midFrame  = new Float32Array(N);
     const sideFrame = new Float32Array(N);
 
-    const writeBase = this.olaWritePos;
-  this.olaWritePos = (this.olaWritePos + this.hop) % this.olaL.length;
+    // Bug 1 fix: capture writePos BEFORE advancing, then use writeBase for
+    // all OLA writes below.  The original code advanced olaWritePos first,
+    // making every frame land one hop later than intended.
+    const writeBase  = this.olaWritePos;
+    this.olaWritePos = (this.olaWritePos + this.hop) % this.olaL.length;
 
     for (let i = 0; i < N; i++) {
-      const idx = (this.writePos - N + i + N) % N;
-      midFrame[i] = 0.5 * (this.inputL[idx] + this.inputR[idx]) * this.window[i];
+      const idx        = (this.writePos - N + i + N) % N;
+      midFrame[i]  = 0.5 * (this.inputL[idx] + this.inputR[idx]) * this.window[i];
       sideFrame[i] = 0.5 * (this.inputL[idx] - this.inputR[idx]) * this.window[i];
     }
 
-    const midTime = this.processChannel(midFrame, this.prevPhase, this.sumPhase, shift, pa);
-    const sideTime = this.processChannel(sideFrame, this.prevPhaseSide, this.sumPhaseSide, shift, pa);
+    const midTime  = this.processChannel(
+      midFrame,  this.prevPhase,     this.sumPhase,     this.synthFreq,     shift, pa);
+    const sideTime = this.processChannel(
+      sideFrame, this.prevPhaseSide, this.sumPhaseSide,  this.synthFreqSide, shift, pa);
+
+    // Bug 6 fix: divide by the Hann/4× OLA normalisation constant so that
+    // the overlapping windowed frames sum to unity gain.
+    const olaNorm = PitchShifterStereoPolished.OLA_NORM;
 
     for (let i = 0; i < N; i++) {
-      const m = midTime[2 * i] * this.window[i];
-      const s = sideTime[2 * i] * this.window[i];
+      const m = (midTime[2 * i]  * this.window[i]) / olaNorm;
+      const s = (sideTime[2 * i] * this.window[i]) / olaNorm;
 
-      const idx = (this.olaWritePos + i) % this.olaL.length;
+      // Bug 1 fix: write at writeBase + i, not the already-advanced olaWritePos.
+      const idx = (writeBase + i) % this.olaL.length;
 
       this.olaL[idx] += m + s;
       this.olaR[idx] += m - s;
