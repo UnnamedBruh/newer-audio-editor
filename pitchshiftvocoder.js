@@ -13,7 +13,7 @@ class PitchShifterProcessor extends AudioWorkletProcessor { // This module was w
     super();
 
     this.frameSize = 1024;
-    this.hopSize = 128; // 87.5% overlap
+    this.hopSize = 256; // 75% overlap
     this.half = this.frameSize / 2;
 
     this.fft = new FFT(this.frameSize);
