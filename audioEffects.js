@@ -323,7 +323,7 @@ const effectsList = [
 	],
 	[
 		"FFT: Pitch Shift (Polished Phase Vocoder Stereo)",
-		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then pitch shifts the audio by accumulating the phase, and linearly distributing the magnitude. This effect has a noticeably less robotic quality, but may have some metallic \"chorus\"-like artifacts. Those artifacts can be reduced using the \"polished\" setting.<br>If you want to apply pitch shifting on this audio track, switch to the Phase Vocoder Mono setting.",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then pitch shifts the audio by accumulating the phase, and linearly distributing the magnitude. This effect has a noticeably less robotic quality, but may have some metallic \"chorus\"-like artifacts, which are reduced using the \"polished\" setting.<br>If you want to apply pitch shifting on this audio track, switch to the Phase Vocoder Mono setting.<br><b>This variant may be ~3 times slower than the mono variant.</b>",
 		'Polished: <input id="fftpitchshiftbetterstereo0" type="checkbox" checked disabled><br>Pitch Multiplier (in octaves): <input id="fftpitchshiftbetterstereo1" type="number" min="0.01" step="0.04" value="1.2" style="width: 100px">',
 		2,
 		"fftpitchshiftbetterstereo",
