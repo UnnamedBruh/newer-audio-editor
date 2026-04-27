@@ -416,7 +416,6 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       this.inputCount++;
       if (this.inputCount % this.hop === 0) {
         this.processFrame(shift, pa);
-        this.olaWritePos = (this.olaWritePos + this.hop) % this.olaL.length;
       }
 
       const op = this.olaReadPos;
@@ -565,6 +564,9 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
 
     const midFrame = new Float32Array(N);
     const sideFrame = new Float32Array(N);
+
+    const writeBase = this.olaWritePos;
+  this.olaWritePos = (this.olaWritePos + this.hop) % this.olaL.length;
 
     for (let i = 0; i < N; i++) {
       const idx = (this.writePos - N + i + N) % N;
