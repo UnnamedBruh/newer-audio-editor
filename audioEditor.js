@@ -2008,10 +2008,144 @@ for (let i = 0; i < frameSize; i++) {
   return out;
 }
 
-effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2, windowing = true) {
+effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2, windowing = false) {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0 || pitchShift === 1) return;
 	
 	exporter.audioData = pitchShift2Naive(pointer, pitchShift, size, windowing);
 }
+
+function pitchShiftPhaseVocoder(samples, shift, frameSize = 1024, hopSize = frameSize / 4) { // This function was written using GPT-5.3
+  const fft = new FFT(frameSize);
+  const out = new Float32Array(samples.length);
+  const norm = new Float32Array(samples.length); // for normalization
+
+  // --- Hann window ---
+  const window = new Float32Array(frameSize);
+  for (let i = 0; i < frameSize; i++) {
+    window[i] = 0.5 * (1 - Math.cos(2 * Math.PI * i / frameSize));
+  }
+
+  const input = new Float32Array(frameSize);
+  const spectrum = fft.createComplexArray();
+  const outputSpectrum = fft.createComplexArray();
+  const time = fft.createComplexArray();
+
+  const half = frameSize / 2;
+
+  const prevPhase = new Float32Array(half + 1);
+  const sumPhase = new Float32Array(half + 1);
+
+  const freqPerBin = 2 * Math.PI / frameSize;
+  const expPhaseAdv = new Float32Array(half + 1);
+
+  for (let k = 0; k <= half; k++) {
+    expPhaseAdv[k] = freqPerBin * k * hopSize;
+  }
+
+  // --- Main loop ---
+  for (let i = 0; i < samples.length; i += hopSize) {
+
+    // 1. Windowed input
+    for (let j = 0; j < frameSize; j++) {
+      input[j] = (samples[i + j] || 0) * window[j];
+    }
+
+    // 2. FFT
+    fft.realTransform(spectrum, input);
+    fft.completeSpectrum(spectrum);
+
+    // Clear output spectrum
+    outputSpectrum.fill(0);
+
+    // 3. Analysis + processing
+    for (let k = 0; k <= half; k++) {
+      const re = spectrum[2 * k];
+      const im = spectrum[2 * k + 1];
+
+      const mag = Math.hypot(re, im);
+      const phase = Math.atan2(im, re);
+
+      // --- Phase difference ---
+      let delta = phase - prevPhase[k];
+      prevPhase[k] = phase;
+
+      // Remove expected phase advance
+      delta -= expPhaseAdv[k];
+
+      // Wrap to [-π, π]
+      delta -= 2 * Math.PI * Math.round(delta / (2 * Math.PI));
+
+      // True frequency
+      const trueFreq = freqPerBin * k + delta / hopSize;
+
+      // Pitch shift
+      const newBin = k * shift;
+
+      if (newBin <= half) {
+        const i0 = Math.floor(newBin);
+        const frac = newBin - i0;
+
+        // Phase accumulation (scaled by shift)
+        const phaseAdvance = trueFreq * hopSize * shift;
+
+        sumPhase[i0] += phaseAdvance;
+        if (i0 + 1 <= half) {
+          sumPhase[i0 + 1] += phaseAdvance;
+        }
+
+        // --- Linear magnitude distribution ---
+        const mag0 = mag * (1 - frac);
+        const mag1 = mag * frac;
+
+        // Bin i0
+        outputSpectrum[2 * i0] += mag0 * Math.cos(sumPhase[i0]);
+        outputSpectrum[2 * i0 + 1] += mag0 * Math.sin(sumPhase[i0]);
+
+        // Bin i0 + 1
+        if (i0 + 1 <= half) {
+          outputSpectrum[2 * (i0 + 1)] += mag1 * Math.cos(sumPhase[i0 + 1]);
+          outputSpectrum[2 * (i0 + 1) + 1] += mag1 * Math.sin(sumPhase[i0 + 1]);
+        }
+      }
+    }
+
+    // 4. Rebuild negative frequencies (Hermitian symmetry)
+    for (let k = 1; k < half; k++) {
+      outputSpectrum[2 * (frameSize - k)] = outputSpectrum[2 * k];
+      outputSpectrum[2 * (frameSize - k) + 1] = -outputSpectrum[2 * k + 1];
+    }
+
+    // 5. IFFT
+    fft.inverseTransform(time, outputSpectrum);
+
+    // 6. Overlap-add + normalization
+    for (let j = 0; j < frameSize; j++) {
+      const sample = (time[2 * j] / frameSize) * window[j];
+
+      if (i + j < out.length) {
+        out[i + j] += sample;
+        norm[i + j] += window[j] * window[j];
+      }
+    }
+  }
+
+  // --- Normalize output (important) ---
+  for (let i = 0; i < out.length; i++) {
+    if (norm[i] > 1e-6) {
+      out[i] /= norm[i];
+    }
+  }
+
+  return out;
+}
+
+effects["fftpitchshiftbetter"] = function(exporter, size = 1024, pitchShift = 2, windowing = false) {
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0 || pitchShift === 1) return;
+	
+	exporter.audioData = pitchShiftPhaseVocoder(pointer, size, pitchShift, windowing);
+}
+
