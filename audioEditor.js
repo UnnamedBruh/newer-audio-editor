@@ -1935,7 +1935,14 @@ effects["fftsmearnaive"] = function(exporter, size = 1024, smearRadius = 2, smoo
 	exporter.audioData = outputArr;
 }
 
-function pitchShift2(samples, shift, frameSize = 1024) { // This function was written using GPT-5.0 Mini
+function pitchShift2Naive(samples, shift, frameSize = 1024, windowing = true) { // This function was written using GPT-5.0 Mini
+	let window = null;
+	if (windowing) {
+		window = new Float32Array(frameSize);
+for (let i = 0; i < frameSize; i++) {
+  window[i] = 0.5 * (1 - Math.cos(2 * Math.PI * i / frameSize));
+}
+	}
   const fft = new FFT(frameSize);
   const out = new Float32Array(samples.length);
 
@@ -1946,8 +1953,14 @@ function pitchShift2(samples, shift, frameSize = 1024) { // This function was wr
 
   for (let i = 0; i < samples.length; i += frameSize) {
 	// Copy frame
-	for (let j = 0; j < frameSize; j++) {
+	if (windowing) {
+		for (let j = 0; j < frameSize; j++) {
+	  input[j] = (samples[i + j] || 0) * window[j];
+	}
+	} else {
+		for (let j = 0; j < frameSize; j++) {
 	  input[j] = samples[i + j] || 0;
+	}
 	}
 
 	// FFT
@@ -1987,10 +2000,10 @@ function pitchShift2(samples, shift, frameSize = 1024) { // This function was wr
   return out;
 }
 
-effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2) {
+effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2, windowing = true) {
 	const pointer = exporter.audioData;
 	const len = pointer.length;
 	if (len === 0 || pitchShift === 1) return;
 	
-	exporter.audioData = pitchShift2(pointer, pitchShift, size);
+	exporter.audioData = pitchShift2(pointer, pitchShift, size, windowing);
 }
