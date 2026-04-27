@@ -384,8 +384,8 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     this.olaL = new Float32Array(this.N * 8);
     this.olaR = new Float32Array(this.N * 8);
 
-    this.olaReadPos  = 0;
-    this.olaWritePos = 0;
+    this.olaReadPos  = this.N;
+    this.olaWritePos = this.N % this.olaL.length;;
     this.inputCount  = 0;
 
     this.freqPerBin = (2 * Math.PI) / this.N;
@@ -404,6 +404,14 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
   // Fix 1: track last shift to detect changes
   this.lastShift = 1.0;
     this.updatedTargets = new Uint8Array(this.half + 1);
+
+    // For improved phase unwrapping (Fix 2)
+this.prevFreq     = new Float32Array(this.half + 1);
+this.prevFreqSide = new Float32Array(this.half + 1);
+
+// For proximity gating (Fix 1) – reusing existing arrays for clarity
+this.peakOwnership = new Int16Array(this.half + 1);
+this.peakPhase     = new Float32Array(this.half + 1);
   }
 
   process(inputs, outputs, parameters) {
@@ -457,171 +465,186 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
   // regardless of how many frames overlap at any given point.
   static get OLA_NORM() { return 1.5; }
 
-  processChannel(frame, prevPhase, sumPhase, synthFreqBuf, shift, perceptuallyAccurate) {
-    const N    = this.N;
-    const half = this.half;
+processChannel(frame, prevPhase, sumPhase, synthFreqBuf, shift, perceptuallyAccurate, prevFreqArray) {
+  const N    = this.N;
+  const half = this.half;
+  const hop  = this.hop;
 
-    this.fft.realTransform(this.spectrum, frame);
-    this.fft.completeSpectrum(this.spectrum);
+  this.fft.realTransform(this.spectrum, frame);
+  this.fft.completeSpectrum(this.spectrum);
 
-    const analysisMag  = this.analysisMag;  analysisMag.fill(0);
-const analysisFreq = this.analysisFreq; analysisFreq.fill(0);
+  const analysisMag  = this.analysisMag;  analysisMag.fill(0);
+  const analysisFreq = this.analysisFreq; analysisFreq.fill(0);
 
-    for (let k = 0; k <= half; k++) {
-      const re = this.spectrum[2 * k];
-      const im = this.spectrum[2 * k + 1];
+  // --- Phase unwrapping with frequency prediction (Fix 2) ---
+  for (let k = 0; k <= half; k++) {
+    const re = this.spectrum[2 * k];
+    const im = this.spectrum[2 * k + 1];
+    const mag   = Math.hypot(re, im);
+    const phase = Math.atan2(im, re);
 
-      const mag   = Math.hypot(re, im);
-      const phase = Math.atan2(im, re);
+    const prevVal = prevPhase[k];
+    prevPhase[k] = phase;
 
-      const prev     = prevPhase[k];
-      prevPhase[k]   = phase;
+    // Predict phase using last known instantaneous frequency
+    let prevFreq = prevFreqArray?.[k] ?? (this.freqPerBin * k);
+    let expectedPhase = prevFreq * hop;
+    let delta = phase - prevVal - expectedPhase;
+    delta -= this.twoPi * Math.round(delta / this.twoPi);
+    let instFreq = (expectedPhase + delta) / hop;   // rad/sample
 
-      let delta = phase - prev - this.freqPerBin * k * this.hop;
-      delta    -= this.twoPi * Math.round(delta / this.twoPi);
+    // Avoid NaN or extreme values when magnitude is tiny (Fix 4)
+    if (mag < 1e-8) instFreq = this.freqPerBin * k;
 
-      analysisFreq[k] = this.freqPerBin * k + delta / this.hop;
-      analysisMag[k]  = mag;
-    }
-
-    this.synth.fill(0);
-    const norm = new Float32Array(N);
-
-    if (perceptuallyAccurate > 0.5) {
-      // ── Peak-locking path ──────────────────────────────────────────────
-
-      const peaks = this.findPeaks(analysisMag, half);
-
-      // Map each SOURCE bin to its nearest source peak.
-      const peakForSrcBin = new Int16Array(half + 1);
-      for (let k = 0; k <= half; k++) {
-        let bestPeak = 0, bestDist = Infinity;
-        for (let p = 0; p < peaks.length; p++) {
-          const d = Math.abs(k - peaks[p]);
-          if (d < bestDist) { bestDist = d; bestPeak = peaks[p]; }
-        }
-        peakForSrcBin[k] = bestPeak;
-      }
-
-      const updatedTargets = this.updatedTargets;
-updatedTargets.fill(0);
-for (let p = 0; p < peaks.length; p++) {
-  const pk       = peaks[p];
-  const targetPk = Math.min(Math.round(pk * shift), half);
-  sumPhase[targetPk] += analysisFreq[pk] * shift * this.hop;
-  updatedTargets[targetPk] = 1;
-}
-for (let k = 0; k <= half; k++) {
-  if (!updatedTargets[k]) sumPhase[k] *= 0.95;
-}
-
-      // Scatter bins into shifted positions.
-      // Bug 4 fix: every bin (peak or not) derives its synthesis phase from
-      // its owning peak's accumulator, which now lives in target space.
-      for (let k = 0; k <= half; k++) {
-        const mag = analysisMag[k];
-        if (mag < 1e-8) continue;
-
-        const target = k * shift;
-        const i0     = target | 0;
-        const frac   = target - i0;
-        if (i0 > half) continue;
-
-        // Resolve the owning peak to target space.
-        const targetPeak = Math.min(Math.round(peakForSrcBin[k] * shift), half);
-        const phase      = sumPhase[targetPeak];
-
-        const bins = [i0, i0 + 1];
-        const w    = [1 - frac, frac];
-
-        for (let b = 0; b < 2; b++) {
-          const bin = bins[b];
-          if (bin > half) continue;
-          const weight = mag * w[b];
-          this.synth[2 * bin]     += weight * Math.cos(phase);
-          this.synth[2 * bin + 1] += weight * Math.sin(phase);
-          norm[bin] += w[b];
-        }
-      }
-
-    } else {
-      // ── Basic path ────────────────────────────────────────────────────
-
-      // Bug 3 fix: instead of letting the last source bin that maps to a
-      // given target bin "win", collect the weighted-average instantaneous
-      // frequency for each target bin, then advance all phase accumulators
-      // in a single pass.  This makes the phase evolution deterministic and
-      // independent of scatter order.
-      synthFreqBuf.fill(0);
-const synthNorm = this.synthNorm; synthNorm.fill(0);
-
-      for (let k = 0; k <= half; k++) {
-        const mag = analysisMag[k];
-        if (mag < 1e-8) continue;
-
-        const target = k * shift;
-        const i0     = target | 0;
-        const frac   = target - i0;
-        if (i0 > half) continue;
-
-        const freq = analysisFreq[k];
-        const bins = [i0, i0 + 1];
-        const w    = [1 - frac, frac];
-
-        for (let b = 0; b < 2; b++) {
-          const bin = bins[b];
-          if (bin > half) continue;
-          synthFreqBuf[bin] += freq * shift * w[b];
-          synthNorm[bin]    += w[b];
-        }
-      }
-
-      // Advance phase accumulators once per target bin, then scatter.
-      for (let k = 0; k <= half; k++) {
-        if (synthNorm[k] > 0) {
-          sumPhase[k] += (synthFreqBuf[k] / synthNorm[k]) * this.hop;
-        }
-      }
-
-      for (let k = 0; k <= half; k++) {
-        const mag = analysisMag[k];
-        if (mag < 1e-8) continue;
-
-        const target = k * shift;
-        const i0     = target | 0;
-        const frac   = target - i0;
-        if (i0 > half) continue;
-
-        const bins = [i0, i0 + 1];
-        const w    = [1 - frac, frac];
-
-        for (let b = 0; b < 2; b++) {
-          const bin = bins[b];
-          if (bin > half) continue;
-          const weight = mag * w[b];
-          this.synth[2 * bin]     += weight * Math.cos(sumPhase[bin]);
-          this.synth[2 * bin + 1] += weight * Math.sin(sumPhase[bin]);
-          norm[bin] += w[b];
-        }
-      }
-    }
-
-    for (let k = 0; k <= half; k++) {
-      if (norm[k] > 0) {
-        this.synth[2 * k]     /= norm[k];
-        this.synth[2 * k + 1] /= norm[k];
-      }
-    }
-
-    for (let k = 1; k < half; k++) {
-      this.synth[2 * (N - k)]     =  this.synth[2 * k];
-      this.synth[2 * (N - k) + 1] = -this.synth[2 * k + 1];
-    }
-
-    this.fft.inverseTransform(this.time, this.synth);
-
-    return this.time.slice();
+    if (prevFreqArray) prevFreqArray[k] = instFreq;
+    analysisFreq[k] = instFreq;
+    analysisMag[k]  = mag;
   }
+
+  this.synth.fill(0);
+  const norm = new Float32Array(N);
+
+  if (perceptuallyAccurate > 0.5) {
+    // --- Fix 1: Proximity-gated peak locking ---
+    const peaks = this.findPeaks(analysisMag, half);
+    const peakOwnership = this.peakOwnership;
+    const peakPhaseArr   = this.peakPhase;
+    peakOwnership.fill(-1);
+    peakPhaseArr.fill(0);
+
+    // 1) Advance accumulators for peaks, and mark bins within ±2 of each peak
+    const updatedTargets = this.updatedTargets;
+    updatedTargets.fill(0);
+    for (let p of peaks) {
+      const targetPk = Math.min(Math.round(p * shift), half);
+      // Only advance the peak's own accumulator
+      sumPhase[targetPk] += analysisFreq[p] * shift * hop;
+      updatedTargets[targetPk] = 1;
+
+      // Mark bins that "belong" to this peak (main lobe width ±2 bins)
+      const start = Math.max(0, p - 2);
+      const end   = Math.min(half, p + 2);
+      for (let bin = start; bin <= end; bin++) {
+        peakOwnership[bin] = targetPk;
+        peakPhaseArr[bin]  = sumPhase[targetPk];
+      }
+    }
+    // Decay untouched accumulators
+    for (let k = 0; k <= half; k++) {
+      if (!updatedTargets[k]) sumPhase[k] *= 0.95;
+    }
+
+    // 2) Scatter bins: owned bins get peak's phase, others use free path phase
+    for (let k = 0; k <= half; k++) {
+      const mag = analysisMag[k];
+      if (mag < 1e-8) continue;
+
+      const target = k * shift;
+      const i0 = target | 0;
+      const frac = target - i0;
+      if (i0 > half) continue;
+
+      let phase;
+      if (peakOwnership[k] !== -1) {
+        // Peak‑owned bin → use locked phase from that peak
+        phase = peakPhaseArr[k];
+      } else {
+        // Free bin – compute its own accumulator from its own frequency
+        // (no peak locking)
+        const ownTargetBin = Math.min(Math.round(k * shift), half);
+        // Use the already‑updated sumPhase[ownTargetBin] (which was decayed if not a peak)
+        // but we need to advance it regularly. Simpler: treat as basic path for this bin.
+        // We'll compute an instantaneous phase advance using the bin's own frequency.
+        // To avoid duplicating code, we call a small inline advance.
+        const instPhaseInc = analysisFreq[k] * shift * hop;
+        sumPhase[ownTargetBin] += instPhaseInc;
+        phase = sumPhase[ownTargetBin];
+      }
+
+      const bins = [i0, i0 + 1];
+      const w    = [1 - frac, frac];
+      for (let b = 0; b < 2; b++) {
+        const bin = bins[b];
+        if (bin > half) continue;
+        const weight = mag * w[b];
+        this.synth[2 * bin]     += weight * Math.cos(phase);
+        this.synth[2 * bin + 1] += weight * Math.sin(phase);
+        norm[bin] += w[b];
+      }
+    }
+
+  } else {
+    // --- Basic path (unchanged but uses improved frequency estimation) ---
+    synthFreqBuf.fill(0);
+    const synthNorm = this.synthNorm; synthNorm.fill(0);
+
+    for (let k = 0; k <= half; k++) {
+      const mag = analysisMag[k];
+      if (mag < 1e-8) continue;
+
+      const target = k * shift;
+      const i0 = target | 0;
+      const frac = target - i0;
+      if (i0 > half) continue;
+
+      const freq = analysisFreq[k];
+      const bins = [i0, i0 + 1];
+      const w    = [1 - frac, frac];
+
+      for (let b = 0; b < 2; b++) {
+        const bin = bins[b];
+        if (bin > half) continue;
+        synthFreqBuf[bin] += freq * shift * w[b];
+        synthNorm[bin]    += w[b];
+      }
+    }
+
+    for (let k = 0; k <= half; k++) {
+      if (synthNorm[k] > 0) {
+        sumPhase[k] += (synthFreqBuf[k] / synthNorm[k]) * hop;
+      }
+    }
+
+    for (let k = 0; k <= half; k++) {
+      const mag = analysisMag[k];
+      if (mag < 1e-8) continue;
+
+      const target = k * shift;
+      const i0 = target | 0;
+      const frac = target - i0;
+      if (i0 > half) continue;
+
+      const bins = [i0, i0 + 1];
+      const w    = [1 - frac, frac];
+
+      for (let b = 0; b < 2; b++) {
+        const bin = bins[b];
+        if (bin > half) continue;
+        const weight = mag * w[b];
+        this.synth[2 * bin]     += weight * Math.cos(sumPhase[bin]);
+        this.synth[2 * bin + 1] += weight * Math.sin(sumPhase[bin]);
+        norm[bin] += w[b];
+      }
+    }
+  }
+
+  // Normalise synthesis bins
+  for (let k = 0; k <= half; k++) {
+    if (norm[k] > 0) {
+      this.synth[2 * k]     /= norm[k];
+      this.synth[2 * k + 1] /= norm[k];
+    }
+  }
+
+  // Conjugate symmetry for real IFFT
+  for (let k = 1; k < half; k++) {
+    this.synth[2 * (N - k)]     =  this.synth[2 * k];
+    this.synth[2 * (N - k) + 1] = -this.synth[2 * k + 1];
+  }
+
+  this.fft.inverseTransform(this.time, this.synth);
+  return this.time.slice();
+}
 
   processFrame(shift, pa) {
     const N = this.N;
