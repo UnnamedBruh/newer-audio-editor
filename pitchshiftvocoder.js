@@ -410,7 +410,7 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       this.writePos = (this.writePos + 1) % this.N;
 
       if (this.writePos % this.hop === 0) {
-        this.processFrame(shift);
+        this.processFrame(shift, parameters.perceptuallyaccurate);
       }
 
       const op = this.olaPos;
@@ -427,7 +427,7 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     return true;
   }
 
-  processFrame(shift) {
+  processFrame(shift, perceptuallyaccurate) {
     const N = this.N;
     const half = this.half;
 
@@ -463,7 +463,7 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       this.analysisMag[k] = mag;
     }
 
-    if (parameters.perceptuallyaccurate > 0.5) {
+    if (perceptuallyaccurate > 0.5) {
     // -------- synthesis (phase-locked) --------
 this.synth.fill(0);
 const norm = new Float32Array(N);
