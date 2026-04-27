@@ -1990,10 +1990,18 @@ for (let i = 0; i < frameSize; i++) {
 	fft.inverseTransform(time, shifted);
 
 	// Copy back with normalization
-	for (let j = 0; j < frameSize; j++) {
+	if (windowing) {
+		for (let j = 0; j < frameSize; j++) {
+	  if (i + j < out.length) {
+		out[i + j] += time[2 * j] * window[j];
+	  }
+	}
+	} else {
+		for (let j = 0; j < frameSize; j++) {
 	  if (i + j < out.length) {
 		out[i + j] += time[2 * j];
 	  }
+	}
 	}
   }
 
