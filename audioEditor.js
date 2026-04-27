@@ -2022,10 +2022,6 @@ effects["fftpitchshiftbetter"] = async function(exporter, pitchShift = 1.2) {
 	// Main render function, originally written by Claude Sonnet 4.5
 	async function renderWithFilter(sourceBuffer) {
 		try {
-			if (!hasLoadedPitchShiftModule) {
-				await ctx.audioWorklet.addModule("pitchshiftvocoder.js");
-				hasLoadedPitchShiftModule = true;
-			}
 			const duration = sourceBuffer.duration;
 			const sampleRate = sourceBuffer.sampleRate;
 
@@ -2040,8 +2036,13 @@ effects["fftpitchshiftbetter"] = async function(exporter, pitchShift = 1.2) {
 			const source = offlineContext.createBufferSource();
 			source.buffer = sourceBuffer;
 
+			if (!hasLoadedPitchShiftModule) {
+				await offlineContext.audioWorklet.addModule("pitchshiftvocoder.js");
+				//hasLoadedPitchShiftModule = true;
+			}
+
 			// Create reverb
-			const convolver = new AudioWorkletNode(ctx, "pitch-shifter", {
+			const convolver = new AudioWorkletNode(offlineContext, "pitch-shifter", {
   parameterData: { shift: pitchShift }
 });
 
