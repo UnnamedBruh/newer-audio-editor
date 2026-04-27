@@ -2016,7 +2016,6 @@ effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2, windo
 	exporter.audioData = pitchShift2Naive(pointer, pitchShift, size, windowing);
 }
 
-let hasLoadedPitchShiftModule = false;
 
 effects["fftpitchshiftbetter"] = async function(exporter, polished = false, pitchShift = 1.2) {
 	// Main render function, originally written by Claude Sonnet 4.5
@@ -2036,10 +2035,7 @@ effects["fftpitchshiftbetter"] = async function(exporter, polished = false, pitc
 			const source = offlineContext.createBufferSource();
 			source.buffer = sourceBuffer;
 
-			if (!hasLoadedPitchShiftModule) {
-				await offlineContext.audioWorklet.addModule("pitchshiftvocoder.js");
-				//hasLoadedPitchShiftModule = true;
-			}
+			await offlineContext.audioWorklet.addModule("pitchshiftvocoder.js");
 
 			// Create reverb
 			const convolver = new AudioWorkletNode(offlineContext, polished ? "pitch-shifter-polished" : "pitch-shifter", {
@@ -2064,6 +2060,55 @@ effects["fftpitchshiftbetter"] = async function(exporter, polished = false, pitc
 
 	const bb = audioContext.createBuffer(1, exporter.audioData.length, exporter.sampleRate);
 	bb.copyToChannel(exporter.audioData, 0);
+
+	await renderWithFilter(bb);
+}
+
+effects["fftpitchshiftbetterstereo"] = async function(exporter, polished = true, pitchShift = 1.2) {
+	// Main render function, originally written by Claude Sonnet 4.5
+	async function renderWithFilter(sourceBuffer) {
+		try {
+			const duration = sourceBuffer.duration;
+			const sampleRate = sourceBuffer.sampleRate;
+
+			// Create offline context
+			const offlineContext = new OfflineAudioContext(
+				2,
+				sampleRate * duration,
+				sampleRate
+			);
+
+			// Create source
+			const source = offlineContext.createBufferSource();
+			source.buffer = sourceBuffer;
+
+			await offlineContext.audioWorklet.addModule("pitchshiftvocoder.js");
+
+			// Create reverb
+			const convolver = new AudioWorkletNode(offlineContext, "pitch-shifter-polishedstereo", {
+  parameterData: { shift: pitchShift }
+});
+
+			// Connect the graph
+			source.connect(convolver);
+			convolver.connect(offlineContext.destination);
+
+			// Start source
+			source.start(0);
+			// Render
+			renderedBuffer = await offlineContext.startRendering();
+
+			exporter[0].audioData = renderedBuffer.getChannelData(0);
+			exporter[1].audioData = renderedBuffer.getChannelData(1);
+		} catch (error) {
+			alert(`There is an error with the frequency filter rendering process.\n\n${error.stack}`);
+			console.error(error);
+		}
+	}
+
+	const bb = audioContext.createBuffer(2, exporter[0].audioData.length, exporter[0].sampleRate);
+	bb.copyToChannel(exporter[0].audioData, 0);
+	bb.copyToChannel(exporter[1].audioData, 1);
 
 	await renderWithFilter(bb);
 }
