@@ -2018,8 +2018,8 @@ effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2, windo
 
 let hasLoadedPitchShiftModule = false;
 
-effects["biquadfilterlineartween"] = async function(exporter, pitchShift = 1.2) {
-	// Main render function, originally written by Claude Sonnet 4.5, but altered to support frequency filters
+effects["fftpitchshiftbetter"] = async function(exporter, pitchShift = 1.2) {
+	// Main render function, originally written by Claude Sonnet 4.5
 	async function renderWithFilter(sourceBuffer) {
 		try {
 			if (!hasLoadedPitchShiftModule) {
