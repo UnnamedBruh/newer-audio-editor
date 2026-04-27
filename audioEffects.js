@@ -307,10 +307,18 @@ const effectsList = [
 	],
 	[
 		"FFT: Pitch Shift (Simple)",
-		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then pitch shifts the audio by literally shifting the data indices. Since this effect is a naive implementation, the audio may sound robotic.",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then pitch shifts the audio by literally shifting the data indices. Since this effect is a naive implementation, the audio may sound robotic and a bit smeared.",
 		'FFT Size: <input id="fftpitchshift0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Pitch Multiplier (in octaves): <input id="fftpitchshift1" type="number" min="0.01" step="0.04" value="1.2" style="width: 100px">',
 		2,
 		"fftpitchshift",
+		[ispowof2, Number]
+	],
+	[
+		"FFT: Pitch Shift (Phase Vocoder)",
+		"Analyzes the audio data in chunks using a Fast Fourier Transform algorithm (indutny FFT.js), then pitch shifts the audio by accumulating the phase, and linearly distributing the magnitude. This effect has a noticeably less robotic quality.",
+		'FFT Size: <input id="fftpitchshiftbetter0" type="number" min="32" step="32" value="2048" style="width: 100px"><br>Pitch Multiplier (in octaves): <input id="fftpitchshiftbetter1" type="number" min="0.01" step="0.04" value="1.2" style="width: 100px">',
+		2,
+		"fftpitchshiftbetter",
 		[ispowof2, Number]
 	],
 	[
