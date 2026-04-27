@@ -360,16 +360,17 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
 
     this.window = new Float32Array(this.N);
 
-    // Stereo circular buffers
     this.inputL = new Float32Array(this.N);
     this.inputR = new Float32Array(this.N);
     this.writePos = 0;
 
+    // Mid phase state
     this.prevPhase = new Float32Array(this.half + 1);
     this.sumPhase = new Float32Array(this.half + 1);
 
-    this.analysisMag = new Float32Array(this.half + 1);
-    this.analysisFreq = new Float32Array(this.half + 1);
+    // Side phase state
+    this.prevPhaseSide = new Float32Array(this.half + 1);
+    this.sumPhaseSide = new Float32Array(this.half + 1);
 
     this.spectrum = this.fft.createComplexArray();
     this.synth = this.fft.createComplexArray();
@@ -377,7 +378,10 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
 
     this.olaL = new Float32Array(this.N * 2);
     this.olaR = new Float32Array(this.N * 2);
-    this.olaPos = 0;
+
+    this.olaReadPos = 0;
+    this.olaWritePos = 0;
+    this.inputCount = 0;
 
     this.freqPerBin = (2 * Math.PI) / this.N;
     this.twoPi = 2 * Math.PI;
@@ -399,53 +403,43 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     const outR = output[1];
 
     const shiftArr = parameters.shift;
+    const paArr = parameters.perceptuallyaccurate;
 
     for (let i = 0; i < inL.length; i++) {
       const shift = shiftArr.length > 1 ? shiftArr[i] : shiftArr[0];
+      const pa = paArr.length > 1 ? paArr[i] : paArr[0];
 
-      // -------- store stereo --------
       this.inputL[this.writePos] = inL[i];
       this.inputR[this.writePos] = inR[i];
-
       this.writePos = (this.writePos + 1) % this.N;
 
-      if (this.writePos % this.hop === 0) {
-        this.processFrame(shift, parameters.perceptuallyaccurate);
+      this.inputCount++;
+      if (this.inputCount % this.hop === 0) {
+        this.processFrame(shift, pa);
+        this.olaWritePos = (this.olaWritePos + this.hop) % this.olaL.length;
       }
 
-      const op = this.olaPos;
-
+      const op = this.olaReadPos;
       outL[i] = this.olaL[op] || 0;
       outR[i] = this.olaR[op] || 0;
-
       this.olaL[op] = 0;
       this.olaR[op] = 0;
-
-      this.olaPos = (this.olaPos + 1) % this.olaL.length;
+      this.olaReadPos = (this.olaReadPos + 1) % this.olaL.length;
     }
 
     return true;
   }
 
-  processFrame(shift, perceptuallyaccurate) {
+  processChannel(frame, prevPhase, sumPhase, shift, perceptuallyAccurate) {
     const N = this.N;
     const half = this.half;
-
-    // -------- MID (coherent analysis source) --------
-    const frame = new Float32Array(N);
-
-    for (let i = 0; i < N; i++) {
-      const idx = (this.writePos - N + i + N) % N;
-
-      const mid = 0.5 * (this.inputL[idx] + this.inputR[idx]);
-
-      frame[i] = mid * this.window[i];
-    }
 
     this.fft.realTransform(this.spectrum, frame);
     this.fft.completeSpectrum(this.spectrum);
 
-    // -------- analysis --------
+    const analysisMag = new Float32Array(half + 1);
+    const analysisFreq = new Float32Array(half + 1);
+
     for (let k = 0; k <= half; k++) {
       const re = this.spectrum[2 * k];
       const im = this.spectrum[2 * k + 1];
@@ -453,125 +447,98 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       const mag = Math.hypot(re, im);
       const phase = Math.atan2(im, re);
 
-      const prev = this.prevPhase[k];
-      this.prevPhase[k] = phase;
+      const prev = prevPhase[k];
+      prevPhase[k] = phase;
 
       let delta = phase - prev - this.freqPerBin * k * this.hop;
       delta -= this.twoPi * Math.round(delta / this.twoPi);
 
-      this.analysisFreq[k] = this.freqPerBin * k + delta / this.hop;
-      this.analysisMag[k] = mag;
+      analysisFreq[k] = this.freqPerBin * k + delta / this.hop;
+      analysisMag[k] = mag;
     }
 
-    if (perceptuallyaccurate > 0.5) {// 1. detect peaks
-const peaks = this.findPeaks(this.analysisMag, half);
-const peakIndexForBin = new Int16Array(half + 1);
-
-for (let k = 0; k <= half; k++) {
-  let bestPeak = 0, bestDist = Infinity;
-  for (let p = 0; p < peaks.length; p++) {
-    const d = Math.abs(k - peaks[p]);
-    if (d < bestDist) { bestDist = d; bestPeak = peaks[p]; }
-  }
-  peakIndexForBin[k] = bestPeak;
-}
-
-// 2. Accumulate phase for each peak ONCE, into its shifted position
-const peakPhase = new Float32Array(half + 1); // synthesized phase per source peak
-const peakSeen = new Uint8Array(half + 1);
-
-for (let p = 0; p < peaks.length; p++) {
-  const pk = peaks[p];
-  const shiftedPeak = Math.round(pk * shift);
-  if (shiftedPeak > half) continue;
-
-  const freq = this.analysisFreq[pk];
-  const phaseInc = freq * shift * this.hop; // scale phase velocity by shift too
-  
-  // Accumulate into the SHIFTED peak index
-  this.sumPhase[shiftedPeak] = (this.sumPhase[shiftedPeak] || 0) + phaseInc;
-  peakPhase[pk] = this.sumPhase[shiftedPeak];
-  peakSeen[pk] = 1;
-}
-
-// 3. Place bins using their peak's phase, locked to the peak's rotation
-this.synth.fill(0);
-const norm = new Float32Array(N);
-
-for (let k = 0; k <= half; k++) {
-  const mag = this.analysisMag[k];
-  if (mag < 1e-8) continue;
-
-  const target = k * shift;
-  const i0 = target | 0;
-  const frac = target - i0;
-  if (i0 > half) continue;
-
-  const peak = peakIndexForBin[k];
-  // Phase of this bin = peak's synthesized phase + offset proportional to bin distance from peak
-  const phase = peakPhase[peak];
-
-  const bins = [i0, i0 + 1];
-  const w = [1 - frac, frac];
-
-  for (let b = 0; b < 2; b++) {
-    const bin = bins[b];
-    if (bin > half) continue;
-    const weight = mag * w[b];
-    this.synth[2 * bin] += weight * Math.cos(phase);
-    this.synth[2 * bin + 1] += weight * Math.sin(phase);
-    norm[bin] += w[b];
-  }
-}
-
-// 3. normalize
-for (let k = 0; k <= half; k++) {
-  if (norm[k] > 0) {
-    this.synth[2 * k] /= norm[k];
-    this.synth[2 * k + 1] /= norm[k];
-  }
-}
-
-// 4. mirror spectrum
-for (let k = 1; k < half; k++) {
-  this.synth[2 * (N - k)] = this.synth[2 * k];
-  this.synth[2 * (N - k) + 1] = -this.synth[2 * k + 1];
-}
-
-this.fft.inverseTransform(this.time, this.synth);} else {
-    // -------- synthesis (shared for L/R) --------
     this.synth.fill(0);
     const norm = new Float32Array(N);
 
-    for (let k = 0; k <= half; k++) {
-      const mag = this.analysisMag[k];
-      if (mag < 1e-8) continue;
+    if (perceptuallyAccurate > 0.5) {
+      const peaks = this.findPeaks(analysisMag, half);
 
-      const target = k * shift;
-      const i0 = target | 0;
-      const frac = target - i0;
+      const peakIndexForBin = new Int16Array(half + 1);
+      for (let k = 0; k <= half; k++) {
+        let bestPeak = 0, bestDist = Infinity;
+        for (let p = 0; p < peaks.length; p++) {
+          const d = Math.abs(k - peaks[p]);
+          if (d < bestDist) { bestDist = d; bestPeak = peaks[p]; }
+        }
+        peakIndexForBin[k] = bestPeak;
+      }
 
-      if (i0 > half) continue;
+      // Accumulate phase for each peak once into its shifted position
+      const peakPhase = new Float32Array(half + 1);
 
-      const freq = this.analysisFreq[k];
-      const phaseInc = freq * this.hop;
+      for (let p = 0; p < peaks.length; p++) {
+        const pk = peaks[p];
+        const shiftedPeak = Math.round(pk * shift);
+        if (shiftedPeak > half) continue;
 
-      const phase = (this.sumPhase[i0] || 0) + phaseInc;
-      this.sumPhase[i0] = phase;
+        const freq = analysisFreq[pk];
+        const phaseInc = freq * shift * this.hop;
 
-      const bins = [i0, i0 + 1];
-      const w = [1 - frac, frac];
+        sumPhase[shiftedPeak] = (sumPhase[shiftedPeak] || 0) + phaseInc;
+        peakPhase[pk] = sumPhase[shiftedPeak];
+      }
 
-      for (let b = 0; b < 2; b++) {
-        const bin = bins[b];
-        if (bin > half) continue;
+      for (let k = 0; k <= half; k++) {
+        const mag = analysisMag[k];
+        if (mag < 1e-8) continue;
 
-        const weight = mag * w[b];
+        const target = k * shift;
+        const i0 = target | 0;
+        const frac = target - i0;
+        if (i0 > half) continue;
 
-        this.synth[2 * bin] += weight * Math.cos(phase);
-        this.synth[2 * bin + 1] += weight * Math.sin(phase);
+        const peak = peakIndexForBin[k];
+        const phase = peakPhase[peak];
 
-        norm[bin] += w[b];
+        const bins = [i0, i0 + 1];
+        const w = [1 - frac, frac];
+
+        for (let b = 0; b < 2; b++) {
+          const bin = bins[b];
+          if (bin > half) continue;
+          const weight = mag * w[b];
+          this.synth[2 * bin] += weight * Math.cos(phase);
+          this.synth[2 * bin + 1] += weight * Math.sin(phase);
+          norm[bin] += w[b];
+        }
+      }
+    } else {
+      for (let k = 0; k <= half; k++) {
+        const mag = analysisMag[k];
+        if (mag < 1e-8) continue;
+
+        const target = k * shift;
+        const i0 = target | 0;
+        const frac = target - i0;
+        if (i0 > half) continue;
+
+        const freq = analysisFreq[k];
+        const phaseInc = freq * this.hop;
+
+        const phase = (sumPhase[i0] || 0) + phaseInc;
+        sumPhase[i0] = phase;
+
+        const bins = [i0, i0 + 1];
+        const w = [1 - frac, frac];
+
+        for (let b = 0; b < 2; b++) {
+          const bin = bins[b];
+          if (bin > half) continue;
+          const weight = mag * w[b];
+          this.synth[2 * bin] += weight * Math.cos(phase);
+          this.synth[2 * bin + 1] += weight * Math.sin(phase);
+          norm[bin] += w[b];
+        }
       }
     }
 
@@ -587,30 +554,47 @@ this.fft.inverseTransform(this.time, this.synth);} else {
       this.synth[2 * (N - k) + 1] = -this.synth[2 * k + 1];
     }
 
-    this.fft.inverseTransform(this.time, this.synth);}
-        // -------- stereo reconstruction --------
+    this.fft.inverseTransform(this.time, this.synth);
+
+    // Return a copy of the time-domain result
+    return this.time.slice();
+  }
+
+  processFrame(shift, pa) {
+    const N = this.N;
+
+    const midFrame = new Float32Array(N);
+    const sideFrame = new Float32Array(N);
+
     for (let i = 0; i < N; i++) {
-      const v = this.time[2 * i] * this.window[i];
+      const idx = (this.writePos - N + i + N) % N;
+      midFrame[i] = 0.5 * (this.inputL[idx] + this.inputR[idx]) * this.window[i];
+      sideFrame[i] = 0.5 * (this.inputL[idx] - this.inputR[idx]) * this.window[i];
+    }
 
-      const idx = (this.olaPos + i) % this.olaL.length;
+    const midTime = this.processChannel(midFrame, this.prevPhase, this.sumPhase, shift, pa);
+    const sideTime = this.processChannel(sideFrame, this.prevPhaseSide, this.sumPhaseSide, shift, pa);
 
-      // Re-expand MID → L/R (preserves image)
-      this.olaL[idx] += v;
-      this.olaR[idx] += v;
+    for (let i = 0; i < N; i++) {
+      const m = midTime[2 * i] * this.window[i];
+      const s = sideTime[2 * i] * this.window[i];
+
+      const idx = (this.olaWritePos + i) % this.olaL.length;
+
+      this.olaL[idx] += m + s;
+      this.olaR[idx] += m - s;
     }
   }
 
   findPeaks(mag, half) {
-  const peaks = [];
-
-  for (let k = 1; k < half - 1; k++) {
-    if (mag[k] > mag[k - 1] && mag[k] > mag[k + 1]) {
-      peaks.push(k);
+    const peaks = [];
+    for (let k = 1; k < half - 1; k++) {
+      if (mag[k] > mag[k - 1] && mag[k] > mag[k + 1]) {
+        peaks.push(k);
+      }
     }
+    return peaks;
   }
-
-  return peaks;
-}
 }
 
 registerProcessor("pitch-shifter-polishedstereo", PitchShifterStereoPolished);
