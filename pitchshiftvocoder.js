@@ -340,6 +340,12 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       minValue: 0.01,
       maxValue: 20.0,
       automationRate: "k-rate"
+    }, {
+      name: "perceptuallyaccurate",
+      defaultValue: 1,
+      minValue: 0,
+      maxValue: 1,
+      automationRate: "k-rate"
     }];
   }
 
@@ -457,6 +463,85 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       this.analysisMag[k] = mag;
     }
 
+    if (parameters.perceptuallyaccurate > 0.5) {
+    // -------- synthesis (phase-locked) --------
+this.synth.fill(0);
+const norm = new Float32Array(N);
+
+// 1. detect spectral peaks
+const peaks = this.findPeaks(this.analysisMag, half);
+
+// map each bin → nearest peak
+const peakIndexForBin = new Int16Array(half + 1);
+
+for (let k = 0; k <= half; k++) {
+  let bestPeak = 0;
+  let bestDist = Infinity;
+
+  for (let p = 0; p < peaks.length; p++) {
+    const pk = peaks[p];
+    const d = Math.abs(k - pk);
+
+    if (d < bestDist) {
+      bestDist = d;
+      bestPeak = pk;
+    }
+  }
+
+  peakIndexForBin[k] = bestPeak;
+}
+
+// 2. synthesize with locked phases
+for (let k = 0; k <= half; k++) {
+  const mag = this.analysisMag[k];
+  if (mag < 1e-8) continue;
+
+  const target = k * shift;
+  const i0 = target | 0;
+  const frac = target - i0;
+
+  if (i0 > half) continue;
+
+  const peak = peakIndexForBin[k];
+
+  // use PEAK phase instead of bin phase
+  const freq = this.analysisFreq[peak];
+  const phaseInc = freq * this.hop;
+
+  const phase = (this.sumPhase[peak] || 0) + phaseInc;
+  this.sumPhase[peak] = phase;
+
+  const bins = [i0, i0 + 1];
+  const w = [1 - frac, frac];
+
+  for (let b = 0; b < 2; b++) {
+    const bin = bins[b];
+    if (bin > half) continue;
+
+    const weight = mag * w[b];
+
+    this.synth[2 * bin] += weight * Math.cos(phase);
+    this.synth[2 * bin + 1] += weight * Math.sin(phase);
+
+    norm[bin] += w[b];
+  }
+}
+
+// 3. normalize
+for (let k = 0; k <= half; k++) {
+  if (norm[k] > 0) {
+    this.synth[2 * k] /= norm[k];
+    this.synth[2 * k + 1] /= norm[k];
+  }
+}
+
+// 4. mirror spectrum
+for (let k = 1; k < half; k++) {
+  this.synth[2 * (N - k)] = this.synth[2 * k];
+  this.synth[2 * (N - k) + 1] = -this.synth[2 * k + 1];
+}
+
+this.fft.inverseTransform(this.time, this.synth);} else {
     // -------- synthesis (shared for L/R) --------
     this.synth.fill(0);
     const norm = new Float32Array(N);
@@ -505,9 +590,8 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       this.synth[2 * (N - k) + 1] = -this.synth[2 * k + 1];
     }
 
-    this.fft.inverseTransform(this.time, this.synth);
-
-    // -------- stereo reconstruction --------
+    this.fft.inverseTransform(this.time, this.synth);}
+        // -------- stereo reconstruction --------
     for (let i = 0; i < N; i++) {
       const v = this.time[2 * i] * this.window[i];
 
@@ -518,6 +602,18 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
       this.olaR[idx] += v;
     }
   }
+
+  findPeaks(mag, half) {
+  const peaks = [];
+
+  for (let k = 1; k < half - 1; k++) {
+    if (mag[k] > mag[k - 1] && mag[k] > mag[k + 1]) {
+      peaks.push(k);
+    }
+  }
+
+  return peaks;
+}
 }
 
 registerProcessor("pitch-shifter-polishedstereo", PitchShifterStereoPolished);
