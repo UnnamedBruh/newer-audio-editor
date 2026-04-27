@@ -140,7 +140,7 @@ class PitchShifterProcessor extends AudioWorkletProcessor { // This module was w
 
     // --- Overlap-add into output buffer ---
     for (let i = 0; i < frameSize; i++) {
-      const sample = (this.time[2 * i] / frameSize) * this.window[i];
+      const sample = (this.time[2 * i] /*/ frameSize*/) * this.window[i];
       const idx = (this.readIndex + i) % frameSize;
       this.outputBuffer[idx] += sample;
     }
