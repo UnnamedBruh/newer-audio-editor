@@ -2017,6 +2017,7 @@ effects["fftpitchshift"] = function(exporter, size = 1024, pitchShift = 2, windo
 }
 
 function pitchShiftPhaseVocoder(samples, shift, frameSize = 1024, hopSize = frameSize / 4) { // This function was written using GPT-5.3
+	// The hopSize is meant to match the Hann window during reconstruction, says GPT-5.3.
   const fft = new FFT(frameSize);
   const out = new Float32Array(samples.length);
   const norm = new Float32Array(samples.length); // for normalization
@@ -2146,6 +2147,6 @@ effects["fftpitchshiftbetter"] = function(exporter, size = 1024, pitchShift = 2,
 	const len = pointer.length;
 	if (len === 0 || pitchShift === 1) return;
 	
-	exporter.audioData = pitchShiftPhaseVocoder(pointer, size, pitchShift, windowing);
+	exporter.audioData = pitchShiftPhaseVocoder(pointer, pitchShift, size, windowing);
 }
 
