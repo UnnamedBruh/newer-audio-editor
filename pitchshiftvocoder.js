@@ -331,3 +331,193 @@ class PitchShifterProcessorPolished extends AudioWorkletProcessor {
 }
 
 registerProcessor("pitch-shifter-polished", PitchShifterProcessorPolished);
+
+class PitchShifterStereoPolished extends AudioWorkletProcessor {
+  static get parameterDescriptors() {
+    return [{
+      name: "shift",
+      defaultValue: 1.0,
+      minValue: 0.01,
+      maxValue: 20.0,
+      automationRate: "k-rate"
+    }];
+  }
+
+  constructor() {
+    super();
+
+    this.N = 1024;
+    this.hop = this.N / 4;
+    this.half = this.N >> 1;
+
+    this.fft = new FFT(this.N);
+
+    this.window = new Float32Array(this.N);
+
+    // Stereo circular buffers
+    this.inputL = new Float32Array(this.N);
+    this.inputR = new Float32Array(this.N);
+    this.writePos = 0;
+
+    this.prevPhase = new Float32Array(this.half + 1);
+    this.sumPhase = new Float32Array(this.half + 1);
+
+    this.analysisMag = new Float32Array(this.half + 1);
+    this.analysisFreq = new Float32Array(this.half + 1);
+
+    this.spectrum = this.fft.createComplexArray();
+    this.synth = this.fft.createComplexArray();
+    this.time = this.fft.createComplexArray();
+
+    this.olaL = new Float32Array(this.N * 2);
+    this.olaR = new Float32Array(this.N * 2);
+    this.olaPos = 0;
+
+    this.freqPerBin = (2 * Math.PI) / this.N;
+    this.twoPi = 2 * Math.PI;
+
+    for (let i = 0; i < this.N; i++) {
+      this.window[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / this.N));
+    }
+  }
+
+  process(inputs, outputs, parameters) {
+    const input = inputs[0];
+    const output = outputs[0];
+
+    if (!input || !output || !input[0] || !input[1]) return true;
+
+    const inL = input[0];
+    const inR = input[1];
+    const outL = output[0];
+    const outR = output[1];
+
+    const shiftArr = parameters.shift;
+
+    for (let i = 0; i < inL.length; i++) {
+      const shift = shiftArr.length > 1 ? shiftArr[i] : shiftArr[0];
+
+      // -------- store stereo --------
+      this.inputL[this.writePos] = inL[i];
+      this.inputR[this.writePos] = inR[i];
+
+      this.writePos = (this.writePos + 1) % this.N;
+
+      if (this.writePos % this.hop === 0) {
+        this.processFrame(shift);
+      }
+
+      const op = this.olaPos;
+
+      outL[i] = this.olaL[op] || 0;
+      outR[i] = this.olaR[op] || 0;
+
+      this.olaL[op] = 0;
+      this.olaR[op] = 0;
+
+      this.olaPos = (this.olaPos + 1) % this.olaL.length;
+    }
+
+    return true;
+  }
+
+  processFrame(shift) {
+    const N = this.N;
+    const half = this.half;
+
+    // -------- MID (coherent analysis source) --------
+    const frame = new Float32Array(N);
+
+    for (let i = 0; i < N; i++) {
+      const idx = (this.writePos - N + i + N) % N;
+
+      const mid = 0.5 * (this.inputL[idx] + this.inputR[idx]);
+
+      frame[i] = mid * this.window[i];
+    }
+
+    this.fft.realTransform(this.spectrum, frame);
+    this.fft.completeSpectrum(this.spectrum);
+
+    // -------- analysis --------
+    for (let k = 0; k <= half; k++) {
+      const re = this.spectrum[2 * k];
+      const im = this.spectrum[2 * k + 1];
+
+      const mag = Math.hypot(re, im);
+      const phase = Math.atan2(im, re);
+
+      const prev = this.prevPhase[k];
+      this.prevPhase[k] = phase;
+
+      let delta = phase - prev - this.freqPerBin * k * this.hop;
+      delta -= this.twoPi * Math.round(delta / this.twoPi);
+
+      this.analysisFreq[k] = this.freqPerBin * k + delta / this.hop;
+      this.analysisMag[k] = mag;
+    }
+
+    // -------- synthesis (shared for L/R) --------
+    this.synth.fill(0);
+    const norm = new Float32Array(N);
+
+    for (let k = 0; k <= half; k++) {
+      const mag = this.analysisMag[k];
+      if (mag < 1e-8) continue;
+
+      const target = k * shift;
+      const i0 = target | 0;
+      const frac = target - i0;
+
+      if (i0 > half) continue;
+
+      const freq = this.analysisFreq[k];
+      const phaseInc = freq * this.hop;
+
+      const phase = (this.sumPhase[i0] || 0) + phaseInc;
+      this.sumPhase[i0] = phase;
+
+      const bins = [i0, i0 + 1];
+      const w = [1 - frac, frac];
+
+      for (let b = 0; b < 2; b++) {
+        const bin = bins[b];
+        if (bin > half) continue;
+
+        const weight = mag * w[b];
+
+        this.synth[2 * bin] += weight * Math.cos(phase);
+        this.synth[2 * bin + 1] += weight * Math.sin(phase);
+
+        norm[bin] += w[b];
+      }
+    }
+
+    for (let k = 0; k <= half; k++) {
+      if (norm[k] > 0) {
+        this.synth[2 * k] /= norm[k];
+        this.synth[2 * k + 1] /= norm[k];
+      }
+    }
+
+    for (let k = 1; k < half; k++) {
+      this.synth[2 * (N - k)] = this.synth[2 * k];
+      this.synth[2 * (N - k) + 1] = -this.synth[2 * k + 1];
+    }
+
+    this.fft.inverseTransform(this.time, this.synth);
+
+    // -------- stereo reconstruction --------
+    for (let i = 0; i < N; i++) {
+      const v = this.time[2 * i] * this.window[i];
+
+      const idx = (this.olaPos + i) % this.olaL.length;
+
+      // Re-expand MID → L/R (preserves image)
+      this.olaL[idx] += v;
+      this.olaR[idx] += v;
+    }
+  }
+}
+
+registerProcessor("pitch-shifter-polishedstereo", PitchShifterStereoPolished);
