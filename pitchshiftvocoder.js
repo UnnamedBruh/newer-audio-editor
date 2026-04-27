@@ -372,6 +372,9 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     this.prevPhaseSide = new Float32Array(this.half + 1);
     this.sumPhaseSide = new Float32Array(this.half + 1);
 
+    this.sumPhasePeak = new Float32Array(this.half + 1);
+    this.sumPhasePeakSide = new Float32Array(this.half + 1);
+
     this.spectrum = this.fft.createComplexArray();
     this.synth = this.fft.createComplexArray();
     this.time = this.fft.createComplexArray();
@@ -460,34 +463,29 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
     const norm = new Float32Array(N);
 
     if (perceptuallyAccurate > 0.5) {
-      const peaks = this.findPeaks(analysisMag, half);
+    const peaks = this.findPeaks(analysisMag, half);
 
-      const peakIndexForBin = new Int16Array(half + 1);
-      for (let k = 0; k <= half; k++) {
+    // Map each bin to its nearest peak
+    const peakIndexForBin = new Int16Array(half + 1);
+    for (let k = 0; k <= half; k++) {
         let bestPeak = 0, bestDist = Infinity;
         for (let p = 0; p < peaks.length; p++) {
-          const d = Math.abs(k - peaks[p]);
-          if (d < bestDist) { bestDist = d; bestPeak = peaks[p]; }
+            const d = Math.abs(k - peaks[p]);
+            if (d < bestDist) { bestDist = d; bestPeak = peaks[p]; }
         }
         peakIndexForBin[k] = bestPeak;
-      }
+    }
 
-      // Accumulate phase for each peak once into its shifted position
-      const peakPhase = new Float32Array(half + 1);
-
-      for (let p = 0; p < peaks.length; p++) {
+    // Accumulate phase for each peak in SOURCE space
+    for (let p = 0; p < peaks.length; p++) {
         const pk = peaks[p];
-        const shiftedPeak = Math.round(pk * shift);
-        if (shiftedPeak > half) continue;
-
         const freq = analysisFreq[pk];
-        const phaseInc = freq * shift * this.hop;
+        // Phase increment accounts for the pitch shift
+        sumPhase[pk] += freq * shift * this.hop;
+    }
 
-        sumPhase[shiftedPeak] = (sumPhase[shiftedPeak] || 0) + phaseInc;
-        peakPhase[pk] = sumPhase[shiftedPeak];
-      }
-
-      for (let k = 0; k <= half; k++) {
+    // Scatter bins into shifted positions using their peak's phase
+    for (let k = 0; k <= half; k++) {
         const mag = analysisMag[k];
         if (mag < 1e-8) continue;
 
@@ -497,21 +495,21 @@ class PitchShifterStereoPolished extends AudioWorkletProcessor {
         if (i0 > half) continue;
 
         const peak = peakIndexForBin[k];
-        const phase = peakPhase[peak];
+        const phase = sumPhase[peak]; // consistent source-space lookup
 
         const bins = [i0, i0 + 1];
         const w = [1 - frac, frac];
 
         for (let b = 0; b < 2; b++) {
-          const bin = bins[b];
-          if (bin > half) continue;
-          const weight = mag * w[b];
-          this.synth[2 * bin] += weight * Math.cos(phase);
-          this.synth[2 * bin + 1] += weight * Math.sin(phase);
-          norm[bin] += w[b];
+            const bin = bins[b];
+            if (bin > half) continue;
+            const weight = mag * w[b];
+            this.synth[2 * bin] += weight * Math.cos(phase);
+            this.synth[2 * bin + 1] += weight * Math.sin(phase);
+            norm[bin] += w[b];
         }
-      }
-    } else {
+    }
+} else {
       for (let k = 0; k <= half; k++) {
         const mag = analysisMag[k];
         if (mag < 1e-8) continue;
