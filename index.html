@@ -2077,16 +2077,18 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							let firstFile = await originalFetchFunction(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url.trim())}`);
 							const contentType = firstFile.headers.get('content-type');
 
+							let arrbuff = await firstFile.arrayBuffer();
 							if (contentType && (contentType.includes('text') || contentType.includes('html'))) {
 								const text = new TextDecoder().decode(arrbuff);
 								if (text.match(/(unable\s*to|cannot)\s*(access|visit|use)|(violated|broke|misused)\s*(our\s*)?(platform|service|guideline|rule|contract)|error code: /i)) {
 									if (confirm("It looks like the cors proxy was flagged by the original website---and mistaken as an attack. Do you want to try allorigins.win?")) {
 										firstFile = await originalFetchFunction(`https://api.allorigins.win/get?url=${encodeURIComponent(url.trim())}`);
+										arrbuff = await firstFile.arrayBuffer();
 									} else return;
 								}
 								break;
 							}
-							const arrbuff = await firstFile.arrayBuffer();
+
 							if (!arrbuff || !arrbuff.byteLength) {
 								loadFromURL.disabled = false;
 								alert("URL #" + (i+1) + " was unable to be fetched. This is not an error, but it's something important to keep in mind.");
