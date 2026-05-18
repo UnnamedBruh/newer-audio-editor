@@ -2070,33 +2070,58 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				obj.target = {files: []};
 				requestAnimationFrame(()=>{loadFromURL.style.width = (loadFromURL.value.length * 8) + "px";});
 				if (event.key === "Enter") {
+					async function trySecondProxy() {
+						let f;
+						try {
+							f = await originalFetchFunction(`https://api.allorigins.win/get?url=${encodeURIComponent(url.trim())}`);
+						} catch {
+							alert("It looks like that cors proxy failed! Unfortunately, it looks like this file couldn't be fetched.");
+						}
+						return f;
+					}
 					loadFromURL.disabled = true;
 					const urls = new Set(loadFromURL.value.split(",")).values().toArray();
 					for (let i = 0, url = urls[0]; i < urls.length; url = urls[++i]) {
+						let firstFile = null;
+						let arrbuff = null;
 						try {
-							let firstFile = await originalFetchFunction(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url.trim())}`);
-							const contentType = firstFile.headers.get('content-type');
+							firstFile = await originalFetchFunction(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url.trim())}`);
+						} catch {
+							if (confirm("It looks like the cors proxy failed to fetch the URL! Do you want to try allorigins.win?")) firstFile = trySecondProxy();
+						}
+						if (!firstFile) {
+							await loadAudioFiles(obj);
+							return;
+						}
+						let contentType = firstFile.headers.get('content-type');
 
-							let arrbuff = await firstFile.arrayBuffer();
-							if (contentType && (contentType.includes('text') || contentType.includes('html'))) {
-								const text = new TextDecoder().decode(arrbuff);
-								if (text.match(/(unable\s*to|cannot)\s*(access|visit|use)|(violated|broke|misused)\s*(our\s*)?(platform|service|guideline|rule|contract)|error code: /i)) {
-									if (confirm("It looks like the cors proxy was flagged by the original website---and mistaken as an attack. Do you want to try allorigins.win?")) {
-										firstFile = await originalFetchFunction(`https://api.allorigins.win/get?url=${encodeURIComponent(url.trim())}`);
-										arrbuff = await firstFile.arrayBuffer();
-									} else return;
+						arrbuff = await firstFile.arrayBuffer();
+
+						const regDetect = /(unable\s*to|cannot)\s*(access|visit|use)|(violated|broke|misused)\s*(our\s*)?(platform|service|guideline|rule|contract)|error code: /i;
+						if (contentType && (contentType.includes('text') || contentType.includes('html'))) {
+							const text = new TextDecoder().decode(arrbuff);
+							if (text.match(regDetect) && confirm("It looks like the cors proxy was flagged by the original website---and mistaken as an attack. Do you want to try allorigins.win?")) {
+								firstFile = trySecondProxy();
+
+								contentType = firstFile.headers.get('content-type');
+
+								arrbuff = await firstFile.arrayBuffer();
+
+								if (contentType && (contentType.includes('text') || contentType.includes('html'))) {
+									alert("It looks like that cors proxy was also flagged! Unfortunately, it looks like this file couldn't be fetched.");
+									await loadAudioFiles(obj);
+									return;
 								}
-								break;
 							}
+						}
 
-							if (!arrbuff || !arrbuff.byteLength) {
-								loadFromURL.disabled = false;
-								alert("URL #" + (i+1) + " was unable to be fetched. This is not an error, but it's something important to keep in mind.");
-								continue;
-							}
-							
-							obj.target.files.push(new File([arrbuff], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
-						} catch {}
+						if (!arrbuff || !arrbuff.byteLength) {
+							loadFromURL.disabled = false;
+							alert("URL #" + (i+1) + " was unable to be fetched. This is not an error, but it's something important to keep in mind.");
+							continue;
+						}
+
+						obj.target.files.push(new File([arrbuff], decodeURIComponent(loadFromURL.value.split("/").slice(-1)[0])));
 					}
 					await loadAudioFiles(obj);
 				}
