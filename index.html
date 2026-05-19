@@ -30,6 +30,7 @@
 	<body>
 		<script>const originalFetchFunction = fetch;</script>
 		<script src="modules/FFT.js"></script>
+		<script src="dct.js"></script>
 		<script src="audioEditor.js"></script>
 		<script src="audioExporter.js"></script>
 		<script src="audioEffects.js"></script>
@@ -45,11 +46,12 @@
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button> <button id="endsel" disabled>Select End Of Audio</button>
 		<h1 id="disappearheader">Searadare (Newer Audio Editor)</h1>
-		<a id="information" onclick="this.remove();localStorage.setItem(&quot;UnnamedBruh_NEWER_AUDIO_EDITOR_ClickedTip&quot;,&quot;true&quot;);" onmouseenter="this.style.textDecoration = &quot;underline&quot;;" onmouseleave="this.style.textDecoration = &quot;&quot;;">Scroll down to see legal information regarding our Newer Audio Editor.</a><br>
+		<a id="information" onclick="this.remove();localStorage.setItem(&quot;UnnamedBruh_NEWER_AUDIO_EDITOR_ClickedTip&quot;,&quot;true&quot;);" onmouseenter="this.style.textDecoration = &quot;underline&quot;;" onmouseleave="this.style.textDecoration = &quot;&quot;;">Scroll down to see legal information regarding our Newer Audio Editor.</a><br id="space">
 		<script>
 			const tip = localStorage.getItem("UnnamedBruh_NEWER_AUDIO_EDITOR_ClickedTip");
 			if (tip) {
 				document.getElementById("information").remove();
+				document.getElementById("space").remove();
 			}
 		</script>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac" multiple><br>
