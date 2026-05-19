@@ -2113,7 +2113,7 @@ effects["fftpitchshiftbetterstereo"] = async function(exporter, polished = true,
 	await renderWithFilter(bb);
 }
 
-effects["dctiiartifacts"] = function(exporter, size = 1024) {
+effects["dctiiartifacts"] = async function(exporter, size = 1024) {
 	const Module = await DCTModule();
 
 	const pointer = exporter.audioData;
@@ -2134,7 +2134,7 @@ effects["dctiiartifacts"] = function(exporter, size = 1024) {
 	}
 }
 
-effects["dctiireversecoefficients"] = function(exporter, size = 1024) {
+effects["dctiireversecoefficients"] = async function(exporter, size = 1024) {
 	const Module = await DCTModule();
 
 	const pointer = exporter.audioData;
