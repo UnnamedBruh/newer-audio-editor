@@ -2120,7 +2120,7 @@ effects["dctiiartifacts"] = async function(exporter, size = 1024) {
 	const len = pointer.length;
 	if (len === 0) return;
 
-	const lenR = Math.floor(len / size) * size;
+	const lenR = Math.floor(len / size);
 
 	let input;
 
@@ -2141,7 +2141,7 @@ effects["dctiireversecoefficients"] = async function(exporter, size = 1024) {
 	const len = pointer.length;
 	if (len === 0) return;
 
-	const lenR = Math.floor(len / size) * size;
+	const lenR = Math.floor(len / size);
 
 	let input;
 
