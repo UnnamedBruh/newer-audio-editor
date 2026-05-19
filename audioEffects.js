@@ -8,7 +8,12 @@ function percent(x) {
 
 function ispowof2(x) {
 	x = Number(x);
-	if (Math.log2(x) !== Math.round(Math.log2(x)) && x !== 65536) alert("The input you provided is not a power of 2.\n\nPowers of 2 include: 32, 64, 128, 256, 512, 1028, 2048, 4096, 8192, 16384, 32768, 65536..."); else return x;
+	if (Math.log2(x) !== Math.round(Math.log2(x))) alert("The input you provided is not a power of 2.\n\nPowers of 2 include: 32, 64, 128, 256, 512, 1028, 2048, 4096, 8192, 16384, 32768, 65536..."); else return x;
+}
+
+function iseven(x) {
+	x = Math.floor(Number(x));
+	if (x & 1) {alert("The input you provided is an odd number.\n\nEven numbers include 2, 4, 6, 8, 10, 12...");return Math.ceil(x/2)*2} else return x;
 }
 
 const frequencyReference = '<br><br>Frequency Reference*<br>Human Voice (Mature Male): 80 Hertz - 180 Hertz<br>Human Voice (Mature Female): 120 Hertz - 310 Hertz<br><br><a style="font-size: 8px">*Sourced from</a> <a style="font-size: 8px" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/">https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/</a>';
@@ -56,7 +61,7 @@ const effectsList = [
 	],
 	[
 		"Lowpass: Ease-In-Out (Smooth)",
-		"Smooths out the audio using the ease in-out tween for every nth group, creating an obscure \"lowpass\" artifact that may show up in legacy software. The audio may sound a bit wet or \"underwater-y\".",
+		"Smooths out the audio using the ease in-out tween for every nth group, creating an obscure \"lowpass\" artifact that may show up in legacy software. The audio may sound a bit gritty or smoothly bitcrushed.",
 		'Smoothing Threshold (measured in samples): <input id="smootheaseinout0" type="number" min="1" max="256" step="1" value="4">',
 		1,
 		"smootheaseinout",
@@ -362,5 +367,21 @@ const effectsList = [
 		"keepsilence2",
 		[identifier, Number],
 		2
-	]
+	],
+	[
+		"DCT: Artifacts",
+		"Analyzes the audio data in chunks using a Discrete Cosine Transform (type II), then converts the coefficients back into PCM. The size must be an even length.",
+		'DCT Size: <input id="dctiiartifacts0" type="number" min="32" step="32" value="2048" style="width: 100px">',
+		1,
+		"dctiiartifacts",
+		[iseven]
+	],
+	[
+		"DCT: Reverse Coefficients",
+		"Analyzes the audio data in chunks using a Discrete Cosine Transform (type II), reverses the order of the coefficients, then converts the coefficients back into PCM. The size must be an even length.\n\nLouder frequencies ",
+		'DCT Size: <input id="dctiireversecoefficients0" type="number" min="32" step="32" value="2048" style="width: 100px">',
+		1,
+		"dctiireversecoefficients",
+		[iseven]
+	],
 ].sort((a, b) => a[0].localeCompare(b[0]));
