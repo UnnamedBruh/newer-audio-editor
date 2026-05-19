@@ -2112,3 +2112,45 @@ effects["fftpitchshiftbetterstereo"] = async function(exporter, polished = true,
 
 	await renderWithFilter(bb);
 }
+
+effects["dctiiartifacts"] = function(exporter, size = 1024) {
+	const Module = await DCTModule();
+
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = Math.floor(len / size) * size;
+
+	let input;
+
+	for (let i = 0; i < lenR; i++) {
+		input = new Float64Array(pointer.subarray(i * size, (i + 1) * size));
+
+		input = new Float64Array(Module.dct_f64(input));
+		input = new Float64Array(Module.idct_f64(input));
+
+		pointer.set(input, i * size);
+	}
+}
+
+effects["dctiireversecoefficients"] = function(exporter, size = 1024) {
+	const Module = await DCTModule();
+
+	const pointer = exporter.audioData;
+	const len = pointer.length;
+	if (len === 0) return;
+
+	const lenR = Math.floor(len / size) * size;
+
+	let input;
+
+	for (let i = 0; i < lenR; i++) {
+		input = new Float64Array(pointer.subarray(i * size, (i + 1) * size));
+
+		input = new Float64Array(Module.dct_f64(input)).toReversed();
+		input = new Float64Array(Module.idct_f64(input));
+
+		pointer.set(input, i * size);
+	}
+}
