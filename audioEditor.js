@@ -65,6 +65,7 @@ async function loadWASMEffects() {
 }
 
 effects["wasm_gain"] = async function(buffer, _bufindex, volume, mode, clipMin, clipMax) {
+	console.log(buffer);
 	await loadWASMEffects();
 	const bufferNew = effinstance._malloc(buffer.length * buffer.BYTES_PER_ELEMENT);
 
