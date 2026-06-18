@@ -42,6 +42,7 @@
 		<script src="srt/sub-parser.js"></script>
 		<script src="srt/vtt-parser.js"></script>
 		<script src="asaf_codec.min.js"></script>
+		<script src="wasm_new_effects/audio_effects.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button> <button id="endsel" disabled>Select End Of Audio</button>
@@ -717,6 +718,7 @@
 							}
 						})];
 						if (effect[6] > 1) values[0] = exporters;
+						if (effect[7]) values.splice(1, 0, i); // Passing the index into the parameters
 						if (timelineBeginAudio !== 0 && effect[4] !== "trim") {
 							if (values[0] === exporters) {
 								values[0] = [{audioData: exporters[0].audioData.subarray(Math.floor(timelineBeginAudio), timelineEndAudio), sampleRate: exporters[0].sampleRate}, {audioData: exporters[1].audioData.subarray(Math.floor(timelineBeginAudio), timelineEndAudio), sampleRate: exporters[1].sampleRate}];
