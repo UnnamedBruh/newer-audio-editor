@@ -127,7 +127,7 @@
 			function __(s,m) {
 				if (!s) return ""; else return m||":";
 			}
-			function formatTime(seconds) {
+			function formatTime(seconds, samples) {
 				let str = "";
 				let f = "";
 				let y = false;
@@ -165,7 +165,7 @@
 					str += __(str,".") + Math.floor(seconds*1000).toFixed(0).padStart(3, "0");
 					f += __(f,".") + "NNN";
 				}
-				return str + " (in " + f + " format)";
+				return str + " (in " + f + " format) in samples: " + samples;
 			}
 			function generateWaveform(exp) {
 				let data2 = ["M 0,100 L 0,100"];
@@ -523,11 +523,11 @@
 						play.textContent = "Stop Sound";
 					}
 				}
-				let clickedAtWhere = 0;
+				let clickedAtWhere = 0, clickedAtWhereSample = 0;
 				const metadataOfAudio = document.createElement("pre");
 				function updateMetadata() {
-					let meta = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate) + "\nSamplerate: " + exporters[0].sampleRate + "\nFilename: " + filename;
-					if (clickedAtWhere) meta += "\nStarted Audio At: " + formatTime(clickedAtWhere);
+					let meta = "Duration: " + formatTime(exporters[0].audioData.length / exporters[0].sampleRate, exporters[0].audioData.length) + "\nSamplerate: " + exporters[0].sampleRate + "\nFilename: " + filename;
+					if (clickedAtWhere) meta += "\nStarted Audio At: " + formatTime(clickedAtWhere, clickedAtWhereSample);
 					metadataOfAudio.textContent = meta;
 				}
 				updateMetadata();
@@ -571,6 +571,7 @@
 					const relativeX = clickX / x.clientWidth;
 					startAt = relativeX * sharedBuffer.duration; // Time in seconds
 					clickedAtWhere = startAt;
+					clickedAtWhereSample = clickedAtWhere * sharedBuffer.sampleRate;
 					updateMetadata();
 					if (timelineBeginNum) startAt = 0;
 					playSound(play);
