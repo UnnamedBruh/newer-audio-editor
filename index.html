@@ -131,6 +131,33 @@
 				let str = "";
 				let f = "";
 				let y = false;
+				let usesMonths = false, usesYears = false;
+				if (seconds >= 31536000) {
+					str += __(str) + Math.floor(seconds/31536000).toFixed(0).padStart(2, "0");
+					seconds = seconds % 31536000;
+					f += __(f) + "yy";
+					y = true;
+					usesYears = true;
+				}
+				if (seconds >= 2592000) {
+					str += __(str) + Math.floor(seconds/2592000).toFixed(0).padStart(2, "0");
+					seconds = seconds % 2592000;
+					f += __(f) + "MM";
+					y = true;
+					usesMonths = true;
+				}
+				if (seconds >= 604800) {
+					str += __(str) + Math.floor(seconds/604800).toFixed(0).padStart(2, "0");
+					seconds = seconds % 604800;
+					f += __(f) + "ww";
+					y = true;
+				}
+				if (seconds >= 86400) {
+					str += __(str) + Math.floor(seconds/86400).toFixed(0).padStart(2, "0");
+					seconds = seconds % 86400;
+					f += __(f) + "dd";
+					y = true;
+				}
 				if (seconds >= 3600) {
 					str += __(str) + Math.floor(seconds/3600).toFixed(0).padStart(2, "0");
 					seconds = seconds % 3600;
@@ -165,7 +192,14 @@
 					str += __(str,".") + Math.floor(seconds*1000).toFixed(0).padStart(3, "0");
 					f += __(f,".") + "NNN";
 				}
-				return str + " (in " + f + " format) in samples: " + samples;
+				let where = "";
+				if (usesYears) {
+					where += ", where Y = 365 days"
+				}
+				if (usesMonths) {
+					where += ", where M = 30 days"
+				}
+				return str + " (in " + f + " format" + where + ") in samples: " + samples;
 			}
 			function generateWaveform(exp) {
 				let data2 = ["M 0,100 L 0,100"];
@@ -606,7 +640,7 @@
 						x.setAttribute("width", exp[0].audioData.length);
 						v.style.width = exp[0].audioData.length + "px";
 					} else {
-						skipSample = 480;
+						skipSample = exp[0].sampleRate / 100;
 						if (!data) data = generateWaveform(exp[0]);
 						const width = exp[0].audioData.length / skipSample;
 						x.setAttribute("width", width);
@@ -772,6 +806,7 @@
 									ref2.set(exporters[0].audioData);
 								}
 							}
+							if (co.checked) skipSample = exp[0].sampleRate / 100;
 							x.setAttribute("width", exp[0].audioData.length / skipSample);
 							v.style.width = (exp[0].audioData.length / skipSample) + "px";
 							n.setAttribute("d", data);
@@ -1237,7 +1272,7 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 		return frames * frameSamples;
 	};
 }
-// Granule calculating is correct, but issues might be packet or CRT calculation
+// Granule calculating is correct, but issues might be packet.
 					try {
 						const vbr = Number(prompt("How high can the bitrate of the audio be? (6.0 = worst quality, big differences, low sizes; 512.0 = best quality, nearly-neglible differences, higher sizes; 256.0 = balanced quality, minimal differences, medium sizes)") ?? 256.0) ?? 256.0;
 						const voiceOpt = confirm("Should the audio encoder optimize for voices in the audio?");
