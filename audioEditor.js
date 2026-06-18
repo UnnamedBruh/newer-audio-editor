@@ -643,7 +643,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 	const sampleRate = buffer.sampleRate;
 	const len = audioData.length;
 
-	const dryMix = 0.5;  // original signal
+	const dryMix = 1;  // original signal
 	const wetMix = volume * 0.01;  // modulated signal
 
 	const modulated = new Float32Array(len);
@@ -655,7 +655,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 
 	depth *= sampleRate; // An optimization to reduce computation (added by me)
 
-	let delaySamples, readIndex, delaySample, int;
+	let delaySamples, readIndex, delayedSample, int;
 
 	if (antiAliasing) {
 		for (let i = 0; i < len; i++) {
@@ -663,7 +663,7 @@ effects["chorus"] = function(buffer, volume = 100, rate = 1, depth = 0.003, anti
 			delaySamples = (sin(phase) * 0.5 + 0.5) * depth; // non-integer delay
 			readIndex = i - delaySamples;
 
-			int = delaySamples | 0;
+			int = readIndex | 0;
 
 			// Safe read: use original if out of bounds
 			delayedSample = readIndex >= 0 ? interpolate(audioData[int], audioData[int + 1], readIndex % 1) : 0;
