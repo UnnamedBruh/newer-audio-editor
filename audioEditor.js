@@ -38,6 +38,32 @@ function _resampleAudio(buffer, speed, shouldSmooth) {
 	buffer.audioData = variable;
 }
 
+const WASMEffects = Object.create(null);
+let effinstance;
+
+async function loadWASMEffects() {
+	if (!Object.keys(WASMEffects).length || !effinstance) {
+		effinstance = await ChorusModule();
+
+		console.log("WASM module ready");
+		WASMEffects["gain"] = effinstance.cwrap("_gain_process", null, ["number", "number", "number", "number", "number", "number"]);
+		// pointer, length, volume, clipping mode, lower limit, upper limit
+	}
+}
+
+effects["wasm_gain"] = async function(buffer, _bufindex, volume, mode, clipMin, clipMax) {
+	await loadWASMEffects();
+	const bufferNew = effinstance._malloc(buffer.length * buffer.BYTES_PER_ELEMENT);
+
+	effinstance.HEAPF32.set(buffer, bufferNew/4);
+
+	WASMEffects["gain"](bufferNew, buffer.length, volume, mode, clipMin, clipMax);
+
+	buffer.set(effinstance.HEAPF32.subarray(ptr / 4, (ptr / 4) + buffer.length););
+
+	effinstance._free(bufferNew);
+}
+
 effects["resample"] = function(buffer, targetSampleRate, shouldSmooth) {
 	if (targetSampleRate === buffer.sampleRate) return;
 
