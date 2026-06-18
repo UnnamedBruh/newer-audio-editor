@@ -53,7 +53,7 @@ const effectsList = [
 	[
 		"Resample",
 		"Resamples the audio to a specific sample rate.",
-		'Samplerate: <select id="resample0"><option>6000</option><option>8000</option><option>11025</option><option>16000</option><option>22050</option><option>33075</option><option>44100</option><option>48000</option><option>72000</option><option>88200</option><option>96000</option><option>176400</option><option>192000</option></select><br>Smooth Audio: <input id="resample1" type="checkbox" checked>',
+		'Samplerate: <select id="resample0"><option>10</option><option>50</option><option>100</option><option>500</option><option>1000</option><option>3000</option><option disabled>ABOVE IS IMPRACTICAL</option><option>6000</option><option>8000</option><option>11025</option><option>16000</option><option>22050</option><option>33075</option><option>44100</option><option>48000</option><option>72000</option><option>88200</option><option>96000</option><option>176400</option><option>192000</option></select><br>Smooth Audio: <input id="resample1" type="checkbox" checked>',
 		2,
 		"resample",
 		[Number, identifier]
