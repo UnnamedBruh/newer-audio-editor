@@ -50,7 +50,7 @@ async function loadWASMEffects() {
 
 			console.log("WASM module ready");
 			WASMEffects.gain = effinstance.cwrap(
-				"_gain_process",
+				"gain_process",
 				null,
 				["number", "number", "number", "number", "number", "number"]
 			);
