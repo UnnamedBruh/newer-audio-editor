@@ -20,6 +20,15 @@ const frequencyReference = '<br><br>Frequency Reference*<br>Human Voice (Mature 
 
 const effectsList = [
 	[
+		"!(WASM optimized NOT ADDED YET IUKAJJKRGALRUIGLARGLRGRJHGAJKRGJGHRGAJRGJAJRKGAJRGJRHGJH) Volume & Limits: Gain & Clamp",
+		"Amplifies (higher volume), attenuates (lower volume) or negates the audio.",
+		'Multiplier: <input id="wasm_gain0" type="number" min="-10" max="10" step="0.001" value="2">',
+		1,
+		"wasm_gain",
+		[function() {alert("hey\nits not implemented yet because im doing stuff. okay? okay.")}]
+	],
+	//
+	[
 		"Gain",
 		"Amplifies each sample's value in the audio, making the sound louder or quieter.",
 		'Multiplier: <input id="gain0" type="number" min="-10" max="10" step="0.001" value="2">',
