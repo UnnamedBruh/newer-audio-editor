@@ -64,7 +64,7 @@ async function loadWASMEffects() {
 	return wasmPromise;
 }
 
-effects["wasm_gain"] = async function(buffer, _bufindex, volume, mode, clipMin, clipMax) {
+effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax) {
 	buffer = buffer.audioData;
 
 	await loadWASMEffects();
