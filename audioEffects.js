@@ -18,14 +18,20 @@ function iseven(x) {
 
 const frequencyReference = '<br><br>Frequency Reference*<br>Human Voice (Mature Male): 80 Hertz - 180 Hertz<br>Human Voice (Mature Female): 120 Hertz - 310 Hertz<br><br><a style="font-size: 8px">*Sourced from</a> <a style="font-size: 8px" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/">https://pmc.ncbi.nlm.nih.gov/articles/PMC8478519/</a>';
 
+const g = localStorage.getItem("UnnamedBruh_NewerAudioEditor_WASMWARNING");
+if (!g) {
+	alert("It's recommended that you use the WASM versions of the original audio effects for more flexibility.");
+	localStorage.setItem("UnnamedBruh_NewerAudioEditor_WASMWARNING", true);
+}
+
 const effectsList = [
 	[
-		"!(WASM optimized NOT ADDED YET IUKAJJKRGALRUIGLARGLRGRJHGAJKRGJGHRGAJRGJAJRKGAJRGJRHGJH) Volume & Limits: Gain & Clamp",
+		" (WASM) Volume & Limits: Gain & Clamp",
 		"Amplifies (higher volume), attenuates (lower volume) or negates the audio.",
-		'Multiplier: <input id="wasm_gain0" type="number" min="-10" max="10" step="0.001" value="2">',
-		1,
+		'Multiplier: <input id="wasm_gain0" type="number" min="-10" max="10" step="0.001" value="2"><br>Clipping Mode: <select id="wasm_gain1"><option value="0">(0) no clipping</option><option value="1">(1) hard clipping</option><option value="2">(2) modulo wrapping (weird static, laser artifacts)</option><option value="3">(3) triangular bouncing (analog-style wrapping)</option></select><br>Minimum Limit: <input id="wasm_gain2" type="number" min="-10" max="10" step="0.001" value="-1.0"><br>Maximum Limit: <input id="wasm_gain3" type="number" min="-10" max="10" step="0.001" value="1.0">',
+		4,
 		"wasm_gain",
-		[function() {alert("hey\nits not implemented yet because im doing stuff. okay? okay.")}]
+		[Number, Number, Number, Number]
 	],
 	//
 	[
