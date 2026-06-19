@@ -26,12 +26,12 @@ if (!g) {
 
 const effectsList = [
 	[
-		" (WASM) Volume & Limits: Gain & Clamp",
-		"Amplifies (higher volume), attenuates (lower volume) or negates the audio.",
-		'Multiplier: <input id="wasm_gain0" type="number" min="-10" max="10" step="0.001" value="2"><br>Clipping Mode: <select id="wasm_gain1"><option value="0">(0) no clipping</option><option value="1">(1) hard clipping</option><option value="2">(2) modulo wrapping (weird static, laser artifacts)</option><option value="3">(3) triangular bouncing (analog-style wrapping)</option></select><br>Minimum Limit: <input id="wasm_gain2" type="number" min="-10" max="10" step="0.001" value="-1.0"><br>Maximum Limit: <input id="wasm_gain3" type="number" min="-10" max="10" step="0.001" value="1.0">',
-		4,
+		" (WASM) Volume & Limits: Gain & Clamp & DC Offset",
+		"Amplifies (higher volume), attenuates (lower volume) or negates the audio.<br><i>Note: The stable range in decimal audio (current format) is [-1.0, 1.0].</i>",
+		'<h3>Gain</h3><br>Multiplier: <input id="wasm_gain0" type="number" min="-10" max="10" step="0.001" value="2"><h3>Clamp</h3><br>Clipping Mode: <select id="wasm_gain1"><option value="0">(0) no clipping</option><option value="1">(1) hard clipping</option><option value="2">(2) modulo wrapping (weird static, laser artifacts)</option><option value="3">(3) triangular bouncing (analog-style wrapping)</option></select><br>Minimum Limit: <input id="wasm_gain2" type="number" min="-10" max="10" step="0.001" value="-1.0"><br>Maximum Limit: <input id="wasm_gain3" type="number" min="-10" max="10" step="0.001" value="1.0"><h3>DC Offset</h3><br>Straight DC Offset: <input id="wasm_gain4" type="number" min="-10" max="10" step="0.001" value="0.0"><br>DC Offset before Gain & Clamp? <input id="wasm_gain5" type="checkbox" checked="false">',
+		6,
 		"wasm_gain",
-		[Number, Number, Number, Number]
+		[Number, Number, Number, Number, Number, Boolean]
 	],
 	//
 	[
