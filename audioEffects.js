@@ -33,6 +33,14 @@ const effectsList = [
 		"wasm_gain",
 		[Number, Number, Number, Number, Number, Boolean, Boolean]
 	],
+	[
+		" (WASM) Frequency Spectrum: Biquad Frequency Filter I",
+		"Filters out, attenuates or boosts audio frequencies at a specific bound.",
+		'Frequency Cutoff: <input id="wasm_biquadfilteri0" type="number" min="0" max="24000" step="1" value="1000"> Hz<br>Quality: <input id="wasm_biquadfilteri1" type="number" min="0" max="1" step="0.01" value="1"><br>Type of Filter: <select id="wasm_biquadfilteri2" oninput="this.value == &quot;3&quot;"><option value="0">(0) lowpass (attenuate higher frequencies)</option><option value="1">(1) highpass (attenuate lower frequencies)</option><option value="2">(2) bandpass (attenuates surrounding frequencies)</option><option value="3">(3) peak (amplifies or attenuates a frequency)</option></select><div id="gn" style="display: none">Gain: <input id="wasm_biquadfilteri3" type="number" min="-10" max="10" step="1" value="1"> Db<br></div>',
+		7,
+		"wasm_biquadfilteri",
+		[Number, Number, Number, Number, Number]
+	],
 	//
 	[
 		"Gain",
