@@ -52,10 +52,10 @@ async function loadWASMEffects() {
 			WASMEffects.gain = effinstance.cwrap(
 				"gain_process",
 				null,
-				["number", "number", "number", "number", "number", "number"]
+				["number", "number", "number", "number", "number", "number", "number", "number"]
 			);
 
-			// pointer, length, volume, clipping mode, lower limit, upper limit
+			// pointer, length, volume, clipping mode, lower limit, upper limit, dc offset, is dc offset applied before gain?
 
 			return WASMEffects;
 		});
@@ -64,7 +64,7 @@ async function loadWASMEffects() {
 	return wasmPromise;
 }
 
-effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax) {
+effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain) {
 	buffer = buffer.audioData;
 
 	await loadWASMEffects();
@@ -72,7 +72,7 @@ effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax) {
 
 	effinstance.HEAPF32.set(buffer, bufferNew/4);
 
-	WASMEffects["gain"](bufferNew, buffer.length, volume, mode, clipMin, clipMax);
+	WASMEffects["gain"](bufferNew, buffer.length, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain);
 
 	buffer.set(effinstance.HEAPF32.subarray(bufferNew / 4, (bufferNew / 4) + buffer.length));
 
