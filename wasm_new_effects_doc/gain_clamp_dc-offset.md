@@ -11,8 +11,10 @@ Optimizations:
 0-2. Else, goto to 1.
 
 1. Gain + Clamp
-Warning: The case below assumes that each audio sample is not `NaN`. This is neglible, because in implementations of the Web Audio API, many HTML browsers, operating systems or sound devices handle `NaN`. This becomes a tradeoff because some legacy systems may not properly handle `NaN` samples, so clearing them *accidentally* addresses that risk. But engineerers might prefer `NaN` not to be overwritten for granular preservation or precision. This case will be handled after one day on June 19th, 2026.
-1-0-0. If `gain == 0`, zero out every byte of the audio data (`memset` in C). This method is not portable, but works as intended because WebAssembly uses the IEEE 754 Floating Point specification for floating-point types.
+Warning: The ability to handle NaN samples is toggled via `handleNaNs`. In implementations of the Web Audio API, many HTML browsers, operating systems or sound devices handle `NaN`, so not handling `NaN`s is neglible. This becomes a tradeoff because some legacy systems may not properly handle `NaN` samples, so clearing them *accidentally* addresses that risk. But engineerers might prefer `NaN` not to be overwritten for granular preservation or precision.
+1-0-0. If `gain == 0`...
+1-0-0-0. If `handleNaNs`, each sample is set to `0` if they are equal to each other (this works for the IEEE 754 Floating Point specification, because `NaN != NaN`), and kept as-is if not, via `f32x4.eq` and `v128.andnot`.
+1-0-0-1. Else, zero out every byte of the audio data (`memset` in C). This method is not portable, but works as intended because WebAssembly uses the IEEE 754 Floating Point specification for floating-point types.
 1-0-1. If `mode == 0`, goto 1-1. If `mode == 1`, goto 1-2. If `mode == 2`, goto 1-3. If `mode == 3`, goto 1-4. Else, goto 2.
 
 1-1. No Clipping Selected
