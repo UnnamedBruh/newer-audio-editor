@@ -20,7 +20,7 @@ const frequencyReference = '<br><br>Frequency Reference*<br>Human Voice (Mature 
 
 const g = localStorage.getItem("UnnamedBruh_NewerAudioEditor_WASMWARNING");
 if (!g) {
-	alert("It's recommended that you use the WASM versions of the original audio effects for more flexibility.");
+	alert("It's recommended that you use the WASM versions of the original audio effects for more flexibility, and much faster speeds.");
 	localStorage.setItem("UnnamedBruh_NewerAudioEditor_WASMWARNING", true);
 }
 
