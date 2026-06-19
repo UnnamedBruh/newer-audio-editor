@@ -28,10 +28,10 @@ const effectsList = [
 	[
 		" (WASM) Volume & Limits: Gain & Clamp & DC Offset",
 		"Amplifies (higher volume), attenuates (lower volume) or negates the audio.<br><i>Note: The stable range in decimal audio (current format) is [-1.0, 1.0].</i>",
-		'<h3>Gain</h3>Multiplier: <input id="wasm_gain0" type="number" min="-10" max="10" step="0.001" value="2"><h3>Clamp</h3>Clipping Mode: <select id="wasm_gain1"><option value="0">(0) no clipping</option><option value="1">(1) hard clipping</option><option value="2">(2) modulo wrapping (weird static, laser artifacts)</option><option value="3">(3) triangular bouncing (analog-style wrapping)</option></select><br>Minimum Limit: <input id="wasm_gain2" type="number" min="-10" max="10" step="0.001" value="-1.0"><br>Maximum Limit: <input id="wasm_gain3" type="number" min="-10" max="10" step="0.001" value="1.0"><h3>DC Offset</h3>Straight DC Offset: <input id="wasm_gain4" type="number" min="-10" max="10" step="0.001" value="0.0"><br>DC Offset before Gain & Clamp? <input id="wasm_gain5" type="checkbox">',
-		6,
+		'<h3>Gain</h3>Multiplier: <input id="wasm_gain0" type="number" min="-10" max="10" step="0.001" value="2"><br>Handle NaNs if Multiplier is 0? <input id="wasm_gain6" type="checkbox"><h3>Clamp</h3>Clipping Mode: <select id="wasm_gain1"><option value="0">(0) no clipping</option><option value="1">(1) hard clipping</option><option value="2">(2) modulo wrapping (weird static, laser artifacts)</option><option value="3">(3) triangular bouncing (analog-style wrapping)</option></select><br>Minimum Limit: <input id="wasm_gain2" type="number" min="-10" max="10" step="0.001" value="-1.0"><br>Maximum Limit: <input id="wasm_gain3" type="number" min="-10" max="10" step="0.001" value="1.0"><h3>DC Offset</h3>Straight DC Offset: <input id="wasm_gain4" type="number" min="-10" max="10" step="0.001" value="0.0"><br>DC Offset before Gain & Clamp? <input id="wasm_gain5" type="checkbox">',
+		7,
 		"wasm_gain",
-		[Number, Number, Number, Number, Number, Boolean]
+		[Number, Number, Number, Number, Number, Boolean, Boolean]
 	],
 	//
 	[
