@@ -52,7 +52,7 @@ async function loadWASMEffects() {
 			WASMEffects.gain = effinstance.cwrap(
 				"gain_process",
 				null,
-				["number", "number", "number", "number", "number", "number", "number", "number"]
+				["number", "number", "number", "number", "number", "number", "number", "number", "number"]
 			);
 
 			// pointer, length, volume, clipping mode, lower limit, upper limit, dc offset, is dc offset applied before gain?
@@ -64,7 +64,7 @@ async function loadWASMEffects() {
 	return wasmPromise;
 }
 
-effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain) {
+effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain, handleNaNsWhenGainZero) {
 	buffer = buffer.audioData;
 
 	await loadWASMEffects();
@@ -72,9 +72,9 @@ effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax, dc
 
 	effinstance.HEAPF32.set(buffer, bufferNew/4);
 
-	WASMEffects["gain"](bufferNew, buffer.length, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain);
+	WASMEffects["gain"](bufferNew, buffer.length, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain, handleNaNsWhenGainZero);
 
-	buffer.set(effinstance.HEAPF32.subarray(bufferNew / 4, (bufferNew / 4) + buffer.length));
+	buffer.set(effinstance.HEAPF32.subarray(bufferNew / buffer.BYTES_PER_ELEMENT, (bufferNew / buffer.BYTES_PER_ELEMENT) + buffer.length));
 
 	effinstance._free(bufferNew);
 }
