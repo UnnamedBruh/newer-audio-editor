@@ -72,7 +72,11 @@ effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax, dc
 
 	effinstance.HEAPF32.set(buffer, bufferNew/4);
 
+	console.time();
+
 	WASMEffects["gain"](bufferNew, buffer.length, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain, handleNaNsWhenGainZero);
+
+	console.timeEnd();
 
 	buffer.set(effinstance.HEAPF32.subarray(bufferNew / buffer.BYTES_PER_ELEMENT, (bufferNew / buffer.BYTES_PER_ELEMENT) + buffer.length));
 
