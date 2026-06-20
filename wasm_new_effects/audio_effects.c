@@ -476,7 +476,7 @@ void gain_process(float* audioData, int len, float volume, int clipMode, float c
 				// Shift the elements up by `shifted` (trishift + u) `shifted` = `data_vector` - min
 				//v128_t trishift = wasm_f32x4_sub(shifted, wasm_f32x4_mul(mult_flr, ran2_vector));
 
-				v128_t trishift = __builtin_wasm_relaxed_madd_f32x4(mult_flr, ran2_vector, shifted);
+				v128_t trishift = __builtin_wasm_relaxed_madd_f32x4(mult_flr, ran2_vector, wasm_f32x4_neg(shifted));
 
 				// Shift `shifted_trishift` down by S (shifted_trishift + S) `S` = max - min
 				trishift = wasm_f32x4_sub(trishift, ran_vector);
@@ -517,7 +517,7 @@ void gain_process(float* audioData, int len, float volume, int clipMode, float c
 				// Shift the elements up by `shifted` (trishift + u) `shifted` = `data_vector` - min
 				//v128_t trishift = wasm_f32x4_sub(shifted, wasm_f32x4_mul(mult_flr, ran2_vector));
 
-				v128_t trishift = __builtin_wasm_relaxed_madd_f32x4(mult_flr, ran2_vector, shifted);
+				v128_t trishift = __builtin_wasm_relaxed_madd_f32x4(mult_flr, ran2_vector, wasm_f32x4_neg(shifted));
 
 				// Shift `shifted_trishift` down by S (shifted_trishift + S) `S` = max - min
 				trishift = wasm_f32x4_sub(trishift, ran_vector);
