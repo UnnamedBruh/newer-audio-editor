@@ -57,6 +57,12 @@ async function loadWASMEffects() {
 
 			// pointer, length, volume, clipping mode, lower limit, upper limit, dc offset, is dc offset applied before gain?
 
+			WASMEffects.biquadfrequencyfilter_i = effinstance.cwrap(
+				"biquadfrequencyfilter_i_process",
+				null,
+				["number", "number", "number", "number", "number", "number", "number", "number"]
+			);
+
 			return WASMEffects;
 		});
 	}
@@ -75,6 +81,26 @@ effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax, dc
 	console.time();
 
 	WASMEffects["gain"](bufferNew, buffer.length, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain, handleNaNsWhenGainZero);
+
+	console.timeEnd();
+
+	buffer.set(effinstance.HEAPF32.subarray(bufferNew / buffer.BYTES_PER_ELEMENT, (bufferNew / buffer.BYTES_PER_ELEMENT) + buffer.length));
+
+	effinstance._free(bufferNew);
+}
+
+effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode, gain, poleRadius) {
+	const sr = buffer.sampleRate;
+	buffer = buffer.audioData;
+
+	await loadWASMEffects();
+	const bufferNew = effinstance._malloc(buffer.length * buffer.BYTES_PER_ELEMENT);
+
+	effinstance.HEAPF32.set(buffer, bufferNew/4);
+
+	console.time();
+
+	WASMEffects["biquadfrequencyfilter_i"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius);
 
 	console.timeEnd();
 
