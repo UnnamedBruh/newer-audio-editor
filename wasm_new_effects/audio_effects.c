@@ -592,10 +592,10 @@ void CALCULATE_BIQUAD_FREQ_COEFFICIENTS(float* coefficients, float sampleRate, f
 			a2 = 1.0f - filterGain;
 			break;
 		}
-		case BI_BANDPASS: { // Bandpass discards very low frequencies, and very high frequencies, or makes them quieter.
-			b0 = sinw * 0.5f;
-			b1 = 0.0;
-			b2 = -sinw * 0.5f;
+		case BI_BANDPASS: { // Bandpass discards very low frequencies, and very high frequencies, or makes them quieter. The b* coefficients were fixed by GPT-5.5
+			b0 = filterGain;
+			b1 = 0.0f;
+			b2 = -filterGain;
 			a0 = 1.0f + filterGain;
 			a1 = -2.0f * cosw;
 			a2 = 1.0f - filterGain;
@@ -696,12 +696,14 @@ void CALCULATE_BIQUAD_FREQ_COEFFICIENTS(float* coefficients, float sampleRate, f
 		}
 	}
 
-	coefficients[0] = b0;
-	coefficients[1] = b1;
-	coefficients[2] = b2;
-	coefficients[3] = a0;
-	coefficients[4] = a1;
-	coefficients[5] = a2;
+	float invA0 = 1.0f / a0;
+
+	coefficients[0] = b0 * invA0;
+	coefficients[1] = b1 * invA0;
+	coefficients[2] = b2 * invA0;
+	coefficients[3] = 1.0f;
+	coefficients[4] = a1 * invA0;
+	coefficients[5] = a2 * invA0;
 };
 
 struct BIQUAD_FREQ_FILTER_I {
