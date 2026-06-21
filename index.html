@@ -210,7 +210,7 @@
 				let data2 = ["M 0,100 L 0,100"];
 				const len = exp.audioData.length, y = exp.audioData;
 				let prev = 0, val, prevVal=0;
-				let ep = 0.004;
+				let ep = 0.009;
 				val = prevVal = y[0];
 				let b = 0;
 				let m = 0;
@@ -487,7 +487,7 @@
 					}
 				};
 				let currentSelected = null, paramElements = null, effect = [];
-				let biquadFilterElements = [null];
+				let biquadFilterElements = [null, null];
 				let biquadFilterPoints = Object.create(null);
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
@@ -625,6 +625,16 @@
 					if (timelineBeginNum) startAt = 0;
 					playSound(play);
 					play.textContent = "Stop Sound";
+				}
+				x.onmousemove = function(eve) {
+					let clickX = eve.clientX - (xOff - window.scrollX);
+					let clickY = eve.clientY - (x.getBoundingClientRect().y - window.scrollY);
+
+					if (isUsingSpecialPointClick && biquadFilterElements[1]) { // if text exists for biquad effect
+						biquadFilterElements[1].setAttributeNS(null, "x", clickX);
+						biquadFilterElements[1].setAttributeNS(null, "y", clickY);
+						biquadFilterElements[1].textContent = (clickY * exporters[0].sampleRate / x.getBoundingClientRect().height * 0.5) + " Hz";
+					}
 				}
 				x.onclick = playWithTimeline;
 				selectStart.onclick = function() {
@@ -848,12 +858,28 @@
 						}
 						currentSelected = effect;
 						if (effect) {
-							params.innerHTML = effect[1] + "<br>" + effect[2];
+							params.innerHTML = effect[1] + "<hr>" + effect[2];
 							paramElements = new Array(effect[3]);
 							for (let i = 0; i < paramElements.length; i++) paramElements[i] = document.getElementById(effect[4] + i);
 						} else {params.innerHTML = "";paramElements = null;}
 						params.style.width = "100vw";
 						previous = opt.selectedIndex;
+						if (currentSelected[4] === "wasm_biquadfilteri") {
+							if (biquadFilterElements[1]) biquadFilterElements[1].remove();
+	
+							const textEle = document.createElementNS("http://www.w3.org/2000/svg", "text");
+							textEle.setAttributeNS(null, "x", 0);
+							textEle.setAttributeNS(null, "y", 0);
+							textEle.setAttributeNS(null, "font-family", "Arial");
+							textEle.setAttributeNS(null, "font-size", 7);
+							textEle.setAttributeNS(null, "fill", "green");
+							textEle.setAttributeNS(null, "text-anchor", "start");
+
+							biquadFilterElements[0] = null; // Reserved for future use (e.g. grouping points using <g>)
+							biquadFilterElements[1] = textEle;
+
+							x.appendChild(textEle); // here, x is the SVG element containing the audio waveforms and timeline bar.
+						}
 					}
 				}
 				tickCache = sharedBuffer.sampleRate / skipSample;
