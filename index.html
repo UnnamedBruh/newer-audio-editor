@@ -487,6 +487,7 @@
 					}
 				};
 				let currentSelected = null, paramElements = null, effect = [];
+				let biquadFilterElements = [null];
 				let biquadFilterPoints = Object.create(null);
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
@@ -580,6 +581,7 @@
 				updateMetadata();
 				function playWithTimeline(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
+					let clickY = eve.clientY - (x.getBoundingClientRect().y - window.scrollY);
 					if (isPressingShift) {
 						timelineIter++;
 						switch (timelineIter) {
