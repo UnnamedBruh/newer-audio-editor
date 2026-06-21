@@ -636,7 +636,7 @@
 						
 						biquadFilterElements[1].setAttributeNS(null, "x", clickX + 2); // Prevent the text from being accidentally selected
 						biquadFilterElements[1].setAttributeNS(null, "y", Math.min(height, clickY + 7));
-						biquadFilterElements[1].textContent = exporters[0].sampleRate - (clickY * exporters[0].sampleRate / height * 0.5) + " Hz";
+						biquadFilterElements[1].textContent = (exporters[0].sampleRate - (clickY * exporters[0].sampleRate / height)) * 0.5 + " Hz";
 					}
 				}
 				x.onclick = playWithTimeline;
