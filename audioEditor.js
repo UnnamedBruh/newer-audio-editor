@@ -60,7 +60,7 @@ async function loadWASMEffects() {
 			WASMEffects.biquadfrequencyfilter_i = effinstance.cwrap(
 				"biquadfrequencyfilter_i_process",
 				null,
-				["number", "number", "number", "number", "number", "number", "number", "number"]
+				["number", "number", "number", "number", "number", "number", "number", "number", "number"]
 			);
 
 			return WASMEffects;
@@ -89,7 +89,7 @@ effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax, dc
 	effinstance._free(bufferNew);
 }
 
-effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode, gain, poleRadius) {
+effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode, gain, poleRadius, form) {
 	const sr = buffer.sampleRate;
 	buffer = buffer.audioData;
 
@@ -100,7 +100,7 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 
 	console.time();
 
-	WASMEffects["biquadfrequencyfilter_i"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius);
+	WASMEffects["biquadfrequencyfilter_i"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius, form);
 
 	console.timeEnd();
 
