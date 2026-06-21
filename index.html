@@ -480,6 +480,14 @@
 				importSubtitles.disabled = false;
 			}
 			function loadDiv(exp, blank = false) {
+				class biquadfilterpoint {
+					constructor(samp, freq) {
+						this.samp = sample;
+						this.freq = freq;
+					}
+				};
+				let currentSelected = null, paramElements = null, effect = [];
+				let biquadFilterPoints = Object.create(null);
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -747,7 +755,6 @@
 					v.appendChild(apply);
 					applyToSpecific.textContent = "Apply To Specific Channel";
 					v.appendChild(applyToSpecific);
-					let currentSelected = null, paramElements = null, effect = [];
 					async function applyEffectOnExporter(i) {
 						const expor = exporters[i];
 						const values = [expor, ...paramElements.map((x, i) => {
