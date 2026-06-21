@@ -819,8 +819,11 @@ inline float BIQUAD_FREQ_FILTER_II_process(float sample, struct BIQUAD_FREQ_FILT
 
 // NOTE: Gain is only additive, not a multiplier.
 
+const int samplesCrossfadeBiquadFrequencyFilter = 32;
+const float samplesCrossfadeInverse = 1.0f / samplesCrossfadeBiquadFrequencyFilter;
+
 EMSCRIPTEN_KEEPALIVE
-void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, float cutoffFreq, float quality, enum BiquadFilterType type, float gain, float poleRadius, enum BiquadFilterForm form) {
+void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, float cutoffFreq, float quality, enum BiquadFilterType type, float gain, float poleRadius, enum BiquadFilterForm form, bool crossFade) {
 	if (len <= 1) return;
 
 	float coefficients[6];
@@ -842,21 +845,79 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 
 	BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
 
-	if (form == BI_FORM_II_TRANS) {
-		for (size_t i = 0; i < len; i++) {
-			buffer[i] = BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter);
-		}
-	} else if (form == BI_FORM_II) {
-		for (size_t i = 0; i < len; i++) {
-			buffer[i] = BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter);
-		}
-	} else if (form == BI_FORM_I_TRANS) {
-		for (size_t i = 0; i < len; i++) {
-			buffer[i] = BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter);
+	if (crossFade) {
+		const int lenMinus = len - samplesCrossfadeBiquadFrequencyFilter;
+		float x = samplesCrossfadeInverse;
+		if (form == BI_FORM_II_TRANS) {
+			for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+				buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter), x);
+				x += samplesCrossfadeInverse;
+			}
+			for (size_t i = samplesCrossfadeBiquadFrequencyFilter; i < lenMinus; i++) {
+				buffer[i] = BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter);
+			}
+			x = 1.0f - samplesCrossfadeInverse;
+			for (size_t i = lenMinus; i < len; i++) {
+				buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter), x);
+				x -= samplesCrossfadeInverse;
+			}
+		} else if (form == BI_FORM_II) {
+			for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+				buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter), x);
+				x += samplesCrossfadeInverse;
+			}
+			for (size_t i = samplesCrossfadeBiquadFrequencyFilter; i < lenMinus; i++) {
+				buffer[i] = BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter);
+			}
+			x = 1.0f - samplesCrossfadeInverse;
+			for (size_t i = lenMinus; i < len; i++) {
+				buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter), x);
+				x -= samplesCrossfadeInverse;
+			}
+		} else if (form == BI_FORM_I_TRANS) {
+			for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+				buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter), x);
+				x += samplesCrossfadeInverse;
+			}
+			for (size_t i = samplesCrossfadeBiquadFrequencyFilter; i < lenMinus; i++) {
+				buffer[i] = BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter);
+			}
+			x = 1.0f - samplesCrossfadeInverse;
+			for (size_t i = lenMinus; i < len; i++) {
+				buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter), x);
+				x -= samplesCrossfadeInverse;
+			}
+		} else {
+			for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+				buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter), x);
+				x += samplesCrossfadeInverse;
+			}
+			for (size_t i = samplesCrossfadeBiquadFrequencyFilter; i < lenMinus; i++) {
+				buffer[i] = BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter);
+			}
+			x = 1.0f - samplesCrossfadeInverse;
+			for (size_t i = lenMinus; i < len; i++) {
+				buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter), x);
+				x -= samplesCrossfadeInverse;
+			}
 		}
 	} else {
-		for (size_t i = 0; i < len; i++) {
-			buffer[i] = BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter);
+		if (form == BI_FORM_II_TRANS) {
+			for (size_t i = 0; i < len; i++) {
+				buffer[i] = BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter);
+			}
+		} else if (form == BI_FORM_II) {
+			for (size_t i = 0; i < len; i++) {
+				buffer[i] = BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter);
+			}
+		} else if (form == BI_FORM_I_TRANS) {
+			for (size_t i = 0; i < len; i++) {
+				buffer[i] = BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter);
+			}
+		} else {
+			for (size_t i = 0; i < len; i++) {
+				buffer[i] = BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter);
+			}
 		}
 	}
 };
