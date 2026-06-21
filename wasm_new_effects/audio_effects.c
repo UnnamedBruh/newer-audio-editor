@@ -476,7 +476,7 @@ void gain_process(float* audioData, int len, float volume, int clipMode, float c
 				// Shift the elements up by `shifted` (trishift + u) `shifted` = `data_vector` - min
 				//v128_t trishift = wasm_f32x4_sub(shifted, wasm_f32x4_mul(mult_flr, ran2_vector));
 
-				v128_t trishift = __builtin_wasm_relaxed_madd_f32x4(mult_flr, ran2_vector, wasm_f32x4_neg(shifted));
+				v128_t trishift = __builtin_wasm_relaxed_nmadd_f32x4(mult_flr, ran2_vector, shifted);
 
 				// Shift `shifted_trishift` down by S (shifted_trishift + S) `S` = max - min
 				trishift = wasm_f32x4_sub(trishift, ran_vector);
@@ -517,7 +517,7 @@ void gain_process(float* audioData, int len, float volume, int clipMode, float c
 				// Shift the elements up by `shifted` (trishift + u) `shifted` = `data_vector` - min
 				//v128_t trishift = wasm_f32x4_sub(shifted, wasm_f32x4_mul(mult_flr, ran2_vector));
 
-				v128_t trishift = __builtin_wasm_relaxed_madd_f32x4(mult_flr, ran2_vector, wasm_f32x4_neg(shifted));
+				v128_t trishift = __builtin_wasm_relaxed_nmadd_f32x4(mult_flr, ran2_vector, shifted);
 
 				// Shift `shifted_trishift` down by S (shifted_trishift + S) `S` = max - min
 				trishift = wasm_f32x4_sub(trishift, ran_vector);
@@ -549,6 +549,11 @@ static float sqrtTwo = 1.4142135381698608f;
 
 enum BiquadFilterType : unsigned int {
 	BI_LOWPASS = 0, BI_HIGHPASS = 1, BI_BANDPASS = 2, BI_PEAK = 3, BI_NOTCH = 4, BI_LOWSHELF = 5, BI_HIGHSHELF = 6, BI_SALLENKEY_LOWPASS = 7, BI_SALLENKEY_HIGHPASS = 8
+};
+
+
+enum BiquadFilterForm : unsigned int {
+	BI_FORM_II_TRANS = 0, BI_FORM_II = 1, BI_FORM_I_TRANS = 2, BI_FORM_I = 3
 };
 
 void CALCULATE_BIQUAD_FREQ_COEFFICIENTS(float* coefficients, float sampleRate, float cutoffFreq, float doubleQuality, enum BiquadFilterType type, float gain, float poleRadius) { // Most of this function was written using GPT-5.3 and GPT-5.3 Mini (for the mathematical formulas)
@@ -696,20 +701,29 @@ void CALCULATE_BIQUAD_FREQ_COEFFICIENTS(float* coefficients, float sampleRate, f
 		}
 	}
 
-	float invA0 = 1.0f / a0;
+	if (a0 == 1.0f) {
+		coefficients[0] = b0;
+		coefficients[1] = b1;
+		coefficients[2] = b2;
+		coefficients[3] = 1.0f;
+		coefficients[4] = a1;
+		coefficients[5] = a2;
+	} else {
+		float invA0 = 1.0f / a0;
 
-	coefficients[0] = b0 * invA0;
-	coefficients[1] = b1 * invA0;
-	coefficients[2] = b2 * invA0;
-	coefficients[3] = 1.0f;
-	coefficients[4] = a1 * invA0;
-	coefficients[5] = a2 * invA0;
+		coefficients[0] = b0 * invA0;
+		coefficients[1] = b1 * invA0;
+		coefficients[2] = b2 * invA0;
+		coefficients[3] = 1.0f;
+		coefficients[4] = a1 * invA0;
+		coefficients[5] = a2 * invA0;
+	}
 };
 
-struct BIQUAD_FREQ_FILTER_I {
+struct BIQUAD_FREQ_FILTER {
 /*
 public:
-	BIQUAD_FREQ_FILTER_I(IN b0, IN b1, IN b2, IN a1, IN a2) : b0(b0), b1(b1), b2(b2), a1(a1), a2(a2), x1(0), x2(0), y1(0), y2(0) {}
+	BIQUAD_FREQ_FILTER(IN b0, IN b1, IN b2, IN a1, IN a2) : b0(b0), b1(b1), b2(b2), a1(a1), a2(a2), x1(0), x2(0), y1(0), y2(0) {}
 
 	void setCoefficients(IN nb0, IN nb1, IN nb2, IN na1, IN na2) {
 		b0 = nb0; b1 = nb1; b2 = nb2; a1 = na1; a2 = na2;
@@ -733,13 +747,29 @@ private:*/
 	float b0, b1, b2, a1, a2; // Feedforward
 	float x1, x2; // Input delays (x[n-1], x[n-2])
 	float y1, y2; // Output delays (y[n-1], y[n-2])
+	float w1, w2;
+	float z1, z2;
 };
 
-inline void BIQUAD_FREQ_FILTER_I_setCoefficients(float* coefficients, struct BIQUAD_FREQ_FILTER_I* biquadFilter) {
+inline void BIQUAD_FREQ_FILTER_setCoefficients(float* coefficients, struct BIQUAD_FREQ_FILTER* biquadFilter) {
 	biquadFilter->b0 = coefficients[0];biquadFilter->b1 = coefficients[1];biquadFilter->b2 = coefficients[2];biquadFilter->a1 = coefficients[4];biquadFilter->a2 = coefficients[5];
 };
 
-inline float BIQUAD_FREQ_FILTER_I_process(float sample, struct BIQUAD_FREQ_FILTER_I* biquadFilter) {
+// Function to process a single audio sample, written using the help of Gemini
+inline float BIQUAD_FREQ_FILTER_I_TRANS_process(float sample, struct BIQUAD_FREQ_FILTER* biquadFilter) {
+	// Calculate the output
+	float output = biquadFilter->b0 * sample + biquadFilter->b1 * biquadFilter->x1 + biquadFilter->b2 * biquadFilter->x2 - biquadFilter->a1 * biquadFilter->y1 - biquadFilter->a2 * biquadFilter->y2;
+
+	// Shift the delay lines for the next cycle
+	biquadFilter->x2 = biquadFilter->x1;
+	biquadFilter->x1 = sample;
+	biquadFilter->y2 = biquadFilter->y1;
+	biquadFilter->y1 = output;
+
+	return output;
+}
+
+inline float BIQUAD_FREQ_FILTER_I_process(float sample, struct BIQUAD_FREQ_FILTER* biquadFilter) {
 	float y = biquadFilter->b0 * sample + biquadFilter->b1 * biquadFilter->x1 + biquadFilter->b2 * biquadFilter->x2 - biquadFilter->a1 * biquadFilter->y1 - biquadFilter->a2 * biquadFilter->y2;
 
 	// Shift state variables (delays)
@@ -751,10 +781,46 @@ inline float BIQUAD_FREQ_FILTER_I_process(float sample, struct BIQUAD_FREQ_FILTE
 	return y;
 };
 
+inline float BIQUAD_FREQ_FILTER_II_TRANS_process(float sample, struct BIQUAD_FREQ_FILTER* biquadFilter) {
+	float y = biquadFilter->b0 * sample + biquadFilter->z1;
+
+	biquadFilter->z1 = biquadFilter->b1 * sample - biquadFilter->a1 * y + biquadFilter->z2;
+	biquadFilter->z2 = biquadFilter->b2 * sample - biquadFilter->a2 * y;
+
+	return y;
+};
+
+/*	OUT process(OUT x) {
+		IN y = b0 * x + z1;
+		z1 = b1 * x - a1 * y + z2;
+		z2 = b2 * x - a2 * y;
+		return (OUT)y;
+	}*/
+
+inline float BIQUAD_FREQ_FILTER_II_process(float sample, struct BIQUAD_FREQ_FILTER* biquadFilter) {
+	float w = sample - biquadFilter->a1 * biquadFilter->w1 - biquadFilter->a2 * biquadFilter->w2;
+	float y = biquadFilter->b0 * w + biquadFilter->b1 * biquadFilter->w1 + biquadFilter->b2 * biquadFilter->w2;
+
+	biquadFilter->w2 = biquadFilter->w1;
+	biquadFilter->w1 = w;
+
+	return y;
+};
+
+/*	OUT process(OUT x) {
+		IN w = x - a1 * w1 - a2 * w2;
+		IN y = b0 * w + b1 * w1 + b2 * w2;
+
+		w2 = w1;
+		w1 = w;
+
+		return (OUT)y;
+	}*/
+
 // NOTE: Gain is only additive, not a multiplier.
 
 EMSCRIPTEN_KEEPALIVE
-void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, float cutoffFreq, float quality, enum BiquadFilterType type, float gain, float poleRadius) {
+void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, float cutoffFreq, float quality, enum BiquadFilterType type, float gain, float poleRadius, enum BiquadFilterForm form) {
 	if (len <= 1) return;
 
 	float coefficients[6];
@@ -763,17 +829,35 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 
 	CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, cutoffFreq, doubleQuality, type, gain, poleRadius);
 
-	struct BIQUAD_FREQ_FILTER_I filter;
+	struct BIQUAD_FREQ_FILTER filter;
 
 	filter.x1 = 0.0f;
 	filter.x2 = 0.0f;
 	filter.y1 = 0.0f;
 	filter.y2 = 0.0f;
+	filter.w1 = 0.0f;
+	filter.w2 = 0.0f;
+	filter.z1 = 0.0f;
+	filter.z2 = 0.0f;
 
-	BIQUAD_FREQ_FILTER_I_setCoefficients(coefficients, &filter);
+	BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
 
-	for (size_t i = 0; i < len; i++) {
-		buffer[i] = BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter);
+	if (form == BI_FORM_II_TRANS) {
+		for (size_t i = 0; i < len; i++) {
+			buffer[i] = BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter);
+		}
+	} else if (form == BI_FORM_II) {
+		for (size_t i = 0; i < len; i++) {
+			buffer[i] = BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter);
+		}
+	} else if (form == BI_FORM_I_TRANS) {
+		for (size_t i = 0; i < len; i++) {
+			buffer[i] = BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter);
+		}
+	} else {
+		for (size_t i = 0; i < len; i++) {
+			buffer[i] = BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter);
+		}
 	}
 };
 
