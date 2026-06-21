@@ -56,7 +56,7 @@
 			}
 		</script>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac" multiple><br>
-		Load Audio File From URL: <input type="url" id="audurl" title="Add multiple URLs by separating them with commas ,"><br>
+		Load Audio File From URL: <input type="url" id="audurl" title="Add multiple URLs by separating them with commas (,)"><br>
 		<button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button> <button id="micrecord">Import Recording From Microphone</button>
 		<br>
 		<div id="frame" style="display: inline-block; width: max-content;"></div>
@@ -1500,6 +1500,9 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				window.onscroll = function() {
 					const scrx = window.scrollX;
 					apply.style.marginLeft = scrx + "px";
+					volume.style.marginLeft = apply.style.marginLeft;
+					volume2.style.marginLeft = apply.style.marginLeft;
+					reinterpretAudio.style.marginLeft = apply.style.marginLeft;
 					opt.style.marginLeft = apply.style.marginLeft;
 					params.style.marginLeft = apply.style.marginLeft;
 					selectLabel.style.marginLeft = apply.style.marginLeft;
@@ -1592,15 +1595,15 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 			function processSharedBuff(channel, channelNum, isProcessed) {
 				if (sharedBuffer.numberOfChannels === 4) {
 					const which = confirm("Do you want the surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
+					const newBuffer = audioContext.createBuffer(1 + which, sharedBuffer.length, sharedBuffer.sampleRate);
+					const lenBuffer = sharedBuffer.length;
+					const channel1 = newBuffer.getChannelData(0);
+					const channel1S = sharedBuffer.getChannelData(0);
+					const channel2S = sharedBuffer.getChannelData(1);
+					const channel3S = sharedBuffer.getChannelData(2);
+					const channel4S = sharedBuffer.getChannelData(3);
 					if (which) {
-						const newBuffer = audioContext.createBuffer(2, sharedBuffer.length, sharedBuffer.sampleRate);
-						const lenBuffer = sharedBuffer.length;
-						const channel1 = newBuffer.getChannelData(0);
 						const channel2 = newBuffer.getChannelData(1);
-						const channel1S = sharedBuffer.getChannelData(0);
-						const channel2S = sharedBuffer.getChannelData(1);
-						const channel3S = sharedBuffer.getChannelData(2);
-						const channel4S = sharedBuffer.getChannelData(3);
 						const leftorright = confirm("Okay! Do you want to store the front left and right sides (Cancel/No), or all sides including the front left, front right, back left and back right sides (OK/Yes)?");
 						if (leftorright) {
 							for (let i = 0; i < lenBuffer; i++) {
@@ -1616,13 +1619,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						sharedBuffer = newBuffer;
 						channel = sharedBuffer.getChannelData(channelNum & 1);
 					} else {
-						const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
-						const lenBuffer = sharedBuffer.length;
-						const channel1 = newBuffer.getChannelData(0);
-						const channel1S = sharedBuffer.getChannelData(0);
-						const channel2S = sharedBuffer.getChannelData(1);
-						const channel3S = sharedBuffer.getChannelData(2);
-						const channel4S = sharedBuffer.getChannelData(3);
 						const leftorright = confirm("Okay! Do you want to store the left and right sides (Cancel/No), or all sides including the left, right, front and back sides (OK/Yes)?");
 						if (leftorright) {
 							for (let i = 0; i < lenBuffer; i++) channel1[i] = (channel1S[i] + channel2S[i] + channel3S[i] + channel4S[i]) * 0.25;
@@ -1635,19 +1631,19 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 				} else if (sharedBuffer.numberOfChannels === 8) {
 					const open = !confirm("The editor will assume that this surround sound audio follows specific conventions. This may not be important, but it will play a role in rendering audio into stereo. You may view the page in another tab if you press No or Cancel.");
 					const which = confirm("Do you want the 7.1 surround sound audio to be converted into mono (Cancel/No) or stereo (OK/Yes)?");
+					const newBuffer = audioContext.createBuffer(1 + which, sharedBuffer.length, sharedBuffer.sampleRate);
+					const lenBuffer = sharedBuffer.length;
+					const channel1 = newBuffer.getChannelData(0);
+					const channel1S = sharedBuffer.getChannelData(0);
+					const channel2S = sharedBuffer.getChannelData(1);
+					const channel3S = sharedBuffer.getChannelData(2);
+					const channel4S = sharedBuffer.getChannelData(3);
+					const channel5S = sharedBuffer.getChannelData(4);
+					const channel6S = sharedBuffer.getChannelData(5);
+					const channel7S = sharedBuffer.getChannelData(6);
+					const channel8S = sharedBuffer.getChannelData(7);
 					if (which) {
-						const newBuffer = audioContext.createBuffer(2, sharedBuffer.length, sharedBuffer.sampleRate);
-						const lenBuffer = sharedBuffer.length;
-						const channel1 = newBuffer.getChannelData(0);
 						const channel2 = newBuffer.getChannelData(1);
-						const channel1S = sharedBuffer.getChannelData(0);
-						const channel2S = sharedBuffer.getChannelData(1);
-						const channel3S = sharedBuffer.getChannelData(2);
-						const channel4S = sharedBuffer.getChannelData(3);
-						const channel5S = sharedBuffer.getChannelData(4);
-						const channel6S = sharedBuffer.getChannelData(5);
-						const channel7S = sharedBuffer.getChannelData(6);
-						const channel8S = sharedBuffer.getChannelData(7);
 						const leftorright = confirm("Okay! Do you want to keep all the centered channels (OK/Yes), or do you want to discard them (Cancel/No)?");
 						const xy = 1/5.4;
 						if (leftorright) {
@@ -1664,17 +1660,6 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 						sharedBuffer = newBuffer;
 						channel = sharedBuffer.getChannelData(channelNum & 1);
 					} else {
-						const newBuffer = audioContext.createBuffer(1, sharedBuffer.length, sharedBuffer.sampleRate);
-						const lenBuffer = sharedBuffer.length;
-						const channel1 = newBuffer.getChannelData(0);
-						const channel1S = sharedBuffer.getChannelData(0);
-						const channel2S = sharedBuffer.getChannelData(1);
-						const channel3S = sharedBuffer.getChannelData(2);
-						const channel4S = sharedBuffer.getChannelData(3);
-						const channel5S = sharedBuffer.getChannelData(4);
-						const channel6S = sharedBuffer.getChannelData(5);
-						const channel7S = sharedBuffer.getChannelData(6);
-						const channel8S = sharedBuffer.getChannelData(7);
 						const leftorright = confirm("Okay! Do you want to keep all the centered channels (OK/Yes), or do you want to discard them (Cancel/No)?");
 						if (leftorright) {
 							for (let i = 0; i < lenBuffer; i++) channel1[i] = (channel1S[i] + channel2S[i] + channel3S[i]*2 + channel4S[i]*2 + channel5S[i] + channel6S[i] + channel7S[i] + channel8S[i]) * 0.1;
@@ -1695,7 +1680,8 @@ function defaultGetPacketSamples(frameMs = 20, sampleRate = 48000) {
 							const choice = Number(prompt("Okay then! Which formula do you want to choose? (-1 = exit this prompt | 0 = channel" + channelNum + " - otherChannel | 1 = channel" + channelNum + " * 2 - otherChannel | 2 = channel" + channelNum + " - (otherChannel - channel" + channelNum + ") / 2 | 3 = 2 but otherChannel" + channelNum + " * 2 | 4 = channel" + channelNum + " + otherChannel | 5 = channel" + channelNum + " * -1)"));
 							if (choice === 0) for (let i = 0; i < len; i++) channel[i] -= channelOther[i];
 							else if (choice === 1) for (let i = 0; i < len; i++) channel[i] = channelOther[i] - channel[i];
-							else if (choice === 2) for (let i = 0; i < len; i++) channel[i] -= Math.abs(channelOther[i] - channel[i]); else if (choice === 3) for (let i = 0; i < len; i++) channel[i] -= channelOther[i] * 2 - channel[i];
+							else if (choice === 2) for (let i = 0; i < len; i++) channel[i] -= Math.abs(channelOther[i] - channel[i]);
+							else if (choice === 3) for (let i = 0; i < len; i++) channel[i] -= channelOther[i] * 2 - channel[i];
 							else if (choice === 3.5) for (let i = 0; i < len; i++) channel[i] -= channelOther[i] - channel[i] * 2;
 							else if (choice === 4) for (let i = 0; i < len; i++) channel[i] = (channel[i] + channelOther[i]) * 0.5;
 							else if (choice === 5) {
