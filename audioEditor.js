@@ -60,7 +60,7 @@ async function loadWASMEffects() {
 			WASMEffects.biquadfrequencyfilter_i = effinstance.cwrap(
 				"biquadfrequencyfilter_i_process",
 				null,
-				["number", "number", "number", "number", "number", "number", "number", "number", "number"]
+				["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
 			);
 
 			return WASMEffects;
@@ -100,7 +100,7 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 
 	console.time();
 
-	WASMEffects["biquadfrequencyfilter_i"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius, form);
+	WASMEffects["biquadfrequencyfilter_i"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius, form, timelineBeginAudio !== 0); // The last argument is for crossfading to prevent clicks.
 
 	console.timeEnd();
 
