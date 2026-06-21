@@ -619,9 +619,9 @@ void CALCULATE_BIQUAD_FREQ_COEFFICIENTS(float* coefficients, float sampleRate, f
 			a2 = 1.0f - alphaDA;
 			break;
 		}
-		case BI_NOTCH: { // Notch quiets down a specific frequency, or nearly eliminates it.
+		case BI_NOTCH: { // Notch quiets down a specific frequency, or nearly eliminates it. implementation: the surrounding frequencies are nearly zeroed out, or attenuated quite a lot
 			float negDoubleCosW = -2.0f * cosw;
-			
+
 			b0 = 1.0f;
 			b1 = negDoubleCosW;
 			b2 = 1.0f;
@@ -637,8 +637,10 @@ void CALCULATE_BIQUAD_FREQ_COEFFICIENTS(float* coefficients, float sampleRate, f
 			float incA = A + 1.0f;
 			float decA = A - 1.0f;
 
-			float intapDecacosw = incA + decA * cosw;
-			float intamDecacosw = incA - decA * cosw;
+			float decACosW = decA * cosw;
+
+			float intapDecacosw = incA + decACosW;
+			float intamDecacosw = incA - decACosW;
 
 			float incaCosw = incA * cosw;
 
@@ -657,8 +659,10 @@ void CALCULATE_BIQUAD_FREQ_COEFFICIENTS(float* coefficients, float sampleRate, f
 			float incA = A + 1.0f;
 			float decA = A - 1.0f;
 
-			float intapDecacosw = incA + decA * cosw;
-			float intamDecacosw = incA - decA * cosw;
+			float decACosW = decA * cosw;
+
+			float intapDecacosw = incA + decACosW;
+			float intamDecacosw = incA - decACosW;
 
 			float incaCosw = incA * cosw;
 
