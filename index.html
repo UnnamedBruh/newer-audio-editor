@@ -45,7 +45,7 @@
 		<script src="wasm_new_effects/audio_effects.js"></script>
 		Volume (<a id="la" style="width: 100px">100</a>%): <input type="range" id="vol" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
 		Volume Multiplier (<a id="la2" style="width: 100px">100</a>%): <input type="range" id="vol2" min="0" max="10" step="0.01" value="1" style="width: 100%"><br>
-		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button> <button id="endsel" disabled>Select End Of Audio</button>
+		<a id="selectlabel">Selecting A Certain Region?</a> <input type="checkbox" id="select"> <button id="startsel" disabled>Select Start Of Audio</button> <button id="endsel" disabled>Select End Of Audio</button> <button id="startspecialselect" disabled>Select Points On Audio Track For Audio Effect</button>
 		<h1 id="disappearheader">Searadare (Newer Audio Editor)</h1>
 		<a id="information" onclick="this.remove();localStorage.setItem(&quot;UnnamedBruh_NEWER_AUDIO_EDITOR_ClickedTip&quot;,&quot;true&quot;);" onmouseenter="this.style.textDecoration = &quot;underline&quot;;" onmouseleave="this.style.textDecoration = &quot;&quot;;">Scroll down to see legal information regarding our Newer Audio Editor.</a><br id="space">
 		<script>
@@ -57,7 +57,7 @@
 		</script>
 		Current Audio File: <input type="file" id="aud" accept=".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac" multiple><br>
 		Load Audio File From URL: <input type="url" id="audurl" title="Add multiple URLs by separating them with commas (,)">
-		<div id="buttons_for_config_or_style" style="display: flex;flex-wrap: nowrap;"><button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button> <button id="micrecord">Import Recording From Microphone</button></div>
+		<div id="buttons_for_config_or_style" style="display: flex;flex-wrap: nowrap;background-color:none;"><button id="which">Decode The Audio File</button> <button id="loadblank">Load Blank Audio</button> <button id="reimp" disabled>Re-import Selected Audio</button> <button id="subtitle" disabled>Import Subtitles</button> <button id="micrecord">Import Recording From Microphone</button></div>
 		<br>
 		<div id="frame" style="display: inline-block; width: max-content;"></div>
 		<hr id="b">
@@ -76,7 +76,7 @@
 		<div id="subtitles" style="display: none; background-color: black; color: white; font-size: 14px; font-family: sans-serif; position: absolute; top: 70vh; left: 0px; width: 100%; height: min-content; text-align: center;"></div>
 		<script>
 			const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles"), recordMicrophone = document.getElementById("micrecord"), selectStart = document.getElementById("startsel"), selectEnd = document.getElementById("endsel"), loadFromURL = document.getElementById("audurl");
+			const audioInput = document.getElementById("aud"), volume = document.getElementById("vol"), label = document.getElementById("la"), volume2 = document.getElementById("vol2"), label2 = document.getElementById("la2"), selectBox = document.getElementById("select"), selectLabel = document.getElementById("selectlabel"), frame = document.getElementById("frame"), reimp = document.getElementById("reimp"), importSubtitles = document.getElementById("subtitle"), subtitlesDiv = document.getElementById("subtitles"), recordMicrophone = document.getElementById("micrecord"), selectStart = document.getElementById("startsel"), selectEnd = document.getElementById("endsel"), selectSpecialEffectAud = document.getElementById("startspecialselect"), loadFromURL = document.getElementById("audurl");
 			let exporters = null;
 			let sharedBuffer = null, src = null, whenPlayed = 0, playing = false, timeline = null, timelineBegin = null, timelineEnd = null, highlight = null, timelineBeginNum = 0, timelineEndNum = 0, timelineEndNumCache = 0, timelineBeginAudio = 0, timelineEndAudio = 0, timelineIter = -1, isPressingShift = false, startAt = 0, bbb = 0, ed = null, div = null, data = null, dataSecond = null, skipSample = 480, volumeWarning = true, prevIntervalID = null, xOff, skipSampleUnround = 480;
 			let gainNode = audioContext.createGain();
@@ -84,6 +84,7 @@
 			const loadBlank = document.getElementById("loadblank");
 			let whichInterpret = false;
 			let canUseSpaceKey = true;
+			let isUsingSpecialPointClick = false;
 			selectBox.oninput = function() {
 				isPressingShift = selectBox.checked;
 				selectStart.disabled = !selectBox.checked;
@@ -93,6 +94,10 @@
 				whichInterpret = !whichInterpret;
 				interpretFiles.textContent = whichInterpret ? "Treat File Data As Audio" : "Decode The Audio File";
 				audioInput.accept = whichInterpret ? "*" : ".wav, .mp3, .ogg, .flac, .aac, .weba, .m4v, .m4a, .mp4, .3gp, .3g2, .webm, .aif, .aiff, .lsac, .fbac";
+			}
+			selectSpecialEffectAud.onclick = function() {
+				isUsingSpecialPointClick = !isUsingSpecialPointClick;
+				interpretFiles.textContent = isUsingSpecialPointClick ? "Select Portions Of Audio Normally" : "Select Points On Audio Track For Audio Effect";
 			}
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
