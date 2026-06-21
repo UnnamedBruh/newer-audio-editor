@@ -97,7 +97,7 @@
 			}
 			selectSpecialEffectAud.onclick = function() {
 				isUsingSpecialPointClick = !isUsingSpecialPointClick;
-				interpretFiles.textContent = isUsingSpecialPointClick ? "Select Portions Of Audio Normally" : "Select Points On Audio Track For Audio Effect";
+				selectSpecialEffectAud.textContent = isUsingSpecialPointClick ? "Select Portions Of Audio Normally" : "Select Points On Audio Track For Audio Effect";
 			}
 			gainNode.connect(audioContext.destination);
 			gainNode.gain.value = 1;
@@ -490,6 +490,7 @@
 				let biquadFilterElements = [null, null];
 				let biquadFilterPoints = Object.create(null);
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
+				selectSpecialEffectAud.disabled = false;
 				const v = document.createElement("div");
 				const x = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 				frame.appendChild(v);
@@ -631,9 +632,11 @@
 					let clickY = eve.clientY - (x.getBoundingClientRect().y - window.scrollY);
 
 					if (isUsingSpecialPointClick && biquadFilterElements[1]) { // if text exists for biquad effect
-						biquadFilterElements[1].setAttributeNS(null, "x", clickX);
-						biquadFilterElements[1].setAttributeNS(null, "y", clickY);
-						biquadFilterElements[1].textContent = (clickY * exporters[0].sampleRate / x.getBoundingClientRect().height * 0.5) + " Hz";
+						const height = x.getBoundingClientRect().height;
+						
+						biquadFilterElements[1].setAttributeNS(null, "x", clickX + 2); // Prevent the text from being accidentally selected
+						biquadFilterElements[1].setAttributeNS(null, "y", Math.min(height, clickY + 7));
+						biquadFilterElements[1].textContent = exporters[0].sampleRate - (clickY * exporters[0].sampleRate / height * 0.5) + " Hz";
 					}
 				}
 				x.onclick = playWithTimeline;
