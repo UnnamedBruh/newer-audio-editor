@@ -648,7 +648,7 @@
 						biquadFilterElements[1].textContent = ((exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5).toFixed(0) + " Hz";
 					}
 				}
-				x.onclick = function(eve) {
+				function whenSVGDisplayIsClicked(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
 					let clickY = eve.clientY - x.getBoundingClientRect().y;
 					const height = x.getBoundingClientRect().height;
@@ -708,6 +708,7 @@
 						}
 					} else playWithTimeline(eve);
 				}
+				x.onclick = whenSVGDisplayIsClicked;
 				selectStart.onclick = function() {
 					restartSelect();
 					timelineIter = 0;
@@ -907,7 +908,7 @@
 							n.setAttribute("d", data);
 							if (n2) n2.setAttribute("d", dataSecond);
 							apply.disabled = false;
-							x.onclick = playWithTimeline; // Reset playing function, just in case browsers like Chrome misbehave every time an effect is applied
+							x.onclick = whenSVGDisplayIsClicked; // Reset playing function, just in case browsers like Chrome misbehave every time an effect is applied
 							yu = exp[0].audioData.length;
 							updateMetadata();
 						}
