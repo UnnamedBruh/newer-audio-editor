@@ -652,8 +652,8 @@
 							if (eve.target.getAttribute("data-which", "biquadpoint")) {
 								const pointEle = eve.target;
 								delete biquadFilterPoints[id];
-								biquadFilterElements[id+2][0].remove();
-								biquadFilterElements[id+2][1].remove();
+								biquadFilterElements[ind+2][0].remove();
+								biquadFilterElements[ind+2][1].remove();
 								biquadFilterElements.splice(ind+2, 1);
 							} else {
 								const pnt = new biquadfilterpoint(Math.round(clickX / x.clientWidth * sharedBuffer.duration), (exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5);
