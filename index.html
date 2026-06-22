@@ -693,7 +693,7 @@
 							const lenOfParam = SPECIALGLOBALParameter.length;
 							SPECIALGLOBALParameter[1] = Number(paramElements[0].value);
 							SPECIALGLOBALParameter[0] = 0;
-							for (let i = 2, j = 0; i < lenOfParam; i += 2, j++) {
+							for (let i = 2, j = 0; i < lenOfParam - 2; i += 2, j++) {
 								SPECIALGLOBALParameter[i] = pointsForArrayBiquadFilter[j].samp;
 								SPECIALGLOBALParameter[i+1] = pointsForArrayBiquadFilter[j].freq;
 							}
