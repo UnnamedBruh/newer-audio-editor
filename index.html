@@ -629,6 +629,13 @@
 					playSound(play);
 					play.textContent = "Stop Sound";
 				}
+				function updateBiquadFrequencyFilterLineform() {
+					const dataForLineform = ["M0 " + (200 - (Number(paramElements[0].value) / exporters[0].sampleRate * 2 * 200))];
+					for (let i = 0; i < pointsForArray.length; i++) {
+						dataForLineform.push(`L${pointsForArray[i].samp / skipSample} ${(200 - (pointsForArray[i].freq / exporters[0].sampleRate * 2 * 200))}`);
+					}
+					biquadFilterElements[0].setAttribute("d", dataForLineform.join(" "));
+				}
 				x.onmousemove = function(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
 					let clickY = eve.clientY - x.getBoundingClientRect().y;
@@ -687,11 +694,7 @@
 								SPECIALGLOBALParameter[i] = pointsForArray[j].samp;
 								SPECIALGLOBALParameter[i+1] = pointsForArray[j].freq;
 							}
-							const dataForLineform = ["M0 " + (200 - (Number(paramElements[0].value) / exporters[0].sampleRate * 2 * 200))];
-							for (let i = 0; i < pointsForArray.length; i++) {
-								dataForLineform.push(`L${pointsForArray[i].samp / skipSample} ${(200 - (pointsForArray[i].freq / exporters[0].sampleRate * 2 * 200))}`);
-							}
-							biquadFilterElements[0].setAttribute("d", dataForLineform.join(" "));
+							updateBiquadFrequencyFilterLineform();
 						}
 					} else playWithTimeline(eve);
 				}
@@ -945,6 +948,8 @@
 
 							x.appendChild(lineform);
 							x.appendChild(textEle); // here, x is the SVG element containing the audio waveforms and timeline bar.
+
+							paramElements[0].oninput = function() {updateBiquadFrequencyFilterLineform();};
 						}
 					}
 				}
