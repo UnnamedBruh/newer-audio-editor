@@ -489,6 +489,7 @@
 				let currentSelected = null, paramElements = null, effect = [];
 				let biquadFilterElements = [null, null];
 				let biquadFilterPoints = Object.create(null);
+				let biquadFilterPointID = 0;
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				selectSpecialEffectAud.disabled = false;
 				const v = document.createElement("div");
@@ -582,7 +583,7 @@
 				updateMetadata();
 				function playWithTimeline(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
-					let clickY = eve.clientY - (x.getBoundingClientRect().y - window.scrollY);
+					let clickY = eve.clientY - (x.getBoundingClientRect().y);
 					if (isPressingShift) {
 						timelineIter++;
 						switch (timelineIter) {
@@ -633,11 +634,39 @@
 					if (isUsingSpecialPointClick && biquadFilterElements[1]) { // if text exists for biquad effect
 						const height = x.getBoundingClientRect().height;
 						biquadFilterElements[1].setAttributeNS(null, "x", clickX + 2); // Prevent the text from being accidentally selected
-						biquadFilterElements[1].setAttributeNS(null, "y", Math.max(0, Math.min(height, clickY - 7)));
-						biquadFilterElements[1].textContent = ((exporters[0].sampleRate - (clickY * exporters[0].sampleRate / height)) * 0.5).toFixed(0) + " Hz";
+						biquadFilterElements[1].setAttributeNS(null, "y", Math.max(7, Math.min(height, clickY + 3.5)));
+						biquadFilterElements[1].textContent = ((exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5).toFixed(0) + " Hz";
 					}
 				}
-				x.onclick = playWithTimeline;
+				x.onclick = function(eve) {
+					let clickX = eve.clientX - (xOff - window.scrollX);
+					let clickY = eve.clientY - x.getBoundingClientRect().y;
+					if (isUsingSpecialPointClick) {
+						if (biquadFilterElements[1]) {
+							const pnt = new biquadfilterpoint(Math.round(clickX / x.clientWidth * sharedBuffer.duration), (exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5);
+							const pointEle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+							pointEle.setAttributeNS(null, "cx", clickX);
+							pointEle.setAttributeNS(null, "cy", clickY);
+							pointEle.setAttributeNS(null, "r", 5);
+							pointEle.setAttributeNS(null, "fill", "white");
+							pointEle.setAttributeNS(null, "stroke-width", 1);
+							pointEle.setAttributeNS(null, "stroke", "black");
+							const textEle = document.createElementNS("http://www.w3.org/2000/svg", "text");
+							textEle.setAttributeNS(null, "x", clickX + 3);
+							textEle.setAttributeNS(null, "y", clickY - 1);
+							textEle.setAttributeNS(null, "font-family", "Arial");
+							textEle.setAttributeNS(null, "font-size", 7);
+							textEle.setAttributeNS(null, "fill", "white");
+							textEle.setAttributeNS(null, "text-anchor", "start");
+							textEle.textContent = pnt.freq + " Hz";
+							x.appendChild(pointEle);
+							x.appendChild(textEle);
+							pointEle.setAttribute("data-svgeleid", biquadFilterPointID);
+							biquadFilterPoints[biquadFilterPointID++] = pnt;
+							biquadFilterElements.push([pointEle, textEle]);
+						}
+					} else playWithTimeline(eve);
+				}
 				selectStart.onclick = function() {
 					restartSelect();
 					timelineIter = 0;
