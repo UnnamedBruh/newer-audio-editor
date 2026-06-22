@@ -689,7 +689,7 @@
 								biquadFilterPoints[biquadFilterPointID++] = pnt;
 							}
 							pointsForArrayBiquadFilter = Object.values(biquadFilterPoints).sort((x, y) => x.samp - y.samp);
-							SPECIALGLOBALParameter = new Float32Array(pointsForArrayBiquadFilter.length * 2 + 2);
+							SPECIALGLOBALParameter = new Float32Array(pointsForArrayBiquadFilter.length * 2 + 4);
 							const lenOfParam = SPECIALGLOBALParameter.length;
 							SPECIALGLOBALParameter[1] = Number(paramElements[0].value);
 							SPECIALGLOBALParameter[0] = 0;
@@ -697,6 +697,8 @@
 								SPECIALGLOBALParameter[i] = pointsForArrayBiquadFilter[j].samp;
 								SPECIALGLOBALParameter[i+1] = pointsForArrayBiquadFilter[j].freq;
 							}
+							SPECIALGLOBALParameter[lenOfParam] = SPECIALGLOBALParameter[lenOfParam - 2];
+							SPECIALGLOBALParameter[lenOfParam + 1] = SPECIALGLOBALParameter[lenOfParam - 1];
 							updateBiquadFrequencyFilterLineform();
 						}
 					} else playWithTimeline(eve);
