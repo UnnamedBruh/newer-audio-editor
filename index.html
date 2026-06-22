@@ -689,7 +689,7 @@
 							}
 							const dataForLineform = ["M0 " + (200 - (Number(paramElements[0].value) / exporters[0].sampleRate * 2 * 200))];
 							for (let i = 0; i < pointsForArray.length; i++) {
-								dataForLineform.push(`L${pointsForArray[i].samp / (exporters[0].sampleRate / sampleSkip)} ${(200 - (pointsForArray[i].freq / exporters[0].sampleRate * 2 * 200)}`);
+								dataForLineform.push(`L${pointsForArray[i].samp / (exporters[0].sampleRate / sampleSkip)} ${(200 - (pointsForArray[i].freq / exporters[0].sampleRate * 2 * 200))}`);
 							}
 							biquadFilterElements[0].setAttribute("d", dataForLineform.join(" "));
 						}
