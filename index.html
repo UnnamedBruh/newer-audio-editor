@@ -677,8 +677,8 @@
 								pointEle.style.cursor = "pointer";
 								pointEle.setAttribute("data-svgeleid", biquadFilterPointID);
 								pointEle.setAttribute("data-which", "biquadpoint");
-								biquadFilterPoints[biquadFilterPointID++] = pnt;
 								biquadFilterElements.push([pointEle, textEle, biquadFilterPointID]);
+								biquadFilterPoints[biquadFilterPointID++] = pnt;
 							}
 							const pointsForArray = Object.values(biquadFilterPoints).sort((x, y) => x.samp - y.samp);
 							SPECIALGLOBALParameter = new Float32Array(pointsForArray.length * 2);
