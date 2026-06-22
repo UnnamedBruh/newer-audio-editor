@@ -629,14 +629,14 @@
 				}
 				x.onmousemove = function(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
-					let clickY = eve.clientY - (x.getBoundingClientRect().y - window.scrollY);
+					let clickY = eve.clientY - x.getBoundingClientRect().y + window.scrollY;
 
 					if (isUsingSpecialPointClick && biquadFilterElements[1]) { // if text exists for biquad effect
 						const height = x.getBoundingClientRect().height;
-						
+
 						biquadFilterElements[1].setAttributeNS(null, "x", clickX + 2); // Prevent the text from being accidentally selected
-						biquadFilterElements[1].setAttributeNS(null, "y", Math.min(height, clickY + 7));
-						biquadFilterElements[1].textContent = (exporters[0].sampleRate - (clickY * exporters[0].sampleRate / height)) * 0.5 + " Hz";
+						biquadFilterElements[1].setAttributeNS(null, "y", Math.max(0, Math.min(height, clickY - 7)));
+						biquadFilterElements[1].textContent = ((exporters[0].sampleRate - (clickY * exporters[0].sampleRate / height)) * 0.5).toFixed(0) + " Hz";
 					}
 				}
 				x.onclick = playWithTimeline;
