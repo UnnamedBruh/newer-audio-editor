@@ -641,6 +641,7 @@
 				x.onclick = function(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
 					let clickY = eve.clientY - x.getBoundingClientRect().y;
+					const height = x.getBoundingClientRect().height;
 					if (isUsingSpecialPointClick) {
 						if (biquadFilterElements[1]) {
 							const pnt = new biquadfilterpoint(Math.round(clickX / x.clientWidth * sharedBuffer.duration), (exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5);
