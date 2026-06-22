@@ -479,6 +479,7 @@
 				} catch (err) {console.log(err.stack);}
 				importSubtitles.disabled = false;
 			}
+			let SPECIALGLOBALParameter = null;
 			function loadDiv(exp, blank = false) {
 				class biquadfilterpoint {
 					constructor(samp, freq) {
@@ -677,6 +678,13 @@
 								pointEle.setAttribute("data-svgeleid", biquadFilterPointID);
 								biquadFilterPoints[biquadFilterPointID++] = pnt;
 								biquadFilterElements.push([pointEle, textEle, biquadFilterPointID]);
+							}
+							const pointsForArray = Object.values(biquadFilterPoints).sort((x, y) => x.samp - y.samp);
+							SPECIALGLOBALParameter = new Float32Array(pointsForArray.length * 2);
+							const lenOfParam = SPECIALGLOBALParameter.length;
+							for (let i = 0, j = 0; i < lenOfParam; i += 2, j++) {
+								SPECIALGLOBALParameter[i] = pointsForArray[j].samp;
+								SPECIALGLOBALParameter[i+1] = pointsForArray[j].freq;
 							}
 						}
 					} else playWithTimeline(eve);
