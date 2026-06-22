@@ -102,16 +102,16 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 
 	let bufferForPoints = null;
 
-	let pointBufferReal = SPECIALGLOBALParameter.subarray(0, SPECIALGLOBALParameter.length);
+	let pointBufferReal = SPECIALGLOBALParameter;
 
 	if (timelineBeginAudio !== 0) {
 		pointBufferReal = new Float32Array(SPECIALGLOBALParameter);
-		for (let i = 0; i < pointBufferReal.length; i++) {
+		for (let i = 0; i < pointBufferReal.length; i += 2) {
 			pointBufferReal[i] -= timelineBeginAudio;
 		}
 	}
 
-	if (Array.isArray(SPECIALGLOBALParameter) && SPECIALGLOBALParameter.length > 0) {
+	if (SPECIALGLOBALParameter instanceof Float32Array && SPECIALGLOBALParameter.length > 0) {
 		bufferForPoints = effinstance._malloc(pointBufferReal.length * pointBufferReal.BYTES_PER_ELEMENT);
 
 		effinstance.HEAPF32.set(pointBufferReal, bufferForPoints/4);
