@@ -644,9 +644,11 @@
 					const height = x.getBoundingClientRect().height;
 					if (isUsingSpecialPointClick) {
 						if (biquadFilterElements[1]) {
+							console.log(eve);
+							console.log(eve.target);
 							const id = Number(eve.target.getAttribute("data-svgeleid"));
-							const ind = biquadFilterElements.findIndex(x => x && x[2] && x[2] === id);
-							if (eve.target.tagName === 'CIRCLE' && !isNaN(id) && ind !== -1) {
+							const ind = biquadFilterElements.findIndex(x => x && Array.isArray(x[2]) && x[2] === id);
+							if (!isNaN(id) && ind !== -1) {
 								const pointEle = eve.target;
 								delete biquadFilterPoints[id];
 								biquadFilterElements[id+2][0].remove();
