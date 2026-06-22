@@ -665,7 +665,7 @@
 							pointEle.style.cursor = "pointer";
 							pointEle.onclick = function() {
 								const id = Number(pointEle.getAttribute("data-svgeleid"));
-								const ind = biquadFilterElements.findIndex(x => x[2] === id);
+								const ind = biquadFilterElements.findIndex(x => x && x[2] && x[2] === id);
 								biquadFilterElements.splice(ind, 1);
 								delete biquadFilterPoints[id];
 								biquadFilterElements[id][0].remove();
