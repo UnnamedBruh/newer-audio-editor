@@ -928,7 +928,7 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 		if (form == BI_FORM_II_TRANS) {
 			for (size_t i = start; i < end; i++) {
 				t = (i - p1) / (p2 - p1);
-				if (t > p2) {
+				if (i > p2) {
 					currentFrequency = p2Freq;
 					indexOfPointBefore += numOfParamsPerBiquadPoint;
 					indexOfPointAfter += numOfParamsPerBiquadPoint;
@@ -946,7 +946,7 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 		} else if (form == BI_FORM_II) {
 			for (size_t i = start; i < end; i++) {
 				t = (i - p1) / (p2 - p1);
-				if (t > p2) {
+				if (i > p2) {
 					currentFrequency = p2Freq;
 					indexOfPointBefore += numOfParamsPerBiquadPoint;
 					indexOfPointAfter += numOfParamsPerBiquadPoint;
@@ -964,7 +964,7 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 		} else if (form == BI_FORM_I_TRANS) {
 			for (size_t i = start; i < end; i++) {
 				t = (i - p1) / (p2 - p1);
-				if (t > p2) {
+				if (i > p2) {
 					currentFrequency = p2Freq;
 					indexOfPointBefore += numOfParamsPerBiquadPoint;
 					indexOfPointAfter += numOfParamsPerBiquadPoint;
@@ -982,7 +982,7 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 		} else {
 			for (size_t i = start; i < end; i++) {
 				t = (i - p1) / (p2 - p1);
-				if (t > p2) {
+				if (i > p2) {
 					currentFrequency = p2Freq;
 					indexOfPointBefore += numOfParamsPerBiquadPoint;
 					indexOfPointAfter += numOfParamsPerBiquadPoint;
