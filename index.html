@@ -649,7 +649,7 @@
 							console.log(eve.target);
 							const id = Number(eve.target.getAttribute("data-svgeleid"));
 							const ind = biquadFilterElements.findIndex(x => x && Array.isArray(x[2]) && x[2] === id);
-							if (!isNaN(id) && ind !== -1) {
+							if (eve.target.getAttribute("data-which", "biquadpoint")) {
 								const pointEle = eve.target;
 								delete biquadFilterPoints[id];
 								biquadFilterElements[id+2][0].remove();
@@ -676,6 +676,7 @@
 								x.appendChild(textEle);
 								pointEle.style.cursor = "pointer";
 								pointEle.setAttribute("data-svgeleid", biquadFilterPointID);
+								pointEle.setAttribute("data-which", "biquadpoint");
 								biquadFilterPoints[biquadFilterPointID++] = pnt;
 								biquadFilterElements.push([pointEle, textEle, biquadFilterPointID]);
 							}
