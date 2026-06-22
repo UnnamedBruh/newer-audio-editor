@@ -689,16 +689,20 @@
 								biquadFilterPoints[biquadFilterPointID++] = pnt;
 							}
 							pointsForArrayBiquadFilter = Object.values(biquadFilterPoints).sort((x, y) => x.samp - y.samp);
-							SPECIALGLOBALParameter = new Float32Array(pointsForArrayBiquadFilter.length * 2 + 4);
-							const lenOfParam = SPECIALGLOBALParameter.length;
-							SPECIALGLOBALParameter[1] = Number(paramElements[0].value);
-							SPECIALGLOBALParameter[0] = 0;
-							for (let i = 2, j = 0; i < lenOfParam - 2; i += 2, j++) {
-								SPECIALGLOBALParameter[i] = pointsForArrayBiquadFilter[j].samp;
-								SPECIALGLOBALParameter[i+1] = pointsForArrayBiquadFilter[j].freq;
+							if (pointsForArrayBiquadFilter.length === 0) {
+								SPECIALGLOBALParameter = new Float32Array();
+							} else {
+								SPECIALGLOBALParameter = new Float32Array(pointsForArrayBiquadFilter.length * 2 + 4);
+								const lenOfParam = SPECIALGLOBALParameter.length;
+								SPECIALGLOBALParameter[1] = Number(paramElements[0].value);
+								SPECIALGLOBALParameter[0] = 0;
+								for (let i = 2, j = 0; i < lenOfParam - 2; i += 2, j++) {
+									SPECIALGLOBALParameter[i] = pointsForArrayBiquadFilter[j].samp;
+									SPECIALGLOBALParameter[i+1] = pointsForArrayBiquadFilter[j].freq;
+								}
+								SPECIALGLOBALParameter[lenOfParam - 2] = exporters[0].audioData.length;
+								SPECIALGLOBALParameter[lenOfParam - 1] = SPECIALGLOBALParameter[lenOfParam - 3];
 							}
-							SPECIALGLOBALParameter[lenOfParam] = exporters[0].audioData.length;
-							SPECIALGLOBALParameter[lenOfParam + 1] = SPECIALGLOBALParameter[lenOfParam - 1];
 							updateBiquadFrequencyFilterLineform();
 						}
 					} else playWithTimeline(eve);
