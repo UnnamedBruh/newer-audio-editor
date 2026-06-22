@@ -697,7 +697,7 @@
 								SPECIALGLOBALParameter[i] = pointsForArrayBiquadFilter[j].samp;
 								SPECIALGLOBALParameter[i+1] = pointsForArrayBiquadFilter[j].freq;
 							}
-							SPECIALGLOBALParameter[lenOfParam] = SPECIALGLOBALParameter[lenOfParam - 2];
+							SPECIALGLOBALParameter[lenOfParam] = exporters[0].audioData.length;
 							SPECIALGLOBALParameter[lenOfParam + 1] = SPECIALGLOBALParameter[lenOfParam - 1];
 							updateBiquadFrequencyFilterLineform();
 						}
