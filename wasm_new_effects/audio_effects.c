@@ -927,7 +927,7 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 		}
 		if (form == BI_FORM_II_TRANS) {
 			for (size_t i = start; i < end; i++) {
-				t = (i - p1) / (p2 - p1);
+				t = ((double)i - p1) / (p2 - p1);
 				if (i > p2) {
 					currentFrequency = p2Freq;
 					indexOfPointBefore += numOfParamsPerBiquadPoint;
@@ -940,12 +940,13 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 				if ((currentFrequency < 40) || fabsf(currentFrequency - oldFrequency) > 7) {
 					CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
 					BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+					oldFrequency = currentFrequency;
 				}
 				buffer[i] = BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter);
 			}
 		} else if (form == BI_FORM_II) {
 			for (size_t i = start; i < end; i++) {
-				t = (i - p1) / (p2 - p1);
+				t = ((double)i - p1) / (p2 - p1);
 				if (i > p2) {
 					currentFrequency = p2Freq;
 					indexOfPointBefore += numOfParamsPerBiquadPoint;
@@ -958,12 +959,13 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 				if ((currentFrequency < 40) || fabsf(currentFrequency - oldFrequency) > 7) {
 					CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
 					BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+					oldFrequency = currentFrequency;
 				}
 				buffer[i] = BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter);
 			}
 		} else if (form == BI_FORM_I_TRANS) {
 			for (size_t i = start; i < end; i++) {
-				t = (i - p1) / (p2 - p1);
+				t = ((double)i - p1) / (p2 - p1);
 				if (i > p2) {
 					currentFrequency = p2Freq;
 					indexOfPointBefore += numOfParamsPerBiquadPoint;
@@ -976,12 +978,13 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 				if ((currentFrequency < 40) || fabsf(currentFrequency - oldFrequency) > 7) {
 					CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
 					BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+					oldFrequency = currentFrequency;
 				}
 				buffer[i] = BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter);
 			}
 		} else {
 			for (size_t i = start; i < end; i++) {
-				t = (i - p1) / (p2 - p1);
+				t = ((double)i - p1) / (p2 - p1);
 				if (i > p2) {
 					currentFrequency = p2Freq;
 					indexOfPointBefore += numOfParamsPerBiquadPoint;
@@ -994,6 +997,7 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 				if ((currentFrequency < 40) || fabsf(currentFrequency - oldFrequency) > 7) {
 					CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
 					BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+					oldFrequency = currentFrequency;
 				}
 				buffer[i] = BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter);
 			}
