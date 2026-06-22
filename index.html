@@ -653,18 +653,27 @@
 							pointEle.setAttributeNS(null, "stroke-width", 1);
 							pointEle.setAttributeNS(null, "stroke", "black");
 							const textEle = document.createElementNS("http://www.w3.org/2000/svg", "text");
-							textEle.setAttributeNS(null, "x", clickX + 3);
+							textEle.setAttributeNS(null, "x", clickX + 5);
 							textEle.setAttributeNS(null, "y", clickY - 1);
 							textEle.setAttributeNS(null, "font-family", "Arial");
 							textEle.setAttributeNS(null, "font-size", 7);
 							textEle.setAttributeNS(null, "fill", "white");
 							textEle.setAttributeNS(null, "text-anchor", "start");
-							textEle.textContent = pnt.freq + " Hz";
+							textEle.textContent = pnt.freq.toFixed(0) + " Hz";
 							x.appendChild(pointEle);
 							x.appendChild(textEle);
+							pointEle.style.cursor = "pointer";
+							pointEle.onclick = function() {
+								const id = Number(pointEle.getAttribute("data-svgeleid"));
+								const ind = biquadFilterElements.findIndex(x => x[2] === id);
+								biquadFilterElements.splice(ind, 1);
+								delete biquadFilterPoints[id];
+								biquadFilterElements[id][0].remove();
+								biquadFilterElements[id][1].remove();
+							}
 							pointEle.setAttribute("data-svgeleid", biquadFilterPointID);
 							biquadFilterPoints[biquadFilterPointID++] = pnt;
-							biquadFilterElements.push([pointEle, textEle]);
+							biquadFilterElements.push([pointEle, textEle, biquadFilterPointID]);
 						}
 					} else playWithTimeline(eve);
 				}
