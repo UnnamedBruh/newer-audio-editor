@@ -629,7 +629,7 @@
 				}
 				x.onmousemove = function(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
-					let clickY = eve.clientY - x.getBoundingClientRect().y + window.scrollY;
+					let clickY = eve.clientY - x.getBoundingClientRect().y - window.scrollY;
 
 					if (isUsingSpecialPointClick && biquadFilterElements[1]) { // if text exists for biquad effect
 						const height = x.getBoundingClientRect().height;
