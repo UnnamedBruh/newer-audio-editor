@@ -629,10 +629,11 @@
 					playSound(play);
 					play.textContent = "Stop Sound";
 				}
+				let pointsForArrayBiquadFilter = [];
 				function updateBiquadFrequencyFilterLineform() {
 					const dataForLineform = ["M0 " + (200 - (Number(paramElements[0].value) / exporters[0].sampleRate * 2 * 200))];
-					for (let i = 0; i < pointsForArray.length; i++) {
-						dataForLineform.push(`L${pointsForArray[i].samp / skipSample} ${(200 - (pointsForArray[i].freq / exporters[0].sampleRate * 2 * 200))}`);
+					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
+						dataForLineform.push(`L${pointsForArrayBiquadFilter[i].samp / skipSample} ${(200 - (pointsForArrayBiquadFilter[i].freq / exporters[0].sampleRate * 2 * 200))}`);
 					}
 					biquadFilterElements[0].setAttribute("d", dataForLineform.join(" "));
 				}
@@ -687,12 +688,12 @@
 								biquadFilterElements.push([pointEle, textEle, biquadFilterPointID]);
 								biquadFilterPoints[biquadFilterPointID++] = pnt;
 							}
-							const pointsForArray = Object.values(biquadFilterPoints).sort((x, y) => x.samp - y.samp);
-							SPECIALGLOBALParameter = new Float32Array(pointsForArray.length * 2);
+							pointsForArrayBiquadFilter = Object.values(biquadFilterPoints).sort((x, y) => x.samp - y.samp);
+							SPECIALGLOBALParameter = new Float32Array(pointsForArrayBiquadFilter.length * 2);
 							const lenOfParam = SPECIALGLOBALParameter.length;
 							for (let i = 0, j = 0; i < lenOfParam; i += 2, j++) {
-								SPECIALGLOBALParameter[i] = pointsForArray[j].samp;
-								SPECIALGLOBALParameter[i+1] = pointsForArray[j].freq;
+								SPECIALGLOBALParameter[i] = pointsForArrayBiquadFilter[j].samp;
+								SPECIALGLOBALParameter[i+1] = pointsForArrayBiquadFilter[j].freq;
 							}
 							updateBiquadFrequencyFilterLineform();
 						}
