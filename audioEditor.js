@@ -60,10 +60,10 @@ async function loadWASMEffects() {
 			WASMEffects.biquadfrequencyfilter = effinstance.cwrap(
 				"biquadfrequencyfilter_i_process", // This doesn't support only the Biquad Filter I form. it's just named this way due to legacy compatibilty.
 				null,
-				["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
+				["number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
 			);
 
-			// pointer, length, sampleRate (Hz), cutoff frequency (Hz), quality (0-1), biquad filter type (0 = lowpass, 1 = highpass, 2 = bandpass, 3 = peak, 4 = notch, 5 = lowshelf, 6 = highshelf, 7 = sallen-key lowpass, 8 = sallen-key high pass), gain (in Db), pole radius (1 = really narrow, 0.7 = a bit broad), biquad filter form (0 = ii trans, 1 = ii, 2 = i trans, 3 = i), crossfade (no pops or clicks at start or end)
+			// pointer, length, sampleRate (Hz), cutoff frequency (Hz), quality (0-1), biquad filter type (0 = lowpass, 1 = highpass, 2 = bandpass, 3 = peak, 4 = notch, 5 = lowshelf, 6 = highshelf, 7 = sallen-key lowpass, 8 = sallen-key high pass), gain (in Db), pole radius (1 = really narrow, 0.7 = a bit broad), biquad filter form (0 = ii trans, 1 = ii, 2 = i trans, 3 = i), crossfade (no pops or clicks at start or end), pointer to points, number of points
 
 			return WASMEffects;
 		});
@@ -100,9 +100,17 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 
 	effinstance.HEAPF32.set(buffer, bufferNew/4);
 
+	let bufferForPoints = null;
+
+	if (Array.isArray(SPECIALGLOBALParameter) && SPECIALGLOBALParameter.length > 0) {
+		bufferForPoints = effinstance._malloc(SPECIALGLOBALParameter.length * SPECIALGLOBALParameter.BYTES_PER_ELEMENT);
+
+		effinstance.HEAPF32.set(SPECIALGLOBALParameter, bufferForPoints/4);
+	} else bufferForPoints = 0; // Equivalent to NULL in the C language
+
 	console.time();
 
-	WASMEffects["biquadfrequencyfilter"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius, form, timelineBeginAudio !== 0); // The last argument is for crossfading to prevent clicks.
+	WASMEffects["biquadfrequencyfilter"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius, form, timelineBeginAudio !== 0, bufferForPoints, SPECIALGLOBALParameter.length); // The last argument is for crossfading to prevent clicks.
 
 	console.timeEnd();
 
