@@ -102,15 +102,24 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 
 	let bufferForPoints = null;
 
-	if (Array.isArray(SPECIALGLOBALParameter) && SPECIALGLOBALParameter.length > 0) {
-		bufferForPoints = effinstance._malloc(SPECIALGLOBALParameter.length * SPECIALGLOBALParameter.BYTES_PER_ELEMENT);
+	let pointBufferReal = SPECIALGLOBALParameter.subarray(0, SPECIALGLOBALParameter.length);
 
-		effinstance.HEAPF32.set(SPECIALGLOBALParameter, bufferForPoints/4);
+	if (timelineBeginAudio !== 0) {
+		pointBufferReal = new Float32Array(SPECIALGLOBALParameter);
+		for (let i = 0; i < pointBufferReal.length; i++) {
+			pointBufferReal[i] -= timelineBeginAudio;
+		}
+	}
+
+	if (Array.isArray(SPECIALGLOBALParameter) && SPECIALGLOBALParameter.length > 0) {
+		bufferForPoints = effinstance._malloc(pointBufferReal.length * pointBufferReal.BYTES_PER_ELEMENT);
+
+		effinstance.HEAPF32.set(pointBufferReal, bufferForPoints/4);
 	} else bufferForPoints = 0; // Equivalent to NULL in the C language
 
 	console.time();
 
-	WASMEffects["biquadfrequencyfilter"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius, form, timelineBeginAudio !== 0, bufferForPoints, SPECIALGLOBALParameter.length); // The last argument is for crossfading to prevent clicks.
+	WASMEffects["biquadfrequencyfilter"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius, form, timelineBeginAudio !== 0, bufferForPoints, pointBufferReal.length); // The timelineBeginAudio !== 0 argument is for crossfading to prevent clicks.
 
 	console.timeEnd();
 
