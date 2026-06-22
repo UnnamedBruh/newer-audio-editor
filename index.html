@@ -645,16 +645,16 @@
 					const height = x.getBoundingClientRect().height;
 					if (isUsingSpecialPointClick) {
 						if (biquadFilterElements[1]) {
-							console.log(eve);
-							console.log(eve.target);
+							//console.log(eve);
+							//console.log(eve.target);
 							const id = Number(eve.target.getAttribute("data-svgeleid"));
 							const ind = biquadFilterElements.findIndex(x => Array.isArray(x) && x[2] === id);
 							if (eve.target.getAttribute("data-which", "biquadpoint")) {
 								const pointEle = eve.target;
 								delete biquadFilterPoints[id];
-								biquadFilterElements[ind+2][0].remove();
-								biquadFilterElements[ind+2][1].remove();
-								biquadFilterElements.splice(ind+2, 1);
+								biquadFilterElements[ind][0].remove();
+								biquadFilterElements[ind][1].remove();
+								biquadFilterElements.splice(ind, 1);
 							} else {
 								const pnt = new biquadfilterpoint(Math.round(clickX / x.clientWidth * sharedBuffer.duration * exporters[0].sampleRate), (exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5);
 								const pointEle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
