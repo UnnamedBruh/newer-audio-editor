@@ -859,7 +859,7 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 		int indexOfPointBefore = 0;
 		int indexOfPointAfter = 0;
 
-		int numOfPointsOff2 = numOfPoints - 2;
+		int numOfPointsOff2 = numberOfPoints - 2;
 
 		// THE VERY FIRST POINT IS AUTOMATICALLY INSERTED!!!
 
@@ -886,102 +886,139 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 
 		double t = 0.0;
 
-		if (crossFade) {} else { 
+		size_t start = 0;
+		size_t end = len;
+
+		if (crossFade) {
+			start = samplesCrossfadeBiquadFrequencyFilter;
+			end = len - samplesCrossfadeBiquadFrequencyFilter;
+
+			float approxFreq = p1Freq + (-p1 / (p2 - p1)) * (p2Freq - p1Freq);
+
+			currentFrequency = approxFreq;
+			oldFrequency = currentFrequency;
+
+			CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, approxFreq, doubleQuality, type, gain, poleRadius);
+			BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+
+			float x = samplesCrossfadeInverse;
+
 			if (form == BI_FORM_II_TRANS) {
-				for (size_t i = 0; i < len; i++) {
-					t = (i - p1) / (p2 - p1);
-
-					if (t > p2) {
-						currentFrequency = p2Freq;
-
-						indexOfPointBefore += numOfParamsPerBiquadPoint;
-						indexOfPointAfter += numOfParamsPerBiquadPoint;
-
-						p1 = points[indexOfPointBefore];
-						p2 = points[indexOfPointAfter];
-
-						p1Freq = points[indexOfPointBefore+1];
-						p2Freq = points[indexOfPointAfter+1];
-					} else currentFrequency = p1Freq + t * (p2Freq - p1Freq);
-
-					if ((currentFrequency < 40) || abs(currentFrequency - oldFrequency) > 7) {
-						CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
-						BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
-					}
-
-					buffer[i] = BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter);
+				for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+					buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter), x);
+					x += samplesCrossfadeInverse;
 				}
 			} else if (form == BI_FORM_II) {
-				for (size_t i = 0; i < len; i++) {
-					t = (i - p1) / (p2 - p1);
-
-					if (t > p2) {
-						currentFrequency = p2Freq;
-
-						indexOfPointBefore += numOfParamsPerBiquadPoint;
-						indexOfPointAfter += numOfParamsPerBiquadPoint;
-
-						p1 = points[indexOfPointBefore];
-						p2 = points[indexOfPointAfter];
-
-						p1Freq = points[indexOfPointBefore+1];
-						p2Freq = points[indexOfPointAfter+1];
-					} else currentFrequency = p1Freq + t * (p2Freq - p1Freq);
-
-					if ((currentFrequency < 40) || abs(currentFrequency - oldFrequency) > 7) {
-						CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
-						BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
-					}
-
-					buffer[i] = BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter);
+				for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+					buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter), x);
+					x += samplesCrossfadeInverse;
 				}
 			} else if (form == BI_FORM_I_TRANS) {
-				for (size_t i = 0; i < len; i++) {
-					t = (i - p1) / (p2 - p1);
-
-					if (t > p2) {
-						currentFrequency = p2Freq;
-
-						indexOfPointBefore += numOfParamsPerBiquadPoint;
-						indexOfPointAfter += numOfParamsPerBiquadPoint;
-
-						p1 = points[indexOfPointBefore];
-						p2 = points[indexOfPointAfter];
-
-						p1Freq = points[indexOfPointBefore+1];
-						p2Freq = points[indexOfPointAfter+1];
-					} else currentFrequency = p1Freq + t * (p2Freq - p1Freq);
-
-					if ((currentFrequency < 40) || abs(currentFrequency - oldFrequency) > 7) {
-						CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
-						BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
-					}
-
-					buffer[i] = BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter);
+				for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+					buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter), x);
+					x += samplesCrossfadeInverse;
 				}
 			} else {
-				for (size_t i = 0; i < len; i++) {
-					t = (i - p1) / (p2 - p1);
-
-					if (t > p2) {
-						currentFrequency = p2Freq;
-
-						indexOfPointBefore += numOfParamsPerBiquadPoint;
-						indexOfPointAfter += numOfParamsPerBiquadPoint;
-
-						p1 = points[indexOfPointBefore];
-						p2 = points[indexOfPointAfter];
-
-						p1Freq = points[indexOfPointBefore+1];
-						p2Freq = points[indexOfPointAfter+1];
-					} else currentFrequency = p1Freq + t * (p2Freq - p1Freq);
-
-					if ((currentFrequency < 40) || abs(currentFrequency - oldFrequency) > 7) {
-						CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
-						BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
-					}
-
-					buffer[i] = BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter);
+				for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+					buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter), x);
+					x += samplesCrossfadeInverse;
+				}
+			}
+		}
+		if (form == BI_FORM_II_TRANS) {
+			for (size_t i = start; i < end; i++) {
+				t = (i - p1) / (p2 - p1);
+				if (t > p2) {
+					currentFrequency = p2Freq;
+					indexOfPointBefore += numOfParamsPerBiquadPoint;
+					indexOfPointAfter += numOfParamsPerBiquadPoint;
+					p1 = points[indexOfPointBefore];
+					p2 = points[indexOfPointAfter];
+					p1Freq = points[indexOfPointBefore+1];
+					p2Freq = points[indexOfPointAfter+1];
+				} else currentFrequency = p1Freq + t * (p2Freq - p1Freq);
+				if ((currentFrequency < 40) || fabsf(currentFrequency - oldFrequency) > 7) {
+					CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
+					BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+				}
+				buffer[i] = BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter);
+			}
+		} else if (form == BI_FORM_II) {
+			for (size_t i = start; i < end; i++) {
+				t = (i - p1) / (p2 - p1);
+				if (t > p2) {
+					currentFrequency = p2Freq;
+					indexOfPointBefore += numOfParamsPerBiquadPoint;
+					indexOfPointAfter += numOfParamsPerBiquadPoint;
+					p1 = points[indexOfPointBefore];
+					p2 = points[indexOfPointAfter];
+					p1Freq = points[indexOfPointBefore+1];
+					p2Freq = points[indexOfPointAfter+1];
+				} else currentFrequency = p1Freq + t * (p2Freq - p1Freq);
+				if ((currentFrequency < 40) || fabsf(currentFrequency - oldFrequency) > 7) {
+					CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
+					BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+				}
+				buffer[i] = BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter);
+			}
+		} else if (form == BI_FORM_I_TRANS) {
+			for (size_t i = start; i < end; i++) {
+				t = (i - p1) / (p2 - p1);
+				if (t > p2) {
+					currentFrequency = p2Freq;
+					indexOfPointBefore += numOfParamsPerBiquadPoint;
+					indexOfPointAfter += numOfParamsPerBiquadPoint;
+					p1 = points[indexOfPointBefore];
+					p2 = points[indexOfPointAfter];
+					p1Freq = points[indexOfPointBefore+1];
+					p2Freq = points[indexOfPointAfter+1];
+				} else currentFrequency = p1Freq + t * (p2Freq - p1Freq);
+				if ((currentFrequency < 40) || fabsf(currentFrequency - oldFrequency) > 7) {
+					CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
+					BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+				}
+				buffer[i] = BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter);
+			}
+		} else {
+			for (size_t i = start; i < end; i++) {
+				t = (i - p1) / (p2 - p1);
+				if (t > p2) {
+					currentFrequency = p2Freq;
+					indexOfPointBefore += numOfParamsPerBiquadPoint;
+					indexOfPointAfter += numOfParamsPerBiquadPoint;
+					p1 = points[indexOfPointBefore];
+					p2 = points[indexOfPointAfter];
+					p1Freq = points[indexOfPointBefore+1];
+					p2Freq = points[indexOfPointAfter+1];
+				} else currentFrequency = p1Freq + t * (p2Freq - p1Freq);
+				if ((currentFrequency < 40) || fabsf(currentFrequency - oldFrequency) > 7) {
+					CALCULATE_BIQUAD_FREQ_COEFFICIENTS(coefficients, sampleRate, currentFrequency, doubleQuality, type, gain, poleRadius);
+					BIQUAD_FREQ_FILTER_setCoefficients(coefficients, &filter);
+				}
+				buffer[i] = BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter);
+			}
+		}
+		if (crossFade) {
+			float x = 1.0f - samplesCrossfadeInverse;
+			if (form == BI_FORM_II_TRANS) {
+				for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+					buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_II_TRANS_process(buffer[i], &filter), x);
+					x -= samplesCrossfadeInverse;
+				}
+			} else if (form == BI_FORM_II) {
+				for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+					buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_II_process(buffer[i], &filter), x);
+					x -= samplesCrossfadeInverse;
+				}
+			} else if (form == BI_FORM_I_TRANS) {
+				for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+					buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_I_TRANS_process(buffer[i], &filter), x);
+					x -= samplesCrossfadeInverse;
+				}
+			} else {
+				for (size_t i = 1; i < samplesCrossfadeBiquadFrequencyFilter; i++) {
+					buffer[i] = interpolate(buffer[i], BIQUAD_FREQ_FILTER_I_process(buffer[i], &filter), x);
+					x -= samplesCrossfadeInverse;
 				}
 			}
 		}
