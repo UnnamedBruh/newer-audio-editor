@@ -745,10 +745,10 @@
 				}
 				// POINT GENERATION
 				function biquadFrequencyFilter_pointGeneration_sineFrequency(points) {
-					const sineWave = prompt("What is the sine wave speed? (cycles per second)");
-					const freq = prompt("What is the frequency the sine wave would \"circle\" around (in kHz)?");
-					const amp = prompt("What is the amplitude (in kHz)?");
-					const numOfPoints = prompt("What should be the number of points per second? (5 = decent, 7 = good, 10 = excellent, 20 = slightly unstable, 100 = unstable)");
+					const sineWave = Number(prompt("What is the sine wave speed? (cycles per second)"));
+					const freq = Number(prompt("What is the frequency the sine wave would \"circle\" around (in Hz)?"));
+					const amp = Number(prompt("What is the amplitude (in Hz)?"));
+					const numOfPoints = Number(prompt("What should be the number of points per second? (5 = decent, 7 = good, 10 = excellent, 20 = slightly unstable, 100 = unstable)"));
 
 					const numOfPointsReciprocal = 1 / numOfPoints;
 
