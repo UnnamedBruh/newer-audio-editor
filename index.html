@@ -480,18 +480,20 @@
 				importSubtitles.disabled = false;
 			}
 			let SPECIALGLOBALParameterBiquadFilter = null;
+			let currentSelected = null, paramElements = null, effect = [];
+			let biquadFilterElements = [null, null];
+			let biquadFilterPoints = Object.create(null);
+			let biquadFilterPointID = 0;
+			let pointsForArrayBiquadFilter = [];
 			function loadDiv(exp, blank = false) {
 				class biquadfilterpoint {
-					constructor(samp, freq) {
+					constructor(samp, freq, id) {
 						this.samp = samp;
 						this.freq = freq;
+						this.__id = id;
 					}
 				};
 				SPECIALGLOBALParameterBiquadFilter = null;
-				let currentSelected = null, paramElements = null, effect = [];
-				let biquadFilterElements = [null, null];
-				let biquadFilterPoints = Object.create(null);
-				let biquadFilterPointID = 0;
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				selectSpecialEffectAud.disabled = false;
 				const v = document.createElement("div");
@@ -630,7 +632,6 @@
 					playSound(play);
 					play.textContent = "Stop Sound";
 				}
-				let pointsForArrayBiquadFilter = [];
 				function updateBiquadFrequencyFilterLineform() {
 					const dataForLineform = ["M0 " + (200 - (Number(paramElements[0].value) / exporters[0].sampleRate * 2 * 200))];
 					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
@@ -736,10 +737,9 @@
 					biquadFilterElements = [biquadFilterElements[0], biquadFilterElements[1]];
 					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
 						const p = pointsForArrayBiquadFilter[i];
-						const pointHTML = createHTMLElementForBiquadFilterPoint(p.samp / skipSample, (height - (p.freq / exporters[0].sampleRate * height)) * 2, p, biquadFilterPointID, height);
-						biquadFilterElements.push([pointHTML[0], pointHTML[1], biquadFilterPointID]);
-						biquadFilterPoints[biquadFilterPointID] = p;
-						biquadFilterPointID++;
+						const pointHTML = createHTMLElementForBiquadFilterPoint(p.samp / skipSample, (height - (p.freq / exporters[0].sampleRate * height)) * 2, p, p.__id, height);
+						biquadFilterElements.push([pointHTML[0], pointHTML[1], p.__id]);
+						biquadFilterPoints[p.__id] = p;
 					}
 					updateBiquadFrequencyGlobalParameter();
 					updateBiquadFrequencyFilterLineform();
@@ -758,7 +758,8 @@
 					const numOfPointsReciprocal = 1 / numOfPoints;
 
 					for (let ind = 0; ind < sharedBuffer.duration; ind += numOfPointsReciprocal) {
-						points[biquadFilterPointID++] = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * ind * Math.PI * 2) * amp + freq);
+						points[biquadFilterPointID] = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * ind * Math.PI * 2) * amp + freq, biquadFilterPointID);
+						biquadFilterPointID++;
 					}
 
 					setPointsBiquadFrequencyFilter(points);
