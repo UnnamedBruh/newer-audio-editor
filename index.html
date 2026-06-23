@@ -637,6 +637,7 @@
 					play.textContent = "Stop Sound";
 				}
 				function updateBiquadFrequencyFilterLineform() {
+					if (!paramElements || !paramElements[0]) return;
 					const dataForLineform = ["M0 " + (200 - (Number(paramElements[0].value) / exporters[0].sampleRate * 2 * 200))];
 					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
 						dataForLineform.push(`L${pointsForArrayBiquadFilter[i].samp / skipSample} ${(200 - (pointsForArrayBiquadFilter[i].freq / exporters[0].sampleRate * 2 * 200))}`);
