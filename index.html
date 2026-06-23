@@ -642,7 +642,7 @@
 					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
 						dataForLineform.push(`L${pointsForArrayBiquadFilter[i].samp / skipSample} ${(200 - (pointsForArrayBiquadFilter[i].freq / exporters[0].sampleRate * 2 * 200))}`);
 					}
-					biquadFilterElements[0].setAttribute("d", dataForLineform.join(" "));
+					if (biquadFilterElements && biquadFilterElements[0] && biquadFilterElements[0].setAttribute) biquadFilterElements[0].setAttribute("d", dataForLineform.join(" "));
 				}
 				x.onmousemove = function(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
