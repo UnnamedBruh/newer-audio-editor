@@ -994,8 +994,8 @@
 						params.style.width = "100vw";
 						previous = opt.selectedIndex;
 						if (currentSelected[4] === "wasm_biquadfilteri") {
-							if (biquadFilterElements[1]) biquadFilterElements[1].remove();
-	
+							if (biquadFilterElements[0]) biquadFilterElements[0].remove();
+
 							const textEle = document.createElementNS("http://www.w3.org/2000/svg", "text");
 							textEle.setAttributeNS(null, "x", 0);
 							textEle.setAttributeNS(null, "y", 0);
@@ -1003,19 +1003,21 @@
 							textEle.setAttributeNS(null, "font-size", 7);
 							textEle.setAttributeNS(null, "fill", "green");
 							textEle.setAttributeNS(null, "text-anchor", "start");
-
-							const lineform = document.createElementNS("http://www.w3.org/2000/svg", "path");
-							lineform.setAttribute("stroke", "green");
-							lineform.setAttribute("fill", "none");
-							lineform.setAttribute("width", div.clientWidth);
-							lineform.setAttribute("height", "200");
-							lineform.setAttribute("stroke-width", 1);
-
-							biquadFilterElements[0] = lineform;
 							biquadFilterElements[1] = textEle;
-
-							x.appendChild(lineform);
 							x.appendChild(textEle); // here, x is the SVG element containing the audio waveforms and timeline bar.
+
+							if (!biquadFilterElements[1]) {
+								const lineform = document.createElementNS("http://www.w3.org/2000/svg", "path");
+								lineform.setAttribute("stroke", "green");
+								lineform.setAttribute("fill", "none");
+								lineform.setAttribute("width", div.clientWidth);
+								lineform.setAttribute("height", "200");
+								lineform.setAttribute("stroke-width", 1);
+
+								biquadFilterElements[0] = lineform;
+
+								x.appendChild(lineform);
+							}
 
 							paramElements[0].oninput = function() {updateBiquadFrequencyFilterLineform();};
 
