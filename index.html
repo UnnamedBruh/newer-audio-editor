@@ -658,6 +658,8 @@
 					//if (biquadFilterElements[1]) biquadFilterElements[1].remove();
 					biquadFilterPoints = Object.create(null);
 					SPECIALGLOBALParameterBiquadFilter = new Float32Array();
+					pointsForArrayBiquadFilter = [];
+					biquadFilterElements.splice(2, biquadFilterElements.length - 2);
 					updateBiquadFrequencyFilterLineform();
 				}
 				function createHTMLElementForBiquadFilterPoint(clickX, clickY, pnt, biquadFilterPointID) {
@@ -729,6 +731,27 @@
 					const pointsArray = Object.values(points).sort((x, y) => x.samp - y.samp);
 					for (let i = 0; i < pointsArray.length; i++) createHTMLElementForBiquadFilterPoint(pointsArray[i].samp / skipSample, 200 - pointsArray[i].freq / 200 / 2);
 					updateBiquadFrequencyFilterLineform();
+				}
+				function setPointsBiquadFrequencyFilter(points) {
+					pointsForArrayBiquadFilter = Object.values(points).sort((x, y) => x.samp - y.samp);
+					biquadFilterPoints = points;
+					placePointsBiquadFrequencyFilter(points);
+				}
+				// POINT GENERATION
+				function biquadFrequencyFilter_pointGeneration_sineFrequency(points) {
+					const sineWave = prompt("What is the sine wave speed? (cycles per second)");
+					const freq = prompt("What is the frequency the sine wave would \"circle\" around (in kHz)?");
+					const amp = prompt("What is the amplitude (in kHz)?");
+					const numOfPoints = prompt("What should be the number of points per second? (5 = decent, 7 = good, 10 = excellent, 20 = slightly unstable, 100 = unstable)");
+
+					const numOfPointsReciprocal = 1 / numOfPoints;
+
+					for (let ind = 0; ind < sharedBuffer.duration; ind += numOfPointsReciprocal) {
+						let point = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * Math.PI * 2) * amp + freq);
+						points[biquadFilterPointID++] = point;
+					}
+
+					setPointsBiquadFrequencyFilter(points);
 				}
 				x.onclick = whenSVGDisplayIsClicked;
 				selectStart.onclick = function() {
@@ -985,8 +1008,14 @@
 							const clearDotsButton = document.createElement("button");
 							clearDotsButton.textContent = "Clear Dots";
 							clearDotsButton.onclick = clearBiquadFilterPoints;
-
 							params.appendChild(clearDotsButton);
+
+							const sineWaveDotsPlace = document.createElement("button");
+							sineWaveDotsPlace.textContent = "Generate Points In Sine Wave";
+							sineWaveDotsPlace.onclick = ()=>{biquadFrequencyFilter_pointGeneration_sineFrequency(biquadFilterPoints);};
+							sineWaveDotsPlace.title = "This will not overwrite existing dots.";
+							params.appendChild(sineWaveDotsPlace);
+
 							params.appendChild(document.createElement("hr"));
 						}
 					}
