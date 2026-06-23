@@ -648,6 +648,41 @@
 						biquadFilterElements[1].textContent = ((exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5).toFixed(0) + " Hz";
 					}
 				}
+				function clearBiquadFilterPoints() {
+					for (let i = 2; i < biquadFilterElements.length; i++) {
+						if (!biquadFilterElements[i]) continue;
+						biquadFilterElements[i][0].remove();
+						biquadFilterElements[i][1].remove();
+					}
+					//if (biquadFilterElements[0]) biquadFilterElements[0].remove();
+					//if (biquadFilterElements[1]) biquadFilterElements[1].remove();
+					biquadFilterPoints = Object.create(null);
+					SPECIALGLOBALParameterBiquadFilter = new Float32Array();
+					updateBiquadFrequencyFilterLineform();
+				}
+				function createHTMLElementForBiquadFilterPoint(clickX, clickY, pnt, biquadFilterPointID) {
+					const pointEle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+					pointEle.setAttributeNS(null, "cx", clickX);
+					pointEle.setAttributeNS(null, "cy", clickY);
+					pointEle.setAttributeNS(null, "r", 5);
+					pointEle.setAttributeNS(null, "fill", "white");
+					pointEle.setAttributeNS(null, "stroke-width", 1);
+					pointEle.setAttributeNS(null, "stroke", "black");
+					const textEle = document.createElementNS("http://www.w3.org/2000/svg", "text");
+					textEle.setAttributeNS(null, "x", clickX + 5);
+					textEle.setAttributeNS(null, "y", clickY - 1);
+					textEle.setAttributeNS(null, "font-family", "Arial");
+					textEle.setAttributeNS(null, "font-size", 7);
+					textEle.setAttributeNS(null, "fill", "white");
+					textEle.setAttributeNS(null, "text-anchor", "start");
+					if (!pnt) textEle.textContent = ((exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5).toFixed(0) + " Hz"; else textEle.textContent = pnt.freq.toFixed(0) + " Hz";
+					x.appendChild(pointEle);
+					x.appendChild(textEle);
+					pointEle.style.cursor = "pointer";
+					pointEle.setAttribute("data-svgeleid", biquadFilterPointID);
+					pointEle.setAttribute("data-which", "biquadpoint");
+					return [pointEle, textEle];
+				}
 				function whenSVGDisplayIsClicked(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
 					let clickY = eve.clientY - x.getBoundingClientRect().y;
@@ -666,26 +701,7 @@
 								biquadFilterElements.splice(ind, 1);
 							} else {
 								const pnt = new biquadfilterpoint(Math.round(clickX / x.clientWidth * sharedBuffer.duration * exporters[0].sampleRate), (exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5);
-								const pointEle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-								pointEle.setAttributeNS(null, "cx", clickX);
-								pointEle.setAttributeNS(null, "cy", clickY);
-								pointEle.setAttributeNS(null, "r", 5);
-								pointEle.setAttributeNS(null, "fill", "white");
-								pointEle.setAttributeNS(null, "stroke-width", 1);
-								pointEle.setAttributeNS(null, "stroke", "black");
-								const textEle = document.createElementNS("http://www.w3.org/2000/svg", "text");
-								textEle.setAttributeNS(null, "x", clickX + 5);
-								textEle.setAttributeNS(null, "y", clickY - 1);
-								textEle.setAttributeNS(null, "font-family", "Arial");
-								textEle.setAttributeNS(null, "font-size", 7);
-								textEle.setAttributeNS(null, "fill", "white");
-								textEle.setAttributeNS(null, "text-anchor", "start");
-								textEle.textContent = pnt.freq.toFixed(0) + " Hz";
-								x.appendChild(pointEle);
-								x.appendChild(textEle);
-								pointEle.style.cursor = "pointer";
-								pointEle.setAttribute("data-svgeleid", biquadFilterPointID);
-								pointEle.setAttribute("data-which", "biquadpoint");
+								const [pointEle, textEle] = createHTMLElementForBiquadFilterPoint(clickX, clickY, pnt, biquadFilterPointID);
 								biquadFilterElements.push([pointEle, textEle, biquadFilterPointID]);
 								biquadFilterPoints[biquadFilterPointID++] = pnt;
 							}
@@ -707,6 +723,12 @@
 							updateBiquadFrequencyFilterLineform();
 						}
 					} else playWithTimeline(eve);
+				}
+				function placePointsBiquadFrequencyFilter(points) {
+					clearBiquadFilterPoints();
+					const pointsArray = Object.values(points).sort((x, y) => x.samp - y.samp);
+					for (let i = 0; i < pointsArray.length; i++) createHTMLElementForBiquadFilterPoint(pointsArray[i].samp / skipSample, 200 - pointsArray[i].freq / 200 / 2);
+					updateBiquadFrequencyFilterLineform();
 				}
 				x.onclick = whenSVGDisplayIsClicked;
 				selectStart.onclick = function() {
