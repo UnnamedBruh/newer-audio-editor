@@ -739,7 +739,7 @@
 					biquadFilterElements = [biquadFilterElements[0], biquadFilterElements[1]];
 					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
 						const p = pointsForArrayBiquadFilter[i];
-						const pointHTML = createHTMLElementForBiquadFilterPoint(p.samp / skipSample, (height - (p.freq / exporters[0].sampleRate * height)) * 2, p, p.__id, height);
+						const pointHTML = createHTMLElementForBiquadFilterPoint(p.samp / skipSample, height - (p.freq / exporters[0].sampleRate * height), p, p.__id, height);
 						biquadFilterElements.push([pointHTML[0], pointHTML[1], p.__id]);
 						biquadFilterPoints[p.__id] = p;
 					}
