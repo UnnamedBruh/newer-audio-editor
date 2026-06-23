@@ -726,11 +726,12 @@
 						}
 					} else playWithTimeline(eve);
 				}
-				function placePointsBiquadFrequencyFilter(points) {
+				function placePointsBiquadFrequencyFilter() {
 					clearBiquadFilterPoints();
 					const height = x.getBoundingClientRect().height;
+					pointsForArrayBiquadFilter = Object.values(biquadFilterPoints).sort((a, b) => a.samp - b.samp);
 					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
-						const pointHTML = createHTMLElementForBiquadFilterPoint(pointsForArrayBiquadFilter[i].samp / skipSample, (height - (pointsForArrayBiquadFilter[i].freq / exporters[0].sampleRate * height)) * 2, pointsForArrayBiquadFilter[i], biquadFilterPointID, height);
+						const pointHTML = createHTMLElementForBiquadFilterPoint(pointsForArrayBiquadFilter[i].samp / skipSample * exporters[0].sampleRate, (height - (pointsForArrayBiquadFilter[i].freq / exporters[0].sampleRate * height)) * 2, pointsForArrayBiquadFilter[i], biquadFilterPointID, height);
 						biquadFilterElements.push([pointHTML[0], pointHTML[1], biquadFilterPointID]);
 						biquadFilterPoints[biquadFilterPointID] = pointsForArrayBiquadFilter[i];
 						biquadFilterPointID++;
@@ -738,9 +739,8 @@
 					updateBiquadFrequencyFilterLineform();
 				}
 				function setPointsBiquadFrequencyFilter(points) {
-					pointsForArrayBiquadFilter = Object.values(points).sort((x, y) => x.samp - y.samp);
-					biquadFilterPoints = points;
-					placePointsBiquadFrequencyFilter(points);
+					biquadFilterPoints = points || {};
+					placePointsBiquadFrequencyFilter();
 				}
 				// POINT GENERATION
 				function biquadFrequencyFilter_pointGeneration_sineFrequency(points) {
