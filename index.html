@@ -1020,7 +1020,7 @@
 
 							const clearDotsButton = document.createElement("button");
 							clearDotsButton.textContent = "Clear Dots";
-							clearDotsButton.onclick = clearBiquadFilterPoints;
+							clearDotsButton.onclick = ()=>{clearBiquadFilterPoints(false);};
 							params.appendChild(clearDotsButton);
 
 							const sineWaveDotsPlace = document.createElement("button");
