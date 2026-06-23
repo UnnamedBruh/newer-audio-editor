@@ -994,7 +994,7 @@
 						params.style.width = "100vw";
 						previous = opt.selectedIndex;
 						if (currentSelected[4] === "wasm_biquadfilteri") {
-							if (biquadFilterElements[0]) biquadFilterElements[0].remove();
+							if (biquadFilterElements[1]) biquadFilterElements[1].remove();
 
 							const textEle = document.createElementNS("http://www.w3.org/2000/svg", "text");
 							textEle.setAttributeNS(null, "x", 0);
@@ -1006,7 +1006,7 @@
 							biquadFilterElements[1] = textEle;
 							x.appendChild(textEle); // here, x is the SVG element containing the audio waveforms and timeline bar.
 
-							if (!biquadFilterElements[1]) {
+							if (!biquadFilterElements[0]) {
 								const lineform = document.createElementNS("http://www.w3.org/2000/svg", "path");
 								lineform.setAttribute("stroke", "green");
 								lineform.setAttribute("fill", "none");
