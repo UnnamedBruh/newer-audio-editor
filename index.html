@@ -649,7 +649,7 @@
 						biquadFilterElements[1].textContent = ((exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5).toFixed(0) + " Hz";
 					}
 				}
-				function clearBiquadFilterPoints() {
+				function clearBiquadFilterPoints(clearPts) {
 					for (let i = 2; i < biquadFilterElements.length; i++) {
 						if (!biquadFilterElements[i]) continue;
 						biquadFilterElements[i][0].remove();
@@ -657,10 +657,12 @@
 					}
 					//if (biquadFilterElements[0]) biquadFilterElements[0].remove();
 					//if (biquadFilterElements[1]) biquadFilterElements[1].remove();
-					biquadFilterPoints = Object.create(null);
-					SPECIALGLOBALParameterBiquadFilter = new Float32Array();
-					pointsForArrayBiquadFilter = [];
-					biquadFilterElements.splice(2, biquadFilterElements.length - 2);
+					if (!clearPts) {
+						biquadFilterPoints = Object.create(null);
+						SPECIALGLOBALParameterBiquadFilter = new Float32Array();
+						pointsForArrayBiquadFilter = [];
+						biquadFilterElements.splice(2, biquadFilterElements.length - 2);
+					}
 					updateBiquadFrequencyFilterLineform();
 				}
 				function createHTMLElementForBiquadFilterPoint(clickX, clickY, pnt, biquadFilterPointID, height) {
@@ -731,7 +733,8 @@
 					} else playWithTimeline(eve);
 				}
 				function placePointsBiquadFrequencyFilter() {
-					clearBiquadFilterPoints();
+					console.log(biquadFilterPoints);
+					clearBiquadFilterPoints(false);
 					const height = x.getBoundingClientRect().height;
 					pointsForArrayBiquadFilter = Object.values(biquadFilterPoints).sort((a, b) => a.samp - b.samp);
 					biquadFilterElements = [biquadFilterElements[0], biquadFilterElements[1]];
