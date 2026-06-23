@@ -552,7 +552,7 @@ static float TWOPI = 2.0f * (float)M_PI;
 static float sqrtTwo = 1.4142135381698608f;
 
 enum BiquadFilterType : unsigned int {
-	BI_LOWPASS = 0, BI_HIGHPASS = 1, BI_BANDPASS = 2, BI_PEAK = 3, BI_NOTCH = 4, BI_LOWSHELF = 5, BI_HIGHSHELF = 6, BI_SALLENKEY_LOWPASS = 7, BI_SALLENKEY_HIGHPASS = 8
+	BI_LOWPASS = 0, BI_HIGHPASS = 1, BI_BANDPASS = 2, BI_PEAK = 3, BI_NOTCH = 4, BI_LOWSHELF = 5, BI_HIGHSHELF = 6, BI_ALLPASS = 7, BI_SALLENKEY_LOWPASS = 8, BI_SALLENKEY_HIGHPASS = 9
 };
 
 
@@ -676,6 +676,20 @@ void CALCULATE_BIQUAD_FREQ_COEFFICIENTS(float* coefficients, float sampleRate, f
 			a0 = intamDecacosw + twoSqrtAAlpha;
 			a1 = 2.0f * (decA - incaCosw);
 			a2 = intamDecacosw - twoSqrtAAlpha;
+			break;
+		}
+		case BI_ALLPASS: { // This part of the code was written by Grok
+			// Inside your coefficient calculation function (in WASM or JS)
+			double alpha = sin(angFreq) / doubleQuality;   // or use your existing pole radius logic
+
+			// All-Pass coefficients
+			b0 = 1.0 - alpha;
+			b1 = -2.0 * cos(angFreq);
+			b2 = 1.0 + alpha;
+
+			a0 = 1.0 + alpha;
+			a1 = b1;
+			a2 = 1.0 - alpha;
 			break;
 		}
 		case BI_SALLENKEY_LOWPASS: {
