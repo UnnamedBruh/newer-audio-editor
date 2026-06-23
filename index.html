@@ -733,8 +733,7 @@
 					} else playWithTimeline(eve);
 				}
 				function placePointsBiquadFrequencyFilter() {
-					console.log(biquadFilterPoints);
-					clearBiquadFilterPoints(false);
+					clearBiquadFilterPoints(true);
 					const height = x.getBoundingClientRect().height;
 					pointsForArrayBiquadFilter = Object.values(biquadFilterPoints).sort((a, b) => a.samp - b.samp);
 					biquadFilterElements = [biquadFilterElements[0], biquadFilterElements[1]];
@@ -764,8 +763,6 @@
 						points[biquadFilterPointID] = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * ind * Math.PI * 2) * amp + freq, biquadFilterPointID);
 						biquadFilterPointID++;
 					}
-
-					console.log(points);
 
 					setPointsBiquadFrequencyFilter(points);
 				}
