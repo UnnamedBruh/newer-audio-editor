@@ -495,6 +495,9 @@
 					}
 				};
 				SPECIALGLOBALParameterBiquadFilter = null;
+				if (biquadFilterElements[0]) biquadFilterElements[0].remove();
+				if (biquadFilterElements[1]) biquadFilterElements[1].remove();
+				biquadFilterElements = [null, null];
 				if (prevIntervalID !== undefined) clearInterval(prevIntervalID);
 				selectSpecialEffectAud.disabled = false;
 				const v = document.createElement("div");
@@ -650,7 +653,7 @@
 						biquadFilterElements[1].textContent = ((exporters[0].sampleRate - ((clickY+1) * exporters[0].sampleRate / height)) * 0.5).toFixed(0) + " Hz";
 					}
 				}
-				function clearBiquadFilterPoints(clearPts) {
+				function clearBiquadFilterPoints(noClearPTS) {
 					for (let i = 2; i < biquadFilterElements.length; i++) {
 						if (!biquadFilterElements[i]) continue;
 						biquadFilterElements[i][0].remove();
@@ -658,7 +661,7 @@
 					}
 					//if (biquadFilterElements[0]) biquadFilterElements[0].remove();
 					//if (biquadFilterElements[1]) biquadFilterElements[1].remove();
-					if (!clearPts) {
+					if (!noClearPTS) {
 						biquadFilterPoints = Object.create(null);
 						SPECIALGLOBALParameterBiquadFilter = new Float32Array();
 						pointsForArrayBiquadFilter = [];
@@ -666,6 +669,7 @@
 					}
 					updateBiquadFrequencyFilterLineform();
 				}
+				clearBiquadFilterPoints(false);
 				function createHTMLElementForBiquadFilterPoint(clickX, clickY, pnt, biquadFilterPointID, height) {
 					const pointEle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 					pointEle.setAttributeNS(null, "cx", clickX);
