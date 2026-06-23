@@ -685,6 +685,22 @@
 					pointEle.setAttribute("data-which", "biquadpoint");
 					return [pointEle, textEle];
 				}
+				function updateBiquadFrequencyGlobalParameter() {
+					if (pointsForArrayBiquadFilter.length === 0) {
+						SPECIALGLOBALParameterBiquadFilter = new Float32Array();
+					} else {
+						SPECIALGLOBALParameterBiquadFilter = new Float32Array(pointsForArrayBiquadFilter.length * 2 + 4);
+						const lenOfParam = SPECIALGLOBALParameterBiquadFilter.length;
+						SPECIALGLOBALParameterBiquadFilter[1] = Number(paramElements[0].value);
+						SPECIALGLOBALParameterBiquadFilter[0] = 0;
+						for (let i = 2, j = 0; i < lenOfParam - 2; i += 2, j++) {
+							SPECIALGLOBALParameterBiquadFilter[i] = pointsForArrayBiquadFilter[j].samp;
+							SPECIALGLOBALParameterBiquadFilter[i+1] = pointsForArrayBiquadFilter[j].freq;
+						}
+						SPECIALGLOBALParameterBiquadFilter[lenOfParam - 2] = exporters[0].audioData.length;
+						SPECIALGLOBALParameterBiquadFilter[lenOfParam - 1] = SPECIALGLOBALParameterBiquadFilter[lenOfParam - 3];
+					}
+				}
 				function whenSVGDisplayIsClicked(eve) {
 					let clickX = eve.clientX - (xOff - window.scrollX);
 					let clickY = eve.clientY - x.getBoundingClientRect().y;
@@ -708,20 +724,7 @@
 								biquadFilterPoints[biquadFilterPointID++] = pnt;
 							}
 							pointsForArrayBiquadFilter = Object.values(biquadFilterPoints).sort((x, y) => x.samp - y.samp);
-							if (pointsForArrayBiquadFilter.length === 0) {
-								SPECIALGLOBALParameterBiquadFilter = new Float32Array();
-							} else {
-								SPECIALGLOBALParameterBiquadFilter = new Float32Array(pointsForArrayBiquadFilter.length * 2 + 4);
-								const lenOfParam = SPECIALGLOBALParameterBiquadFilter.length;
-								SPECIALGLOBALParameterBiquadFilter[1] = Number(paramElements[0].value);
-								SPECIALGLOBALParameterBiquadFilter[0] = 0;
-								for (let i = 2, j = 0; i < lenOfParam - 2; i += 2, j++) {
-									SPECIALGLOBALParameterBiquadFilter[i] = pointsForArrayBiquadFilter[j].samp;
-									SPECIALGLOBALParameterBiquadFilter[i+1] = pointsForArrayBiquadFilter[j].freq;
-								}
-								SPECIALGLOBALParameterBiquadFilter[lenOfParam - 2] = exporters[0].audioData.length;
-								SPECIALGLOBALParameterBiquadFilter[lenOfParam - 1] = SPECIALGLOBALParameterBiquadFilter[lenOfParam - 3];
-							}
+							updateBiquadFrequencyGlobalParameter();
 							updateBiquadFrequencyFilterLineform();
 						}
 					} else playWithTimeline(eve);
@@ -730,12 +733,15 @@
 					clearBiquadFilterPoints();
 					const height = x.getBoundingClientRect().height;
 					pointsForArrayBiquadFilter = Object.values(biquadFilterPoints).sort((a, b) => a.samp - b.samp);
+					biquadFilterElements = [biquadFilterElements[0], biquadFilterElements[1]];
 					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
-						const pointHTML = createHTMLElementForBiquadFilterPoint(pointsForArrayBiquadFilter[i].samp / skipSample * exporters[0].sampleRate, (height - (pointsForArrayBiquadFilter[i].freq / exporters[0].sampleRate * height)) * 2, pointsForArrayBiquadFilter[i], biquadFilterPointID, height);
+						const p = pointsForArrayBiquadFilter[i];
+						const pointHTML = createHTMLElementForBiquadFilterPoint(p.samp / skipSample, (height - (p.freq / exporters[0].sampleRate * height)) * 2, p, biquadFilterPointID, height);
 						biquadFilterElements.push([pointHTML[0], pointHTML[1], biquadFilterPointID]);
-						biquadFilterPoints[biquadFilterPointID] = pointsForArrayBiquadFilter[i];
+						biquadFilterPoints[biquadFilterPointID] = p;
 						biquadFilterPointID++;
 					}
+					updateBiquadFrequencyGlobalParameter();
 					updateBiquadFrequencyFilterLineform();
 				}
 				function setPointsBiquadFrequencyFilter(points) {
@@ -752,8 +758,7 @@
 					const numOfPointsReciprocal = 1 / numOfPoints;
 
 					for (let ind = 0; ind < sharedBuffer.duration; ind += numOfPointsReciprocal) {
-						let point = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * ind * Math.PI * 2) * amp + freq);
-						points[biquadFilterPointID++] = point;
+						points[biquadFilterPointID++] = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * ind * Math.PI * 2) * amp + freq);
 					}
 
 					setPointsBiquadFrequencyFilter(points);
