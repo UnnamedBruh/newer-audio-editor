@@ -728,12 +728,11 @@
 				}
 				function placePointsBiquadFrequencyFilter(points) {
 					clearBiquadFilterPoints();
-					const pointsArray = Object.values(points).sort((x, y) => x.samp - y.samp);
 					const height = x.getBoundingClientRect().height;
-					for (let i = 0; i < pointsArray.length; i++) {
-						const pointHTML = createHTMLElementForBiquadFilterPoint(pointsArray[i].samp / skipSample, 200 - pointsArray[i].freq / 200 / 2, pointsArray[i], biquadFilterPointID, height);
+					for (let i = 0; i < pointsForArrayBiquadFilter.length; i++) {
+						const pointHTML = createHTMLElementForBiquadFilterPoint(pointsForArrayBiquadFilter[i].samp / skipSample, (height - (pointsForArrayBiquadFilter[i].freq / exporters[0].sampleRate * height)) * 2), pointsForArrayBiquadFilter[i], biquadFilterPointID, height);
 						biquadFilterElements.push([pointHTML[0], pointHTML[1], biquadFilterPointID]);
-						biquadFilterPoints[biquadFilterPointID] = pointsArray[i];
+						biquadFilterPoints[biquadFilterPointID] = pointsForArrayBiquadFilter[i];
 						biquadFilterPointID++;
 					}
 					updateBiquadFrequencyFilterLineform();
@@ -753,7 +752,7 @@
 					const numOfPointsReciprocal = 1 / numOfPoints;
 
 					for (let ind = 0; ind < sharedBuffer.duration; ind += numOfPointsReciprocal) {
-						let point = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * Math.PI * 2) * amp + freq);
+						let point = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * ind * Math.PI * 2) * amp + freq);
 						points[biquadFilterPointID++] = point;
 					}
 
