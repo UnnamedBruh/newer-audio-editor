@@ -799,21 +799,19 @@
 					bpmMarks = [];
 					const bpmNum = Number(prompt("What is the amount of beats per minute of this track?") || NaN);
 					if (!isNaN(bpmNum)) {
-						if (bpmNum > 2400) {
-							alert("There are too many BPM.");
-							return;
-						} else if (bpmNum <= 1) {
-							alert("The amount of BPM is too low.");
+						if (bpmNum > 2400 && confirm("There are likely too many beats per minute.\n\nAre you sure that the BPM should be this high? If so, the audio waveform might be obscured by a huge amount of yellow and orange lines.")) {
 							return;
 						}
 						const inc = (60 / bpmNum) * (div.clientWidth / sharedBuffer.duration);
 						const data1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
 						data1.setAttribute("stroke", "yellow");
+						data1.setAttribute("stroke-width", bpmNum > 2400 ? 1 / (1 + (bpmNum - 2400) / 1000) : 2);
 						data1.setAttribute("fill", "none");
 						data1.setAttribute("width", div.clientWidth);
 						data1.setAttribute("height", "200");
 						const data2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
 						data2.setAttribute("stroke", "orange");
+						data1.setAttribute("stroke-width", bpmNum > 2400 ? 1 / (1 + (bpmNum - 2400) / 1000) : 2);
 						data1.setAttribute("fill", "none");
 						data2.setAttribute("width", div.clientWidth);
 						data1.setAttribute("height", "200");
@@ -952,7 +950,7 @@
 						}
 						currentSelected = effect;
 						if (effect) {
-							params.innerHTML = effect[1] + "<hr>" + effect[2];
+							params.innerHTML = effect[1] + "<hr>" + effect[2] + "<hr>";
 							paramElements = new Array(effect[3]);
 							for (let i = 0; i < paramElements.length; i++) paramElements[i] = document.getElementById(effect[4] + i);
 						} else {params.innerHTML = "";paramElements = null;}
@@ -983,6 +981,13 @@
 							x.appendChild(textEle); // here, x is the SVG element containing the audio waveforms and timeline bar.
 
 							paramElements[0].oninput = function() {updateBiquadFrequencyFilterLineform();};
+
+							const clearDotsButton = document.createElement("button");
+							clearDotsButton.textContent = "Clear Dots";
+							clearDotsButton.onclick = clearBiquadFilterPoints;
+
+							params.appendChild(clearDotsButton);
+							params.appendChild(document.createElement("hr"));
 						}
 					}
 				}
@@ -993,17 +998,17 @@
 				exportBtn.textContent = "Export as WAV (Original Library)";
 				exportBtn.onclick = function() {
 					const metadata = {};
-					const author = prompt("Who is the author of this audio? (e.g. \"John Smith\") Leave the input blank if you don't want the author to be specified.");
+					const author = prompt("Who is the author of this audio? (ex. \"John Smith\") Leave the input blank if you don't want the author to be specified.");
 					if (author === "" || author === undefined || author === null) return;
-					const name = prompt("What is the name of this audio? (e.g. \"Electro Dance (Techno Mix)\") Leave the input blank if you don't want the name to be specified.");
-					const genre = prompt("What is the genre of this audio? (e.g. \"Techno\") Leave the input blank if you don't want the genre to be specified.");
-					const notes = prompt("Any notes or comments for this audio? (e.g. \"This audio is super cool\") Leave the input blank if you don't have any notes or comments.");
-					const software = prompt("What software did you use to create this audio? (e.g. \"UnnamedBruh's Audio Editor\") If input is \"UAE\" without quotes, this software's name will be appended to the audio metadata.");
+					const name = prompt("What is the name of this audio? (ex. \"Electro Dance (Techno Mix)\") Leave the input blank if you don't want the name to be specified.");
+					const genre = prompt("What is the genre of this audio? (ex. \"Techno\") Leave the input blank if you don't want the genre to be specified.");
+					const notes = prompt("Any notes or comments for this audio? (ex. \"This audio is super cool\") Leave the input blank if you don't have any notes or comments.");
+					const software = prompt("What software did you use to create this audio? (ex. \"UnnamedBruh's Audio Editor\") If input is \"UAE\" without quotes, this software's name will be appended to the audio metadata.");
 					if (author) metadata["IART"] = author;
 					if (name) metadata["INAM"] = name;
 					if (genre) metadata["IGNR"] = genre;
 					if (notes) metadata["ICMT"] = notes;
-					if (software) metadata["ISFT"] = software === "UAE" ? "UnnamedBruh's Audio Editor" : software;
+					if (software) metadata["ISFT"] = software === "UAE" ? "Searadare (Newer Audio Editor)" : software;
 					const encodeBits = prompt("What are the exporting settings of the audio? (0 = 8-bit. 1 = 12-bit. 2 = 16-bit. 3 = 24-bit. 4 = 32-bit. 5 = 32-bit float. 6 = 64-bit float. 7 = mu-law. 8 = a-law. 9 = dpcm.)");
 					const exporters2 = timelineBeginAudio ? {audioData: exporters[0].audioData.subarray(timelineBeginAudio, timelineEndAudio), sampleRate: exporters[0].sampleRate, bits: exporters[0].bits, encoding: exporters[0].encoding, convertToWav: exporters[0].convertToWav} : exporters[0];
 					const oldBits = exporters2.bits;
