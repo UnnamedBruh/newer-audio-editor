@@ -760,7 +760,10 @@
 					for (let ind = 0; ind < sharedBuffer.duration; ind += numOfPointsReciprocal) {
 						points[biquadFilterPointID] = new biquadfilterpoint(ind * exporters[0].sampleRate, Math.sin(sineWave * ind * Math.PI * 2) * amp + freq, biquadFilterPointID);
 						biquadFilterPointID++;
+						console.log(points[biquadFilterPointID]);
 					}
+
+					console.log(points);
 
 					setPointsBiquadFrequencyFilter(points);
 				}
