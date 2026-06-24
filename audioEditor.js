@@ -68,7 +68,7 @@ async function loadWASMEffects() {
 			WASMEffects.customfeedback1 = effinstance.cwrap(
 				"customfeedback1_process",
 				null,
-				["number", "number"] // pointer, length
+				["number", "number", "number"] // pointer, length, gain
 			);
 
 			return WASMEffects;
@@ -134,7 +134,7 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 	effinstance._free(bufferNew);
 }
 
-effects["wasm_customfeedback1"] = async function(buffer) {
+effects["wasm_customfeedback1"] = async function(buffer, gain) {
 	buffer = buffer.audioData;
 
 	await loadWASMEffects();
@@ -144,7 +144,7 @@ effects["wasm_customfeedback1"] = async function(buffer) {
 
 	console.time();
 
-	WASMEffects["customfeedback1"](bufferNew, buffer.length);
+	WASMEffects["customfeedback1"](bufferNew, buffer.length, gain);
 
 	console.timeEnd();
 
