@@ -1138,7 +1138,7 @@ struct CustomFeedback1 {
 };
 
 inline float CustomFeedback1_process(float sample, struct CustomFeedback1* filter) {
-	filter->g = filter->g + (fabsf(sample) - filter->g) * 0.01f;
+	filter->g = filter->g + (fabsf(sample) - filter->g) * 0.1f + 0.05f;
 	float x0 = filter->x3 * filter->g + sample;
 	filter->x3 = filter->x2 * filter->g;
 	filter->x2 = filter->x1 * filter->g;
