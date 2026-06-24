@@ -65,6 +65,12 @@ async function loadWASMEffects() {
 
 			// pointer, length, sampleRate (Hz), cutoff frequency (Hz), quality (0-1), biquad filter type (0 = lowpass, 1 = highpass, 2 = bandpass, 3 = peak, 4 = notch, 5 = lowshelf, 6 = highshelf, 7 = sallen-key lowpass, 8 = sallen-key high pass), gain (in Db), pole radius (1 = really narrow, 0.7 = a bit broad), biquad filter form (0 = ii trans, 1 = ii, 2 = i trans, 3 = i), crossfade (no pops or clicks at start or end), pointer to points, number of points
 
+			WASMEffects.customfeedback1 = effinstance.cwrap(
+				"customfeedback1_process",
+				null,
+				["number", "number"] // pointer, length
+			);
+
 			return WASMEffects;
 		});
 	}
@@ -120,6 +126,25 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 	console.time();
 
 	WASMEffects["biquadfrequencyfilter"](bufferNew, buffer.length, sr, freqCutoff, quality, Number(mode), gain, poleRadius, form, timelineBeginAudio !== 0, bufferForPoints, pointBufferReal.length); // The timelineBeginAudio !== 0 argument is for crossfading to prevent clicks.
+
+	console.timeEnd();
+
+	buffer.set(effinstance.HEAPF32.subarray(bufferNew / buffer.BYTES_PER_ELEMENT, (bufferNew / buffer.BYTES_PER_ELEMENT) + buffer.length));
+
+	effinstance._free(bufferNew);
+}
+
+effects["wasm_customfeedback1"] = async function(buffer) {
+	buffer = buffer.audioData;
+
+	await loadWASMEffects();
+	const bufferNew = effinstance._malloc(buffer.length * buffer.BYTES_PER_ELEMENT);
+
+	effinstance.HEAPF32.set(buffer, bufferNew/4);
+
+	console.time();
+
+	WASMEffects["customfeedback1"](bufferNew, buffer.length);
 
 	console.timeEnd();
 
