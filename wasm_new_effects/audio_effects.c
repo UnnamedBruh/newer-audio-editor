@@ -1132,26 +1132,36 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 	}
 };
 
-struct CustomFeedback1 {
+struct CombFeedback4Tap {
 	float x0, x1, x2, x3;
 	float g;
 };
 
-inline float CustomFeedback1_process(float sample, struct CustomFeedback1* filter) {
+inline float CombFeedback4Tap_lowpass_process(float sample, struct CombFeedback4Tap* filter) {
 	float x0 = filter->x3 * filter->g + sample;
-	filter->x3 = filter->x2 * filter->g;
-	filter->x2 = filter->x1 * filter->g;
-	filter->x1 = x0 * filter->g;
+	filter->x3 = filter->x2;
+	filter->x2 = filter->x1;
+	filter->x1 = filter->x0;
+	filter->x0 = x0;
+
+	return x0;
+};
+
+inline float CombFeedback4Tap_highpass_process(float sample, struct CombFeedback4Tap* filter) {
+	float x0 = sample - (filter->x3 * filter->g);
+	filter->x3 = filter->x2;
+	filter->x2 = filter->x1;
+	filter->x1 = filter->x0;
 	filter->x0 = x0;
 
 	return x0;
 };
 
 EMSCRIPTEN_KEEPALIVE
-void customfeedback1_process(float* buffer, int len, float g) {
+void combfeedback4tap_process(float* buffer, int len, float g, int type) {
 	if (len <= 1) return;
 
-	struct CustomFeedback1 filter;
+	struct CombFeedback4Tap filter;
 
 	filter.x0 = 0.0f;
 	filter.x1 = 0.0f;
@@ -1159,8 +1169,14 @@ void customfeedback1_process(float* buffer, int len, float g) {
 	filter.x3 = 0.0f;
 	filter.g = g;
 
-	for (size_t i = 0; i < len; i++) {
-		buffer[i] = CustomFeedback1_process(buffer[i], &filter);
+	if (type == 0) { // lowpass
+		for (size_t i = 0; i < len; i++) {
+			buffer[i] = CombFeedback4Tap_lowpass_process(buffer[i], &filter);
+		}
+	} else if (type == 1) { // highpass
+		for (size_t i = 0; i < len; i++) {
+			buffer[i] = CombFeedback4Tap_highpass_process(buffer[i], &filter);
+		}
 	}
 };
 
@@ -1185,4 +1201,4 @@ void customfeedback1_process(float* buffer, int len, float g) {
 //#                            nicely if you load multiple WASM modules or use
 //#                            bundlers
 //# --no-entry               : no main(), this is a library, not an executable
-//emcc audio_effects.c -Ofast -fno-finite-math-only -msimd128 -mrelaxed-simd -flto -fno-rtti -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS="[\"_chorus_process\",\"_gain_process\",\"_biquadfrequencyfilter_i_process\",\"_customfeedback1_process\",\"_malloc\",\"_free\"]" -s EXPORTED_RUNTIME_METHODS="[\"ccall\",\"cwrap\",\"HEAPF32\"]" -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s WASM=1 -s NO_DISABLE_EXCEPTION_CATCHING=1 -s EXPORT_NAME="ChorusModule" --no-entry -o audio_effects.js
+//emcc audio_effects.c -Ofast -fno-finite-math-only -msimd128 -mrelaxed-simd -flto -fno-rtti -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS="[\"_chorus_process\",\"_gain_process\",\"_biquadfrequencyfilter_i_process\",\"_combfeedback4tap_process\",\"_malloc\",\"_free\"]" -s EXPORTED_RUNTIME_METHODS="[\"ccall\",\"cwrap\",\"HEAPF32\"]" -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s WASM=1 -s NO_DISABLE_EXCEPTION_CATCHING=1 -s EXPORT_NAME="ChorusModule" --no-entry -o audio_effects.js
