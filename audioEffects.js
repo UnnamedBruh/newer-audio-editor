@@ -41,6 +41,14 @@ const effectsList = [
 		"wasm_biquadfilteri",
 		[Number, Number, Number, Number, function(x){return 1 - Number(x)}, Number]
 	],
+	[
+		" (WASM) Custom Machinery & Systems: Scaling Feedback Processor",
+		"Creates a custom sound.",
+		'',
+		0,
+		"wasm_customfeedback1",
+		[]
+	],
 	//
 	[
 		"Gain",
