@@ -1132,6 +1132,39 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 	}
 };
 
+struct CustomFeedback1 {
+	float x0, x1, x2, x3;
+	float g;
+};
+
+inline float CustomFeedback1_process(float sample, struct CustomFeedback1* filter) {
+	filter->g = filter->g + (fabsf(sample) - filter->g) * 0.01f;
+	float x0 = filter->x3 * filter->g + sample;
+	filter->x3 = filter->x2 * filter->g;
+	filter->x2 = filter->x1 * filter->g;
+	filter->x1 = x0 * filter->g;
+	filter->x0 = x0;
+
+	return x0;
+};
+
+EMSCRIPTEN_KEEPALIVE
+void customfeedback1_process(float* buffer, int len) {
+	if (len <= 1) return;
+
+	struct CustomFeedback1 filter;
+
+	filter.x0 = 0.0f;
+	filter.x1 = 0.0f;
+	filter.x2 = 0.0f;
+	filter.x3 = 0.0f;
+	filter.g = 0.0f;
+
+	for (size_t i = 0; i < len; i++) {
+		buffer[i] = CustomFeedback1_process(buffer[i], &filter);
+	}
+};
+
 #ifndef __wasm_relaxed_simd__
 #error "Relaxed SIMD flag is not being caught by the compiler!"
 #endif
@@ -1153,4 +1186,4 @@ void biquadfrequencyfilter_i_process(float* buffer, int len, float sampleRate, f
 //#                            nicely if you load multiple WASM modules or use
 //#                            bundlers
 //# --no-entry               : no main(), this is a library, not an executable
-//emcc audio_effects.c -Ofast -fno-finite-math-only -msimd128 -mrelaxed-simd -flto -fno-rtti -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS="[\"_chorus_process\",\"_gain_process\",\"_biquadfrequencyfilter_i_process\",\"_malloc\",\"_free\"]" -s EXPORTED_RUNTIME_METHODS="[\"ccall\",\"cwrap\",\"HEAPF32\"]" -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s WASM=1 -s NO_DISABLE_EXCEPTION_CATCHING=1 -s EXPORT_NAME="ChorusModule" --no-entry -o audio_effects.js
+//emcc audio_effects.c -Ofast -fno-finite-math-only -msimd128 -mrelaxed-simd -flto -fno-rtti -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS="[\"_chorus_process\",\"_gain_process\",\"_biquadfrequencyfilter_i_process\",\"_customfeedback1_process\",\"_malloc\",\"_free\"]" -s EXPORTED_RUNTIME_METHODS="[\"ccall\",\"cwrap\",\"HEAPF32\"]" -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s WASM=1 -s NO_DISABLE_EXCEPTION_CATCHING=1 -s EXPORT_NAME="ChorusModule" --no-entry -o audio_effects.js
