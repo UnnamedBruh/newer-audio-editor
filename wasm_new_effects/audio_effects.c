@@ -1138,7 +1138,6 @@ struct CustomFeedback1 {
 };
 
 inline float CustomFeedback1_process(float sample, struct CustomFeedback1* filter) {
-	filter->g = filter->g + (fabsf(sample) - filter->g) * 0.1f + 0.05f;
 	float x0 = filter->x3 * filter->g + sample;
 	filter->x3 = filter->x2 * filter->g;
 	filter->x2 = filter->x1 * filter->g;
@@ -1149,7 +1148,7 @@ inline float CustomFeedback1_process(float sample, struct CustomFeedback1* filte
 };
 
 EMSCRIPTEN_KEEPALIVE
-void customfeedback1_process(float* buffer, int len) {
+void customfeedback1_process(float* buffer, int len, float g) {
 	if (len <= 1) return;
 
 	struct CustomFeedback1 filter;
@@ -1158,7 +1157,7 @@ void customfeedback1_process(float* buffer, int len) {
 	filter.x1 = 0.0f;
 	filter.x2 = 0.0f;
 	filter.x3 = 0.0f;
-	filter.g = 0.0f;
+	filter.g = g;
 
 	for (size_t i = 0; i < len; i++) {
 		buffer[i] = CustomFeedback1_process(buffer[i], &filter);
