@@ -42,12 +42,12 @@ const effectsList = [
 		[Number, Number, Number, Number, function(x){return 1 - Number(x)}, Number]
 	],
 	[
-		" (WASM) Custom Machinery & Systems: Scaling Feedback Processor",
+		" (WASM) Custom Machinery & Systems: 4-Sample Scaling Feedback Processor",
 		"Creates a custom sound.",
-		'',
-		0,
+		'Feedback Multiplier: <input id="wasm_customfeedback10" type="number" min="-0.99" max="0.99" step="0.001" value="0.95">',
+		1,
 		"wasm_customfeedback1",
-		[]
+		[Number]
 	],
 	//
 	[
