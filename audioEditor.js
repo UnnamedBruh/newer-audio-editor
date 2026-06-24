@@ -65,7 +65,7 @@ async function loadWASMEffects() {
 
 			// pointer, length, sampleRate (Hz), cutoff frequency (Hz), quality (0-1), biquad filter type (0 = lowpass, 1 = highpass, 2 = bandpass, 3 = peak, 4 = notch, 5 = lowshelf, 6 = highshelf, 7 = sallen-key lowpass, 8 = sallen-key high pass), gain (in Db), pole radius (1 = really narrow, 0.7 = a bit broad), biquad filter form (0 = ii trans, 1 = ii, 2 = i trans, 3 = i), crossfade (no pops or clicks at start or end), pointer to points, number of points
 
-			WASMEffects.customfeedback1 = effinstance.cwrap(
+			WASMEffects.combfeedback4tap_process = effinstance.cwrap(
 				"combfeedback4tap_process",
 				null,
 				["number", "number", "number", "number"] // pointer, length, gain, type
