@@ -66,9 +66,9 @@ async function loadWASMEffects() {
 			// pointer, length, sampleRate (Hz), cutoff frequency (Hz), quality (0-1), biquad filter type (0 = lowpass, 1 = highpass, 2 = bandpass, 3 = peak, 4 = notch, 5 = lowshelf, 6 = highshelf, 7 = sallen-key lowpass, 8 = sallen-key high pass), gain (in Db), pole radius (1 = really narrow, 0.7 = a bit broad), biquad filter form (0 = ii trans, 1 = ii, 2 = i trans, 3 = i), crossfade (no pops or clicks at start or end), pointer to points, number of points
 
 			WASMEffects.customfeedback1 = effinstance.cwrap(
-				"customfeedback1_process",
+				"combfeedback4tap_process",
 				null,
-				["number", "number", "number"] // pointer, length, gain
+				["number", "number", "number", "number"] // pointer, length, gain, type
 			);
 
 			return WASMEffects;
@@ -88,7 +88,7 @@ effects["wasm_gain"] = async function(buffer, volume, mode, clipMin, clipMax, dc
 
 	console.time();
 
-	WASMEffects["gain"](bufferNew, buffer.length, volume, mode, clipMin, clipMax, dcOffset, appliedBeforeGain, handleNaNsWhenGainZero);
+	WASMEffects["gain"](bufferNew, buffer.length, volume, Number(mode), clipMin, clipMax, dcOffset, appliedBeforeGain, handleNaNsWhenGainZero);
 
 	console.timeEnd();
 
@@ -134,7 +134,7 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 	effinstance._free(bufferNew);
 }
 
-effects["wasm_customfeedback1"] = async function(buffer, gain) {
+effects["wasm_combfeedback4filter"] = async function(buffer, gain, type) {
 	buffer = buffer.audioData;
 
 	await loadWASMEffects();
@@ -144,7 +144,7 @@ effects["wasm_customfeedback1"] = async function(buffer, gain) {
 
 	console.time();
 
-	WASMEffects["customfeedback1"](bufferNew, buffer.length, gain);
+	WASMEffects["combfeedback4tap_process"](bufferNew, buffer.length, gain, Number(type));
 
 	console.timeEnd();
 
