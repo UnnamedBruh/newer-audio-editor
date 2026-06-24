@@ -42,8 +42,8 @@ const effectsList = [
 		[Number, Number, Number, Number, function(x){return 1 - Number(x)}, Number]
 	],
 	[
-		" (WASM) Custom Machinery & Systems: 4-Sample Scaling Feedback Processor",
-		"Creates a custom sound.",
+		" (WASM) Custom Machinery & Systems: Lowpass Feedback Processor",
+		"Boosts low frequencies, and lightly distorts high frequencies using a custom, simple algorithm. The higher the multipler, the higher the boost.",
 		'Feedback Multiplier: <input id="wasm_customfeedback10" type="number" min="-0.99" max="0.99" step="0.001" value="0.95">',
 		1,
 		"wasm_customfeedback1",
