@@ -71,6 +71,12 @@ async function loadWASMEffects() {
 				["number", "number", "number", "number"] // pointer, length, gain, type
 			);
 
+			WASMEffects.combfeedbackntap_process = effinstance.cwrap(
+				"combfeedbackntap_process",
+				null,
+				["number", "number", "number", "number", "number"] // pointer, length, gain, type, number of "taps"
+			);
+
 			return WASMEffects;
 		});
 	}
@@ -134,7 +140,7 @@ effects["wasm_biquadfilteri"] = async function(buffer, freqCutoff, quality, mode
 	effinstance._free(bufferNew);
 }
 
-effects["wasm_combfeedback4filter"] = async function(buffer, gain, type) {
+effects["wasm_combfeedbackfilter"] = async function(buffer, gain, type, numOfTaps) {
 	buffer = buffer.audioData;
 
 	await loadWASMEffects();
@@ -144,7 +150,7 @@ effects["wasm_combfeedback4filter"] = async function(buffer, gain, type) {
 
 	console.time();
 
-	WASMEffects["combfeedback4tap_process"](bufferNew, buffer.length, gain, Number(type));
+	if (numOfTaps === 4) WASMEffects["combfeedback4tap_process"](bufferNew, buffer.length, gain, Number(type)); else WASMEffects["combfeedbackntap_process"](bufferNew, buffer.length, gain, Number(type), Number(numOfTaps));
 
 	console.timeEnd();
 
