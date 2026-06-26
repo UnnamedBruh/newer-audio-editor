@@ -2,7 +2,7 @@ The cases are officially documented, exactly as the WASM module is internally op
 
 Note: All of these effect loops are branchless. 0, 1, and 2 are executed separately.
 Optimizations:
-- Each effect branch points to sets of instructions. They are not dynamically generated during runtime (like JIT compilation), although it is functionally similar.
+- Each effect branch points to sets of instructions. They are dynamically selected based on the given parameters of this implementation.
 - Instead of dividing, the implementation multiplies by reciprocals.
 - Variables that hold 128-bit vectors, that store 4 floats are reused.
 
@@ -29,10 +29,10 @@ Note: This effect produces odd harmonics, and may boost low frequencies and/or a
 
 Note: The effect below uses a practice known as "wave-folding", which may produce high transients, and/or series of odd and even harmonics.
 1-3. Modulo Wrap Selected
-1-3-0. If `gain == 1 && min == -1.0f && max == 1.0f`, the effect performs Euclidean division (`fmodf` in C) on every audio sample by `2`.
-1-3-1. If `gain == 1`, the effect scales it into `[min, max]`, then performs Euclidean division (`fmodf` in C) on it by `max - min`, then scales it back into the `[-1.0, 1.0]` range. "It" refers to the audio sample in a loop iteration of every sample.
-1-3-2. If `min == -1.0f && max == 1.0f`, the effect amplifies or attenuates the audio by `gain` via `f32x4.mul`, then performs Euclidean division on every audio sample by `2`.
-1-3-3. Else, the effect amplifies or attenuates the audio by `gain` via `f32x4.mul`, then the effect scales it into `[min, max]`, then performs Euclidean division (`fmodf` in C) on it by `max - min`, then scales it back into the `[-1.0, 1.0]` range. "It" refers to the audio sample in a loop iteration of every sample.
+1-3-0. If `gain == 1 && min == -1.0f && max == 1.0f`, the effect computes the truncated modulo (`fmodf` in C) of every audio sample by `2`.
+1-3-1. If `gain == 1`, the effect scales it into `[min, max]`, then computes the truncated modulo (`fmodf` in C) of it by `max - min`, then scales it back into the `[-1.0, 1.0]` range. "It" refers to the audio sample in a loop iteration of every sample.
+1-3-2. If `min == -1.0f && max == 1.0f`, the effect amplifies or attenuates the audio by `gain` via `f32x4.mul`, then computes the truncated modulo (`fmodf` in C) of every audio sample by `2`.
+1-3-3. Else, the effect amplifies or attenuates the audio by `gain` via `f32x4.mul`, then the effect scales it into `[min, max]`, then computes the truncated modulo (`fmodf` in C) of it by `max - min`, then scales it back into the `[-1.0, 1.0]` range. "It" refers to the audio sample in a loop iteration of every sample.
 
 Note: The effect below may produce smooth or noticeable transients similar to a Triangle Wave. This is recommended when volume boosting is expected to produce harsh artifacts, *and* speed is a priority.
 1-4. Triangular Bouncing
