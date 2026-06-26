@@ -8,14 +8,14 @@ Optimizations:
 
 0. DC Offset (Before Gain + Clamp)
 0-1. If `dcOffsetBeforeGain` and `dcOffset != 0.0f`, apply a constant DC Offset to the waveform via `f32x4.add`.
-0-2. Else, goto to 1.
+0-2. Else, continue to step 1.
 
 1. Gain + Clamp
 Warning: The ability to handle NaN samples is toggled via `handleNaNs`. In implementations of the Web Audio API, many HTML browsers, operating systems or sound devices handle `NaN`, so not handling `NaN`s is neglible. This becomes a tradeoff because some legacy systems may not properly handle `NaN` samples, so clearing them *accidentally* addresses that risk. But engineerers might prefer `NaN` not to be overwritten for granular preservation or precision.
 1-0-0. If `gain == 0`...
-1-0-0-0. If `handleNaNs`, each sample is set to `0` if they are equal to each other (this works for the IEEE 754 Floating Point specification, because `NaN != NaN`), and kept as-is if not, via `f32x4.eq` and `v128.andnot`.
-1-0-0-1. Else, zero out every byte of the audio data (`memset` in C). This method is not portable, but works as intended because WebAssembly uses the IEEE 754 Floating Point specification for floating-point types.
-1-0-1. If `mode == 0`, goto 1-1. If `mode == 1`, goto 1-2. If `mode == 2`, goto 1-3. If `mode == 3`, goto 1-4. Else, goto 2.
+1-0-0-0. If `handleNaNs`, each sample's bytes are zeroed out if they are ordered, and kept as-is if not. This is done via `f32x4.eq` and `v128.andnot` in WebAssembly. For an example, `8.0f == 8.0f` passes, because `8.0` is an ordered value according to the IEEE 754 Floating Point standard. `NaN != NaN` passes, because the standard specifies that `NaN` is an *unordered* value; comparing any value to `NaN` must return `false`, except the `Not Equals` operator which must return `true`.
+1-0-0-1. Else, zero out every byte of the audio data (`memset` in C). WebAssembly uses the IEEE 754 Floating Point standard, so this works as intended.
+1-0-1. If `mode == 0`, continue to step 1-1. If `mode == 1`, continue to step 1-2. If `mode == 2`, continue to step 1-3. If `mode == 3`, continue to step 1-4. Else, continue to step 2.
 
 1-1. No Clipping Selected
 1-1-0. If `gain == 1`, the effect skips to 2.
