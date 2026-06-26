@@ -1158,6 +1158,8 @@ inline float CombFeedbackNTap_lowpass_process(float sample, struct CombFeedbackN
 		filter->feedbackTaps[i] = filter->feedbackTaps[j];
 	}
 	filter->feedbackTaps[0] = x0;
+
+	return x0;
 };
 
 inline float CombFeedback4Tap_highpass_process(float sample, struct CombFeedback4Tap* filter) {
@@ -1176,6 +1178,8 @@ inline float CombFeedbackNTap_highpass_process(float sample, struct CombFeedback
 		filter->feedbackTaps[i] = filter->feedbackTaps[j];
 	}
 	filter->feedbackTaps[0] = x0;
+
+	return x0;
 };
 
 EMSCRIPTEN_KEEPALIVE
