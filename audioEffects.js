@@ -49,6 +49,15 @@ const effectsList = [
 		"wasm_combfeedbackfilter",
 		[Number, Number, Number]
 	],
+		[
+		" (WASM) Stereo Sound: Stereo Widener",
+		"Widens the stereo information by operating in the Mid/Side representation of audio.<br>Recommended: Apply this effect in a way that's subtle. Overapplying it can weaken the center punch.",
+		'Side Multiplier: <input id="wasm_stereowiden0" type="number" min="-2" max="2" step="0.01" value="1.2">',
+		1,
+		"wasm_stereowiden",
+		[Number],
+		2
+	],
 	//
 	[
 		"Gain",
