@@ -77,6 +77,12 @@ async function loadWASMEffects() {
 				["number", "number", "number", "number", "number"] // pointer, length, gain, type, number of "taps"
 			);
 
+			WASMEffects.stereowidener_process = effinstance.cwrap(
+				"stereowidener_process",
+				null,
+				["number", "number", "number", "number"]
+			)
+
 			return WASMEffects;
 		});
 	}
@@ -157,6 +163,30 @@ effects["wasm_combfeedbackfilter"] = async function(buffer, gain, type, numOfTap
 	buffer.set(effinstance.HEAPF32.subarray(bufferNew / buffer.BYTES_PER_ELEMENT, (bufferNew / buffer.BYTES_PER_ELEMENT) + buffer.length));
 
 	effinstance._free(bufferNew);
+}
+
+effects["wasm_stereowiden"] = async function(buffers, gain) {
+	const buffer0 = buffers[0].audioData;
+	const buffer1 = buffers[1].audioData;
+
+	await loadWASMEffects();
+	const bufferNew1 = effinstance._malloc(buffer0.length * buffer0.BYTES_PER_ELEMENT);
+	const bufferNew2 = effinstance._malloc(buffer1.length * buffer1.BYTES_PER_ELEMENT);
+
+	effinstance.HEAPF32.set(buffer0, bufferNew1/4);
+	effinstance.HEAPF32.set(buffer1, bufferNew2/4);
+
+	console.time();
+
+	WASMEffects["stereowidener_process"](bufferNew1, bufferNew2, buffer0.length, gain);
+
+	console.timeEnd();
+
+	buffer0.set(effinstance.HEAPF32.subarray(bufferNew1 / buffer0.BYTES_PER_ELEMENT, (bufferNew1 / buffer0.BYTES_PER_ELEMENT) + buffer0.length));
+	buffer1.set(effinstance.HEAPF32.subarray(bufferNew2 / buffer1.BYTES_PER_ELEMENT, (bufferNew2 / buffer1.BYTES_PER_ELEMENT) + buffer1.length));
+
+	effinstance._free(bufferNew1);
+	effinstance._free(bufferNew2);
 }
 
 effects["resample"] = function(buffer, targetSampleRate, shouldSmooth) {
