@@ -1230,6 +1230,68 @@ void combfeedbackntap_process(float* buffer, int len, float g, int type, int num
 	}
 };
 
+EMSCRIPTEN_KEEPALIVE
+void stereowidener_process(float* buffer1, float* buffer2, int len, float g) {
+	if (len == 0 || g == 1.0f) return;
+
+	// 1. Duplicate the float across all 4 slots of a 128-bit vector
+	v128_t scalar_vector = wasm_f32x4_splat(g);
+	v128_t half = wasm_f32x4_splat(0.5f);
+
+	size_t vectorized_size = len & ~3; // Equivalent to (size / 4) * 4;
+
+	if (g == 0.0f) {
+		for (size_t i = 0; i < vectorized_size; i++) {
+			float* p1 = buffer1 + i;
+			float* p2 = buffer2 + i;
+
+			v128_t samples1 = wasm_v128_load(p1);
+			v128_t samples2 = wasm_v128_load(p2);
+
+			v128_t mid = wasm_f32x4_add(samples1, samples2);
+
+			mid = wasm_f32x4_mul(mid, half);
+
+			wasm_v128_store(p1, mid);
+			wasm_v128_store(p2, mid);
+		}
+
+		for (size_t i = vectorized_size; i < len; i++) {
+			buffer1[i] = buffer2[i] = (buffer1[i] + buffer2[i]) * 0.5f;
+		}
+	} else {
+		for (size_t i = 0; i < vectorized_size; i++) {
+			float* p1 = buffer1 + i;
+			float* p2 = buffer2 + i;
+
+			v128_t samples1 = wasm_v128_load(p1);
+			v128_t samples2 = wasm_v128_load(p2);
+
+			v128_t mid = wasm_f32x4_add(samples1, samples2);
+			v128_t side = wasm_f32x4_sub(samples1, samples2);
+
+			side = wasm_f32x4_mul(side, scalar_vector);
+
+			samples1 = wasm_f32x4_add(mid, side);
+			samples1 = wasm_f32x4_mul(samples1, half);
+
+			samples2 = wasm_f32x4_sub(mid, side);
+			samples2 = wasm_f32x4_mul(samples2, half);
+
+			wasm_v128_store(p1, samples1);
+			wasm_v128_store(p2, samples2);
+		}
+
+		for (size_t i = vectorized_size; i < len; i++) {
+			float mid = buffer1[i] + buffer2[i];
+			float side = (buffer1[i] - buffer2[i]) * g;
+
+			buffer1[i] = (mid + side) * 0.5f;
+			buffer2[i] = (mid - side) * 0.5f;
+		}
+	}
+};
+
 #ifndef __wasm_relaxed_simd__
 #error "Relaxed SIMD flag is not being caught by the compiler!"
 #endif
@@ -1251,4 +1313,4 @@ void combfeedbackntap_process(float* buffer, int len, float g, int type, int num
 //#                            nicely if you load multiple WASM modules or use
 //#                            bundlers
 //# --no-entry               : no main(), this is a library, not an executable
-//emcc audio_effects.c -Ofast -fno-finite-math-only -msimd128 -mrelaxed-simd -flto -fno-rtti -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS="[\"_chorus_process\",\"_gain_process\",\"_biquadfrequencyfilter_i_process\",\"_combfeedback4tap_process\",\"_combfeedbackntap_process\",\"_malloc\",\"_free\"]" -s EXPORTED_RUNTIME_METHODS="[\"ccall\",\"cwrap\",\"HEAPF32\"]" -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s WASM=1 -s NO_DISABLE_EXCEPTION_CATCHING=1 -s EXPORT_NAME="ChorusModule" --no-entry -o audio_effects.js
+//emcc audio_effects.c -Ofast -fno-finite-math-only -msimd128 -mrelaxed-simd -flto -fno-rtti -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS="[\"_chorus_process\",\"_gain_process\",\"_biquadfrequencyfilter_i_process\",\"_combfeedback4tap_process\",\"_combfeedbackntap_process\",\"_stereowidener_process\",\"_malloc\",\"_free\"]" -s EXPORTED_RUNTIME_METHODS="[\"ccall\",\"cwrap\",\"HEAPF32\"]" -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s WASM=1 -s NO_DISABLE_EXCEPTION_CATCHING=1 -s EXPORT_NAME="ChorusModule" --no-entry -o audio_effects.js
