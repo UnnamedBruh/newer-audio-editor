@@ -1241,7 +1241,7 @@ void stereowidener_process(float* buffer1, float* buffer2, int len, float g) {
 	size_t vectorized_size = len & ~3; // Equivalent to (size / 4) * 4;
 
 	if (g == 0.0f) {
-		for (size_t i = 0; i < vectorized_size; i++) {
+		for (size_t i = 0; i < vectorized_size; i += 4) {
 			float* p1 = buffer1 + i;
 			float* p2 = buffer2 + i;
 
@@ -1260,7 +1260,7 @@ void stereowidener_process(float* buffer1, float* buffer2, int len, float g) {
 			buffer1[i] = buffer2[i] = (buffer1[i] + buffer2[i]) * 0.5f;
 		}
 	} else {
-		for (size_t i = 0; i < vectorized_size; i++) {
+		for (size_t i = 0; i < vectorized_size; i += 4) {
 			float* p1 = buffer1 + i;
 			float* p2 = buffer2 + i;
 
